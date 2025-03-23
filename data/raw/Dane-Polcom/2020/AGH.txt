@@ -1,0 +1,7 @@
+Przesyłam dane dotyczące części naszego środowiska VMware.
+
+Zakres danych obejmuje 12M. Dotyczy to środowisk, które w tym czasie istniały lub zostały utworzone.
+
+Generalnie charakter pracy naszego środowiska to serwery bazodanowe, aplikacyjne. Jeśli miałbym bardzo zgrubnie określić stosunek to 1 VM DB:2 VM APP.
+
+W archiwum znajduje się aktualne wartości VCPU/VRAM. Całość w pliku AGH.zip
