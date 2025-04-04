@@ -166,8 +166,8 @@ def extract_resource_consumption_from_dataset_2022_Y(vmware_server_id: str, meta
     return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions, read_csv=read_csv_dataset_2022_Y)
 
 
-def get_metadata_about_resource_consumption(path: str) -> dict:
-    paths = sorted(Path(path).glob("*.csv"))
+def get_metadata_about_resource_consumption(path: str, type : str) -> dict:
+    paths = sorted(Path(path).glob(f"*_1{type}.csv"))
     metadata = {}
 
     for path in paths:
