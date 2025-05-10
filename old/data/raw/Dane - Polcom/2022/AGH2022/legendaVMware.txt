@@ -1,0 +1,51 @@
+Z uwagi na to, że w naszej infrastrukturze klastry różnią się wersjami vcenter opis poszczególnych parametrów może się różnić.
+Poniżej znajdują się opisy parametrów takich zasobów jak CPU, RAM, DISK oraz NETWORK. Jeśli są podane w nazwy parametrów oraz 2 opisy tego parametru to pierwszy z nich zawsze dotyczy nowszej wersji vcenter, drugi natomiast starszej wersji vcenter.
+
+* to parametr dostępny tylko w niektórych wersjach vcenter
+
+[CPU]
+Usage - CPU usage as a percentage during the interval
+
+Usage in MHz - CPU usage in megahertz during the interval 
+
+Total* - Total amount of CPU resources of all hosts in the cluster
+
+Reserved capacity* - Total CPU capacity reserved by the virtual machines
+
+
+[MEMORY]
+Active* (KB) - Amount of guest physical memory that is being actively read or written by guest. Activeness is estimated by ESXi
+
+Balloned memory/Ballon - Amount of guest physical meory reclaimed from the virtual machine by the baloon driver in the guest/Amount of memory allocated by the virtual machine meory control driver (vmmemctl), which is installed with VMware Tools
+
+Consumed - Amount of host physical memory consumed for backing up guest physical memory pages/Amount of host physical memory consumed by a virtual machine, host, or cluster
+
+Granted* (KB) - Amount of host physical memory or physical memory that is mapped for a virtual machine or a host
+
+Overhead consumed/Overhead - Host physical memory consumed by ESXi data structures for running the virtual machines/Host physical memory (KB) consumed by the virtualzation infrastructure for running the virtual machine
+
+Host consumed % / Usage - Percentage of host physical memory that has been consumed/Memory usage as percentage of total configured or available memory
+
+Shared* (KB) - Amount of guest physical memory that is shared within a single virtual machine or across virtual machines
+
+Compressed* - Compressed Average KB compressed Absolute Guest physical memory pages that have undergone memory compression
+
+
+[DISK]
+
+Read rate* (KBps) - Average number of kilobytes read from the disk each second during the collection interval
+
+Usage (KBps) - Aggregated disk I/O rate. For hosts, this metric includes the rates for all virtual machines running on the host during the collection interval.
+
+Write rate* (KBps) - Average number of kilobytes written to disk each second during the collection interval
+
+
+
+[NETWORK]
+
+Usage (KBps) - Network utilization (combined transmit-rates and receive-rates) during the interval
+
+Data receive rate* (KBps) - Data receive rate Average KBps received Rate Average rate at which data was received during the interval
+
+Data transmit rate* (KBps) - Data transmit rate Average KBps transmitted Rate Average rate at which data was transmitted during the interval
+
