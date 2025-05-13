@@ -41,6 +41,7 @@ from steps import (
     verifier,
     train_data_splitter,
     dict_to_list_step,
+    register_model
 )
 from zenml import pipeline
 from zenml.logger import get_logger
@@ -68,7 +69,7 @@ def cloud_resource_prediction_training(raw_dir: str, zip_path: str, raw_polcom_d
 
     model, best_params = model_trainer(train_dict)
 
-    mse = model_evaluator(
+    qos = model_evaluator(
         model=model,
         best_params=best_params,
         train_dfs=train_dict,
@@ -77,3 +78,4 @@ def cloud_resource_prediction_training(raw_dir: str, zip_path: str, raw_polcom_d
         fail_on_quality=True,
     )
 
+    register_model(model, name = "cnn_lstm_prod")

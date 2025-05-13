@@ -30,8 +30,11 @@ from zenml.client import Client
 from zenml.logger import get_logger
 
 from pipelines import cloud_resource_prediction_batch_inference, cloud_resource_prediction_training, cloud_resource_prediction_deployment
-
+import os
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
+
+
 
 
 @click.command(

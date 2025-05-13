@@ -656,3 +656,117 @@
 2025-05-13 07:30:02,253:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
   warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
 
+2025-05-13 08:10:16,480:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:10:16,480:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:10:16,480:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:10:16,480:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:13:17,595:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:13:17,596:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:13:17,596:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:13:17,596:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:14:46,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:14:46,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:14:46,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:14:46,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:15:25,228:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-05-13 08:15:54,236:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:15:54,236:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:15:54,236:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:15:54,236:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:17:05,177:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-05-13 08:23:04,243:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:23:04,243:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:23:04,243:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:23:04,243:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:25:46,349:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:25:46,349:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:25:46,349:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:25:46,349:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:32:17,815:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:32:17,815:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:32:17,815:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:32:17,815:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:37:30,164:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:37:30,164:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:37:30,164:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:37:30,164:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:39:04,381:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-05-13 08:43:06,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:43:06,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:43:06,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:43:06,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:44:42,829:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-05-13 08:48:12,593:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:48:12,593:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:48:12,593:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:48:12,593:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:49:35,269:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-05-13 08:53:22,752:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:53:22,752:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:53:22,753:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:53:22,753:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:54:48,275:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-05-13 08:59:13,734:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:59:13,734:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:59:13,734:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-05-13 08:59:13,734:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.

@@ -44,4 +44,4 @@ from .promotion import (
     compute_performance_metrics_on_current_data,
     promote_with_metric_compare,
 )
-from .training import model_trainer, model_evaluator
+from .training import model_trainer, model_evaluator, register_model

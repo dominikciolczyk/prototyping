@@ -12,12 +12,11 @@ from zenml import step
 from zenml.client import Client
 from typing_extensions import Annotated
 from zenml import ArtifactConfig, get_step_context, step
-
+from zenml.integrations.mlflow.steps.mlflow_registry import mlflow_register_model_step
 from steps.training.QoSLoss import QoSLoss
-
+#import mlflow
+import mlflow.pytorch
 experiment_tracker = Client().active_stack.experiment_tracker
-
-
 # -------- helpers ---------------------------------------------------------- #
 def add_time_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
@@ -98,6 +97,8 @@ class DPSO_GA:
 
         self.g_best, self.g_best_score = None, float("inf")
 
+        #mlflow.log_metric("best_loss", self.g_best_score, step=it)
+
     def _fitness(self, particle):
         # compute actual lr by exponentiation
         lr = 10.0 ** particle["lr_exp"]
@@ -146,6 +147,8 @@ class DPSO_GA:
                 if score < self.g_best_score:
                     self.g_best_score, self.g_best = score, p.copy()
 
+            #mlflow.log_metric("pso_best_loss", self.g_best_score, step=it)
+
             # PSO velocity & position update — note we update 'lr_exp' not 'lr'
             for p in self.swarm:
                 for idx, key in enumerate(["seq_len", "horizon", "hidden", "lr_exp"]):
@@ -179,7 +182,7 @@ def model_trainer(
     Annotated[dict[str, float], ArtifactConfig(name="best_params")]
 ]:
 
-
+    mlflow.pytorch.autolog()
     # -- combine all VMs into one big frame
     combined = pd.concat(dfs.values()).sort_index()
     combined = add_time_features(combined)
@@ -225,5 +228,6 @@ def model_trainer(
         loss.backward()
         optimizer.step()
 
-    return model, best_params
+        #mlflow.log_metric("train_loss", loss.item(), step=epoch)
 
+    return model, best_params
