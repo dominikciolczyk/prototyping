@@ -1,1 +1,0 @@
-Przesyłam cpu i ram z 1M z rozdzielczością 2H oraz sieć z 1M i 1Y (gdzie Usage to KBps).
