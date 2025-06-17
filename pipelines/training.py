@@ -41,7 +41,8 @@ from steps import (
     verifier,
     train_data_splitter,
     dict_to_list_step,
-    register_model
+    register_model,
+    track_experiment_metadata,
 )
 from zenml import pipeline
 from zenml.logger import get_logger
@@ -51,13 +52,21 @@ from pathlib import Path
 from zenml import step
 import shutil
 from zenml.logger import get_logger
-
+from zenml.client import Client
+import mlflow
 logger = get_logger(__name__)
 
 
 @pipeline(on_failure=notify_on_failure)
 def cloud_resource_prediction_training(raw_dir: str, zip_path: str, raw_polcom_dir: str, raw_polcom_2022_dir: str
 ):
+    track_experiment_metadata({
+        "raw_dir": raw_dir,
+        "zip_path": zip_path,
+        "raw_polcom_dir": raw_polcom_dir,
+        "raw_polcom_2022_dir": raw_polcom_2022_dir
+    })
+
     extracted_path = extractor(zip_path=zip_path, raw_dir=raw_dir, output_dir=raw_polcom_2022_dir)
     cleaned_dfs = cleaner(extracted_path)
     aggregated_dfs = aggregator(cleaned_dfs)

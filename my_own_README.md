@@ -8,4 +8,6 @@
   --host 0.0.0.0 \
   --port 5000`
 
+`conda activate PD1`
+
 `python run.py`
