@@ -770,3 +770,1608 @@
 'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
 2025-05-13 08:59:13,734:WARNING:
 'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 18:33:05,541:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 18:33:05,541:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 18:33:05,541:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 18:33:05,541:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:02:07,229:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:02:07,231:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:02:07,231:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:02:07,231:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:19:20,941:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:19:20,942:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:19:20,942:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:19:20,942:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:21:31,537:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:21:31,537:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:21:31,538:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:21:31,538:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:35:29,266:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:35:29,266:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:35:29,266:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:35:29,266:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:36:55,846:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:36:55,846:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:36:55,846:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:36:55,846:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:38:55,883:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:38:55,883:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:38:55,883:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:38:55,883:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:39:03,975:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-06-17 19:41:03,189:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:41:03,190:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:41:03,190:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:41:03,190:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:45:54,954:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:45:54,955:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:45:54,955:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:45:54,955:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:46:02,560:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-06-17 19:47:05,413:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:47:05,413:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:47:05,413:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:47:05,413:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:47:14,062:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-06-17 19:48:13,240:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:48:13,240:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:48:13,240:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:48:13,240:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:48:21,366:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-06-17 19:50:04,673:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:50:04,673:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:50:04,673:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:50:04,673:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:52:18,667:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:52:18,668:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:52:18,668:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:52:18,668:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:54:33,740:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:54:33,740:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:54:33,740:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:54:33,740:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:56:14,129:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:56:14,130:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:56:14,130:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:56:14,130:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 19:56:22,118:WARNING:/home/dodeu/miniconda3/envs/PD1/lib/python3.10/site-packages/mlflow/fastai/__init__.py:68: FutureWarning: fastai flavor is deprecated and will be removed in MLflow 3.0.
+  warnings.warn("fastai flavor is deprecated and will be removed in MLflow 3.0.", FutureWarning)
+
+2025-06-17 20:39:21,582:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:39:21,583:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:39:21,584:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:39:21,584:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:53:11,526:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:53:11,527:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:53:11,527:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:53:11,527:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:57:39,492:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:57:39,492:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:57:39,492:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:57:39,492:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:59:42,544:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:59:42,544:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:59:42,544:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 20:59:42,544:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:49:14,037:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:49:14,038:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:49:14,038:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:49:14,038:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:51:21,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:51:21,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:51:21,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:51:21,343:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:55:47,256:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:55:47,256:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:55:47,257:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 21:55:47,257:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:07:17,710:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:07:17,710:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:07:17,710:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:07:17,710:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:59:02,447:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:59:02,448:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:59:02,449:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 22:59:02,449:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:02:17,101:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:02:17,101:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:02:17,101:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:02:17,101:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:04:38,895:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:04:38,895:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:04:38,895:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:04:38,895:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:05:59,764:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:05:59,765:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:05:59,765:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:05:59,765:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:18:48,942:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:18:48,943:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:18:48,943:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:18:48,943:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:30:22,532:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:30:22,532:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:30:22,533:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:30:22,533:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:31:48,737:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:31:48,737:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:31:48,737:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:31:48,737:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:33:31,042:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:33:31,043:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:33:31,043:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:33:31,043:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:36:08,024:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:36:08,024:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:36:08,024:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:36:08,024:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:37:24,415:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:37:24,415:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:37:24,415:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:37:24,415:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:50:10,075:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:50:10,076:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:50:10,076:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:50:10,076:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:54:27,133:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:54:27,133:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:54:27,134:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:54:27,134:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:55:09,200:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:55:09,200:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:55:09,200:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:55:09,200:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:58:13,113:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:58:13,114:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:58:13,114:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:58:13,114:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:59:57,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:59:57,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:59:57,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-17 23:59:57,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:00:56,181:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:00:56,181:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:00:56,181:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:00:56,181:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:02:07,855:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:02:07,855:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:02:07,855:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:02:07,855:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:04:56,351:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:04:56,351:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:04:56,351:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:04:56,351:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:06:56,061:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:06:56,061:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:06:56,061:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:06:56,061:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:08:23,735:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:08:23,735:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:08:23,735:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:08:23,735:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:14:21,574:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:14:21,575:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:14:21,575:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:14:21,575:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:09,493:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:09,493:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:09,493:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:09,493:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:41,430:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:41,431:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:41,431:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 00:16:41,431:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:10:05,490:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:10:05,490:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:10:05,490:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:10:05,490:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:11:37,819:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:11:37,819:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:11:37,819:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:11:37,819:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:13:03,397:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:13:03,397:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:13:03,397:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:13:03,397:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:13:14,105:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:38: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:21:21,482:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:21:21,483:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:21:21,483:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:21:21,483:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:21:32,435:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:22:50,070:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:22:50,070:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:22:50,071:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:22:50,071:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:22:56,823:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:26:21,333:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:26:21,333:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:26:21,333:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:26:21,333:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:26:32,697:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:26:32,741:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:26:32,785:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:27:17,716:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:27:17,716:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:27:17,716:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:27:17,716:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:27:24,780:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:27:24,930:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:27:25,140:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:37:41,969:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:37:41,969:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:37:41,970:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:37:41,970:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:38:35,246:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:38:35,247:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:38:35,247:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:38:35,247:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:38:45,515:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:37: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:38:45,548:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:37: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:38:45,579:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:37: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:40:48,963:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:40:48,963:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:40:48,963:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:40:48,964:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:40:59,688:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:37: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:40:59,722:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:37: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:40:59,753:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:37: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:40:59,785:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:37: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:42:16,890:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:42:16,890:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:42:16,890:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:42:16,890:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:42:25,927:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:42:25,965:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:42:26,000:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:42:26,037:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:42:54,934:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:42:54,934:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:42:54,934:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:42:54,934:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:43:01,820:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:43:45,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:43:45,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:43:45,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:43:45,311:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:43:52,303:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:43:52,342:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:43:52,374:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:43:52,412:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:48:54,339:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:48:54,339:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:48:54,339:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:48:54,339:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:49:00,890:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:46: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:49:00,925:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:46: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:49:00,958:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:46: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:49:00,994:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:46: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:50:51,004:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:50:51,004:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:50:51,004:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:50:51,004:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:51:35,919:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:51:35,919:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:51:35,920:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:51:35,920:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:51:42,608:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:47: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:51:42,646:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:47: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:51:42,683:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:47: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:51:42,719:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:47: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:56:48,964:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:56:48,964:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:56:48,964:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:56:48,964:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 01:56:56,310:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:38: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:56:56,347:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:38: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:56:56,382:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:38: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:56:56,417:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:38: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:56:56,450:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:38: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 01:56:56,484:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:38: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:04:52,011:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:04:52,011:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:04:52,011:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:04:52,011:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:04:59,428:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:04:59,447:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:04:59,481:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:04:59,492:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:04:59,531:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:04:59,564:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:04:59,571:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:06:30,630:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:06:30,630:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:06:30,630:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:06:30,630:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:07:58,728:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:07:58,728:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:07:58,728:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:07:58,728:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:08:08,460:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:08:08,470:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:08:08,504:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:08:08,514:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:08:08,551:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:08:08,584:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:08:08,592:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:12:30,827:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:12:30,827:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:12:30,827:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:12:30,828:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:12:54,043:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:12:54,043:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:12:54,044:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:12:54,044:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:15:34,869:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:15:34,869:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:15:34,869:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:15:34,869:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:20:44,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:20:44,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:20:44,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:20:44,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:20:50,785:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:20:50,794:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:20:50,827:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:20:50,837:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:20:50,868:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:20:50,875:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:20:50,906:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:20:50,913:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:20:50,944:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:20:50,950:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:20:50,981:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:20:50,987:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:66: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:31:00,839:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:31:00,839:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:31:00,839:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:31:00,839:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:31:07,797:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:47: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=", ")
+
+2025-06-18 02:35:39,089:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:35:39,089:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:35:39,089:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:35:39,089:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:35:46,548:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:36: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:39:56,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:39:56,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:39:56,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:39:56,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:41:19,120:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:41:19,120:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:41:19,120:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:41:19,120:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:41:29,241:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:43:11,258:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:43:11,259:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:43:11,259:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:43:11,259:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:43:18,092:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:44:09,910:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:44:09,910:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:44:09,910:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:44:09,910:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:44:19,784:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:46:36,040:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:46:36,040:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:46:36,040:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:46:36,040:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:46:43,535:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:41: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:46:43,553:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:77: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:46:43,599:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:41: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:46:43,618:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:77: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:46:43,658:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:41: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:46:43,672:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:77: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:46:43,708:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:41: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:46:43,722:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:77: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:46:43,757:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:41: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:46:43,767:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:77: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:46:43,799:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:41: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:46:43,809:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:77: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:51:19,094:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:51:19,094:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:51:19,094:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:51:19,094:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:51:28,580:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:51:28,585:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:51:28,617:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:51:28,624:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:51:28,797:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:51:28,804:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:51:28,836:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:51:28,843:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:51:28,875:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:51:28,881:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:51:28,915:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:51:28,920:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:53:09,972:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:53:09,972:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:53:09,972:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:53:09,972:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:53:18,774:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:53:18,780:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:53:18,814:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:53:18,819:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:53:18,850:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:53:18,855:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:53:18,887:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:53:18,892:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:53:18,922:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:53:18,926:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:53:18,957:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:53:18,961:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:75: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+
+2025-06-18 02:55:05,041:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:55:05,041:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:55:05,041:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:55:05,041:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:59:04,628:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:59:04,628:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:59:04,628:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:59:04,629:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 02:59:14,805:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:59:14,810:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 02:59:14,844:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:59:14,980:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 02:59:15,012:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 02:59:15,017:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:03:41,858:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:03:41,858:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:03:41,858:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:03:41,858:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:03:48,891:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:03:48,898:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:03:48,934:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:03:49,078:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:03:49,112:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:05:27,953:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:05:27,953:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:05:27,953:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:05:27,953:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:05:35,382:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:05:35,388:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:05:35,423:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:05:35,557:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:05:35,590:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:05:35,597:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:94: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:10:13,995:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:13,995:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:13,995:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:13,995:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:24,467:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:10:24,474:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:10:24,510:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:10:24,674:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:10:24,719:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:10:41,070:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:41,070:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:41,070:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:41,070:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:10:48,372:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:10:48,379:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:10:48,414:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:10:48,557:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:10:48,590:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:10:48,598:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:11:50,879:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:11:50,879:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:11:50,879:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:11:50,879:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 03:11:57,819:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:11:57,825:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:11:57,862:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:11:53,875:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 03:12:01,386:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 03:12:01,393:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 17:02:03,781:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 17:02:03,782:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 17:02:03,782:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 17:02:03,782:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:46:55,403:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:46:55,404:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:46:55,404:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:46:55,404:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:47:29,325:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:47:29,325:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:47:29,325:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:47:29,325:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:47:36,950:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:47:36,956:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:47:36,995:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:47:37,182:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:47:37,214:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:47:37,222:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:49:33,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:49:33,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:49:33,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:49:33,391:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:49:40,412:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:49:40,418:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:49:40,454:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:49:40,653:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:49:40,688:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:49:40,695:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:50:58,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:50:58,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:50:58,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:50:58,010:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:54:20,923:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:54:20,923:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:54:20,923:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:54:20,923:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:54:28,491:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:54:28,640:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:54:28,676:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:54:28,683:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:54:28,715:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:54:28,721:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:54:28,897:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:54:28,903:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:54:28,937:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:54:28,942:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:54:28,978:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:54:28,985:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:56:51,579:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:56:51,579:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:56:51,579:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:56:51,579:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 18:56:59,589:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:56:59,857:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:56:59,895:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:56:59,902:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:56:59,938:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:56:59,945:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:57:00,292:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:57:00,299:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:57:00,334:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:57:00,339:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 18:57:00,375:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 18:57:00,380:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:15:56,353:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:15:56,354:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:15:56,354:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:15:56,354:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:16:11,654:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:16:11,890:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:16:11,932:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:16:11,939:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:16:11,976:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:16:11,983:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:16:12,019:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:16:12,251:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:16:12,288:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:16:12,294:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:16:12,330:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:40: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:16:12,336:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:95: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:19:21,582:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:19:21,582:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:19:21,582:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:19:21,582:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:19:32,144:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:19:32,151:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:19:32,189:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:19:32,195:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:19:32,228:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:19:32,235:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:19:32,268:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:19:32,274:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:19:32,308:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:19:32,313:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:19:32,348:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:19:32,353:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:27:56,723:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:27:56,723:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:27:56,723:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:27:56,723:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 19:28:06,233:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:28:06,239:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:28:06,276:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:28:06,283:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:28:06,341:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:28:06,357:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:28:06,418:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:28:06,425:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:28:06,461:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:28:06,466:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 19:28:06,499:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 19:28:06,504:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 21:18:04,404:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:18:04,404:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:18:04,404:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:18:04,404:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:41:51,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:41:51,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:41:51,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:41:51,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:44:52,360:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:44:52,361:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:44:52,361:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:44:52,361:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:46:15,093:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:46:15,093:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:46:15,093:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:46:15,093:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:47:46,672:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:47:46,672:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:47:46,672:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:47:46,672:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:48:38,297:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:48:38,298:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:48:38,298:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:48:38,298:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:50:00,231:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:50:00,232:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:50:00,232:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 21:50:00,232:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:03:43,729:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:03:43,731:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:03:43,731:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:03:43,731:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:04:25,517:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:04:25,517:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:04:25,517:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:04:25,517:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:09:51,893:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:09:51,893:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:09:51,893:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:09:51,893:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:17:34,221:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:17:34,222:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:17:34,222:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:17:34,222:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:17:45,399:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:17:45,405:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:17:45,444:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:17:45,449:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:17:45,482:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:17:45,488:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:17:45,520:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:17:45,525:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:17:45,557:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:17:45,562:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:17:45,593:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:17:45,598:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:91: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:21:56,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:21:56,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:21:56,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:21:56,132:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2025-06-18 22:22:04,059:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,064:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,070:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,076:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,080:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,086:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,091:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,096:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,102:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,108:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,113:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:04,118:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:39: ParserWarning: Falling back to the 'python' engine because the 'c' engine does not support regex separators (separators > 1 char and different from '\s+' are interpreted as regex); you can avoid this warning by specifying engine='python'.
+  df = pd.read_csv(path, sep=sep)
+
+2025-06-18 22:22:07,112:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:99: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:22:07,146:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:99: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:22:07,178:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:99: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:22:07,209:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:99: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:22:07,241:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:99: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+
+2025-06-18 22:22:07,272:WARNING:/home/dodeu/AGH/PD1/prototyping/src/extract.py:99: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+

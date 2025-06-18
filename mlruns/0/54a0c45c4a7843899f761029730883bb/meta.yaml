@@ -1,0 +1,15 @@
+artifact_uri: file:///home/dodeu/AGH/PD1/prototyping/mlruns/0/54a0c45c4a7843899f761029730883bb/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 54a0c45c4a7843899f761029730883bb
+run_name: sneaky-kite-961
+run_uuid: 54a0c45c4a7843899f761029730883bb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1750180890475
+status: 1
+tags: []
+user_id: dodeu

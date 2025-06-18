@@ -22,27 +22,19 @@ def extractor_2020(
 
 @step(enable_cache=False)
 def extractor(
-        zip_path: str,
-        raw_dir: str,
-        output_dir: Path,
-        dataset_year: int,
+        zip_path: Path,
+        raw_dir: Path,
+        raw_polcom_2020_dir: Path,
 ) -> Path:
     if Path(raw_dir).exists():
         shutil.rmtree(raw_dir)
-        #print("Removed", raw_dir)
+        print("Removed", raw_dir)
 
     Path(raw_dir).mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path) as zf:
         zf.extractall(raw_dir)
     #print("Unzipped", zip_path, "→", raw_dir)
 
-    if dataset_year == 2020:
-        zip_folder = Path(raw_dir) / "Dane - Polcom" / "2020"
-        extractor_2020(zip_folder=zip_folder, output_dir=zip_folder)
-        pass
-    elif dataset_year == 2022:
-        pass
-    else:
-        raise ValueError(f"Unsupported dataset year: {dataset_year}")
+    extractor_2020(zip_folder=raw_polcom_2020_dir, output_dir=raw_polcom_2020_dir)
 
-    return output_dir
+    return raw_polcom_2020_dir

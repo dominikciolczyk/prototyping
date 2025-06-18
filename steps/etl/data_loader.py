@@ -39,8 +39,8 @@ def concat_dataframes_horizontally(dataframes: list[pd.DataFrame]) -> pd.DataFra
     return result
 
 def extract_consumption_data(
+    input_dir: Path,
     year: int,
-    raw_dir: Path,
     granularity: str
 ) -> dict[str, pd.DataFrame]:
 
@@ -63,8 +63,6 @@ def extract_consumption_data(
             if granularity == 'Y'
             else extract_resource_consumption_from_dataset_2020_M
         )
-
-        raw_dir = Path("data/raw/Dane - Polcom/2020/AGH2020")  # optionally override
 
     elif year == 2022:
         vmware_to_local = {
@@ -92,7 +90,7 @@ def extract_consumption_data(
     result = {}
     for virtual_machine_id in virtual_machines:
         vmware_server_id = local_to_vmware[virtual_machine_id]
-        metadata = get_metadata_about_resource_consumption(str(raw_dir / vmware_server_id), granularity)
+        metadata = get_metadata_about_resource_consumption(str(input_dir / vmware_server_id), granularity)
         dfs = extract_func(vmware_server_id, metadata)
         df_merged = concat_dataframes_horizontally(dfs)
         result[virtual_machine_id] = df_merged
@@ -101,22 +99,21 @@ def extract_consumption_data(
 
 @step
 def data_loader(
-    raw_dir: Path,
+    polcom_2022_dir: Path,
+    polcom_2020_dir: Path,
     data_granularity: str,
-    load_2022: bool,
-    load_2020: bool,
+    year: int,
 ) -> dict[str, pd.DataFrame]:
-    """Load and concatenate parquet files for a single VM."""
-    data = {}
-    if load_2022:
-        print(f"Extracting data for year 2022 with granularity {data_granularity}")
-        data = extract_consumption_data(year=2022, raw_dir=raw_dir, granularity='Y')
 
-    if load_2020:
-        print(f"Extracting data for year 2020 with granularity {data_granularity}")
-        data = extract_consumption_data(year=2020, raw_dir=raw_dir, granularity='M')
-
-    if not data:
-        raise ValueError("No data loaded. Check the raw_dir and granularity parameters.")
-
-    return data
+    if year == 2022:
+        print(f"Extracting data for year {year} with granularity {data_granularity}")
+        return extract_consumption_data(
+            year=year, input_dir=polcom_2022_dir, granularity=data_granularity
+        )
+    elif year == 2020:
+        print(f"Extracting data for year {year} with granularity {data_granularity}")
+        return extract_consumption_data(
+            year=year, input_dir=polcom_2020_dir, granularity=data_granularity
+        )
+    else:
+        raise ValueError(f"Unsupported year: {year}. Supported years are 2020 and 2022.")

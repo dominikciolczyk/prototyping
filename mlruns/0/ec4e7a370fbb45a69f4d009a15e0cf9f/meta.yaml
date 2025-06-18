@@ -1,0 +1,15 @@
+artifact_uri: file:///home/dodeu/AGH/PD1/prototyping/mlruns/0/ec4e7a370fbb45a69f4d009a15e0cf9f/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ec4e7a370fbb45a69f4d009a15e0cf9f
+run_name: bold-kit-103
+run_uuid: ec4e7a370fbb45a69f4d009a15e0cf9f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1750179725894
+status: 1
+tags: []
+user_id: dodeu

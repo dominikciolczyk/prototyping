@@ -64,9 +64,19 @@ def fix_separator_and_overwrite(path: str | Path):
 
     raise ValueError(f"Could not fix separator in {path}")
 
-def read_csv_dataset_2020_Y(path: str) -> pd.DataFrame:
-    fix_separator_and_overwrite(path)
 
+def fix_separators_in_all_files(root_dir: Path) -> None:
+    """
+    Recursively apply fix_separator_and_overwrite to all files under root_dir.
+    """
+    for file_path in root_dir.rglob("*.csv"):  # or just rglob("*") if not limited to CSVs
+        if file_path.is_file():
+            try:
+                fix_separator_and_overwrite(file_path)
+            except Exception as e:
+                print(f"❌ Failed to process {file_path}: {e}")
+
+def read_csv_dataset_2020_Y(path: str) -> pd.DataFrame:
     df = pd.read_csv(path, sep=";")
     if not "VM03" in path: # to jest średnie
         df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
@@ -81,8 +91,6 @@ def read_csv_dataset_2020_Y(path: str) -> pd.DataFrame:
     return df
 
 def read_csv_dataset_2020_M(path: str) -> pd.DataFrame:
-    fix_separator_and_overwrite(path)
-
     df = pd.read_csv(path, sep=";")
 
     #print("Columns in DataFrame:", df.columns.tolist())

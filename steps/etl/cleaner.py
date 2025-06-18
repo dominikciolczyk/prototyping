@@ -8,7 +8,7 @@ from extract import (
     extract_resource_consumption_from_dataset_2022_Y,
     extract_resource_consumption_from_dataset_2020_M,
     extract_resource_consumption_from_dataset_2020_Y,
-    get_metadata_about_resource_consumption
+    get_metadata_about_resource_consumption, fix_separators_in_all_files
 )
 
 import shutil
@@ -18,40 +18,34 @@ import re
 logger = get_logger(__name__)
 
 
-
-
-
-def reorganize_2020_data_to_vm_folders(base_2020_path: Path, vmware_to_local: dict):
-    # Źródłowe katalogi
+def reorganize_2020_data_to_vm_folders(base_2020_path: Path, cleaned_base_path: Path, vmware_to_local: dict):
+    # Source directories
     cpu_mem_dir = base_2020_path / "CPUandRAM"
     disk_dir = base_2020_path / "Disk"
     net_dir = base_2020_path / "Network"
 
-    agh2020_dir = base_2020_path / "AGH2020"
-    agh2020_dir.mkdir(exist_ok=True)
+    # Target directory base
+    cleaned_base_path.mkdir(parents=True, exist_ok=True)
 
     for vmware_id, local_id in vmware_to_local.items():
-        target_dir = agh2020_dir / vmware_id
+        target_dir = cleaned_base_path / vmware_id
         target_dir.mkdir(parents=True, exist_ok=True)
 
         for granularity in ["M", "Y"]:
-            # CPU i Memory
+            # CPU and Memory
             for resource in ["cpu", "memory"]:
                 src = cpu_mem_dir / f"{vmware_id}_{resource}_1{granularity}.csv"
                 if src.exists():
                     dst = target_dir / f"{vmware_id}_{resource}_1{granularity}.csv"
-                    #print(f"Moving {src} → {dst}")
-                    shutil.move(str(src), str(dst))
+                    shutil.copy2(src, dst)
 
             # Disk
             for f in disk_dir.glob(f"{vmware_id}_node*_disk_1{granularity}.csv"):
-                #print(f"Moving {f} → {target_dir / f.name}")
-                shutil.move(str(f), str(target_dir / f.name))
+                shutil.copy2(f, target_dir / f.name)
 
             # Network
             for f in net_dir.glob(f"{vmware_id}_node*_network_1{granularity}.csv"):
-                #print(f"Moving {f} → {target_dir / f.name}")
-                shutil.move(str(f), str(target_dir / f.name))
+                shutil.copy2(f, target_dir / f.name)
 
 def move_and_rename_agh_files(base_2020_path: Path):
     agh_dir = base_2020_path / "AGH"
@@ -85,14 +79,28 @@ def override_csv_headers(header_overrides: dict[Path, list[str]]):
         with path.open("w", encoding="utf-8") as f:
             f.writelines(lines)
 
-        print(f"✅ Overridden header in {path.name} → {new_header}")
+        print(f"✅ Overridden header in {path} → {new_header}")
+
+
+def copy_vm_folders_to_cleaned_dir(source_dir: Path, destination_dir: Path) -> None:
+    """
+    Copy all VM folders from the source directory to the destination directory.
+    """
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    for vm_folder in source_dir.iterdir():
+        if vm_folder.is_dir():
+            target_folder = destination_dir / vm_folder.name
+            shutil.copytree(vm_folder, target_folder, dirs_exist_ok=True)
 
 
 @step(enable_cache=False)
 def cleaner(
-    raw_dir: Path,
+    raw_polcom_2022_dir: Path,
+    raw_polcom_2020_dir: Path,
+    cleaned_polcom_dir: Path,
+    cleaned_polcom_2022_dir: Path,
+    cleaned_polcom_2020_dir: Path,
 ) -> Path:
-    """Load and concatenate parquet files for a single VM."""
 
     vmware_to_local = {
         "dcaM": "VM01",
@@ -107,17 +115,23 @@ def cleaner(
         "V": "VM10",
     }
 
-    base_2020 = Path("data/raw/Dane - Polcom/2020")
+    move_and_rename_agh_files(raw_polcom_2020_dir)
 
-    move_and_rename_agh_files(base_2020)
+    if cleaned_polcom_dir.exists() and cleaned_polcom_dir.is_dir():
+        print(f"Removing existing cleaned directory: {cleaned_polcom_dir}")
+        shutil.rmtree(cleaned_polcom_dir)
 
-    reorganize_2020_data_to_vm_folders(base_2020, vmware_to_local)
-
+    reorganize_2020_data_to_vm_folders(raw_polcom_2020_dir, cleaned_polcom_2020_dir, vmware_to_local)
     override_csv_headers({
-        Path("data/raw/Dane - Polcom/2020/AGH2020/dcaM/dcaM_node1_network_1Y.csv"): ["Time", "Usage for dcaM_n1"],
-        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node1_disk_1Y.csv"): ["Time,Usage for R01_n1"],
-        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node2_disk_1Y.csv"): ["Time,Usage for R01_n2"],
-        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node1_disk_1M.csv"): ["Time,Usage for R01_n1"],
-        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node2_disk_1M.csv"): ["Time,Usage for R01_n2"],
+        cleaned_polcom_2020_dir / "dcaM/dcaM_node1_network_1Y.csv": ["Time", "Usage for dcaM_n1"],
+        cleaned_polcom_2020_dir / "R01/R01_node1_disk_1Y.csv": ["Time,Usage for R01_n1"],
+        cleaned_polcom_2020_dir / "R01/R01_node2_disk_1Y.csv": ["Time,Usage for R01_n2"],
+        cleaned_polcom_2020_dir / "R01/R01_node1_disk_1M.csv": ["Time,Usage for R01_n1"],
+        cleaned_polcom_2020_dir / "R01/R01_node2_disk_1M.csv": ["Time,Usage for R01_n2"],
     })
-    return raw_dir
+
+    fix_separators_in_all_files(cleaned_polcom_2020_dir)
+
+    copy_vm_folders_to_cleaned_dir(raw_polcom_2022_dir, cleaned_polcom_2022_dir)
+
+    return cleaned_polcom_2022_dir

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/dodeu/AGH/PD1/prototyping/mlruns/0/024571a11c4d42b6a56f4542a2d61cad/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 024571a11c4d42b6a56f4542a2d61cad
+run_name: magnificent-fox-802
+run_uuid: 024571a11c4d42b6a56f4542a2d61cad
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1750181735826
+status: 1
+tags: []
+user_id: dodeu
