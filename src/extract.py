@@ -4,7 +4,6 @@ import pandas as pd
 import re
 from pathlib import Path
 
-
 def read_csv_dataset_2022_M(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
@@ -21,7 +20,53 @@ def read_csv_dataset_2022_Y(path: str) -> pd.DataFrame:
 
     return df
 
+
+def replace_commas(df):
+    for col in df.columns:
+        if df[col].dtype == "object":
+            try:
+                df[col] = df[col].str.replace(",", ".")
+                df[col] = df[col].astype(float)
+            except ValueError:
+                pass
+    return df
+
+def fix_separator_and_overwrite(path: str | Path):
+    path = Path(path)
+
+    def try_fix(sep: str, label: str):
+        try:
+            df = pd.read_csv(path, sep=sep)
+            if df.shape[1] > 1:
+                df = replace_commas(df)
+                df.to_csv(path, sep=";", index=False)
+                print(f"{label} → saved as ; in {path.name}")
+                return True
+        except Exception as e:
+            print(f"Failed for sep='{sep}' in {path.name}: {e}")
+        return False
+
+    try:
+        df = pd.read_csv(path, sep=";")
+        if df.shape[1] > 1:
+            df = replace_commas(df)
+            df.to_csv(path, sep=";", index=False)
+            #print(f"Verified OK and updated decimals in {path.name}")
+            return
+    except Exception as e:
+        #print(f"Initial sep=';' read failed in {path.name}: {e}")
+        pass
+
+    if try_fix(", ", "Fixed ', '"):
+        return
+    if try_fix(",", "Fixed ','"):
+        return
+
+    raise ValueError(f"Could not fix separator in {path}")
+
 def read_csv_dataset_2020_Y(path: str) -> pd.DataFrame:
+    fix_separator_and_overwrite(path)
+
     df = pd.read_csv(path, sep=";")
     if not "VM03" in path: # to jest średnie
         df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
@@ -36,7 +81,12 @@ def read_csv_dataset_2020_Y(path: str) -> pd.DataFrame:
     return df
 
 def read_csv_dataset_2020_M(path: str) -> pd.DataFrame:
+    fix_separator_and_overwrite(path)
+
     df = pd.read_csv(path, sep=";")
+
+    #print("Columns in DataFrame:", df.columns.tolist())
+
     if not "VM03" in path: # to jest średnie
         df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
     else:
@@ -57,9 +107,27 @@ def extract_cpu_consumption_data(vmware_server_id: str, df: pd.DataFrame) -> pd.
 
     return _df
 
+def extract_cpu_consumption_data_2020(vmware_server_id: str, df: pd.DataFrame) -> pd.DataFrame:
+    _df: pd.DataFrame = pd.DataFrame()
+
+    # Zamień wszystkie nazwy kolumn na lower() i utwórz mapowanie
+    lower_cols = {col.lower(): col for col in df.columns}
+
+    usage_mhz_key = f"usage in mhz for {vmware_server_id.lower()}"
+    usage_percent_key = f"usage for {vmware_server_id.lower()}"
+
+    if usage_mhz_key not in lower_cols or usage_percent_key not in lower_cols:
+        raise ValueError(f"Could not find expected CPU usage columns for {vmware_server_id}. Available columns: {df.columns.tolist()}")
+
+    _df["CPU_USAGE_MHZ"] = df[lower_cols[usage_mhz_key]]
+    _df["CPU_USAGE_PERCENT"] = df[lower_cols[usage_percent_key]]
+
+    return _df
 
 def extract_memory_consumption_data(vmware_server_id: str, df: pd.DataFrame) -> pd.DataFrame:
     _df: pd.DataFrame = pd.DataFrame()
+
+    #print("Columns in DataFrame:", df.columns.tolist())
 
     # is_newer_vcenter = f"Active for {vmware_server_id}" in df.columns
     is_older_vcenter = f"Host consumed % for {vmware_server_id}" in df.columns
@@ -91,6 +159,8 @@ def extract_memory_consumption_data(vmware_server_id: str, df: pd.DataFrame) -> 
 
 def extract_disk_consumption_data(vmware_server_id: str, node_id: int, df: pd.DataFrame) -> pd.DataFrame:
     _df: pd.DataFrame = pd.DataFrame()
+    #print("Columns in DataFrame:", df.columns.tolist())
+
     server: str = f"{vmware_server_id}_n{node_id}"
 
     # IO - Input/Output rate
@@ -105,6 +175,7 @@ def extract_disk_consumption_data(vmware_server_id: str, node_id: int, df: pd.Da
 
 def extract_network_consumption_data(vmware_server_id: str, node_id: int, df: pd.DataFrame) -> pd.DataFrame:
     _df: pd.DataFrame = pd.DataFrame()
+    #print("Columns in DataFrame:", df.columns.tolist())
     server: str = f"{vmware_server_id}_n{node_id}"
 
     # TR - Transmit/Receive rate
@@ -118,8 +189,15 @@ def extract_network_consumption_data(vmware_server_id: str, node_id: int, df: pd
     return _df
 
 
-extractions: dict[str, Callable] = {
+extractions_2022: dict[str, Callable] = {
     "cpu": extract_cpu_consumption_data,
+    "memory": extract_memory_consumption_data,
+    "disk": extract_disk_consumption_data,
+    "network": extract_network_consumption_data,
+}
+
+extractions_2020: dict[str, Callable] = {
+    "cpu": extract_cpu_consumption_data_2020,
     "memory": extract_memory_consumption_data,
     "disk": extract_disk_consumption_data,
     "network": extract_network_consumption_data,
@@ -154,16 +232,16 @@ def extract_resource_consumption(vmware_server_id: str, metadata: dict, extracti
 
 
 def extract_resource_consumption_from_dataset_2020_M(vmware_server_id: str, metadata: dict) -> list[pd.DataFrame]:
-    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions, read_csv=read_csv_dataset_2020_M)
+    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2022, read_csv=read_csv_dataset_2020_M)
 
 def extract_resource_consumption_from_dataset_2020_Y(vmware_server_id: str, metadata: dict) -> list[pd.DataFrame]:
-    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions, read_csv=read_csv_dataset_2020_Y)
+    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2020, read_csv=read_csv_dataset_2020_Y)
 
 def extract_resource_consumption_from_dataset_2022_M(vmware_server_id: str, metadata: dict) -> list[pd.DataFrame]:
-    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions, read_csv=read_csv_dataset_2022_M)
+    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2022, read_csv=read_csv_dataset_2022_M)
 
 def extract_resource_consumption_from_dataset_2022_Y(vmware_server_id: str, metadata: dict) -> list[pd.DataFrame]:
-    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions, read_csv=read_csv_dataset_2022_Y)
+    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2020, read_csv=read_csv_dataset_2022_Y)
 
 
 def get_metadata_about_resource_consumption(path: str, type : str) -> dict:

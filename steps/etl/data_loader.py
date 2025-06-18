@@ -1,77 +1,122 @@
-# MIT License
-# 
-# Copyright (c) Dominik Ciołczyk 2025
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-# 
-
-
-from typing import Tuple
-
-import pandas as pd
-from sklearn.datasets import load_breast_cancer
-from typing_extensions import Annotated
+from pathlib import Path
 from zenml import step
 from zenml.logger import get_logger
+import pandas as pd
+from extract import (
+    extract_resource_consumption_from_dataset_2022_M,
+    extract_resource_consumption_from_dataset_2022_Y,
+    extract_resource_consumption_from_dataset_2020_M,
+    extract_resource_consumption_from_dataset_2020_Y,
+    get_metadata_about_resource_consumption
+)
 
 logger = get_logger(__name__)
 
+def concat_dataframes_horizontally(dataframes: list[pd.DataFrame]) -> pd.DataFrame:
+    # Create a set to track all column names across dataframes
+    all_columns = set()
+
+    # Create a list to store the processed dataframes
+    processed_dfs = []
+
+    for i, df in enumerate(dataframes):
+        new_cols = []
+        for col in df.columns:
+            if col in all_columns:
+                new_cols.append(f'df{i}_{col}')
+            else:
+                new_cols.append(col)
+            all_columns.add(new_cols[-1])
+        df.columns = new_cols
+
+        if not df.index.is_unique:
+            df = df.groupby(df.index).mean()
+        processed_dfs.append(df)
+
+    # Concatenate the dataframes horizontally
+    result = pd.concat(processed_dfs, axis=1)
+
+    return result
+
+def extract_consumption_data(
+    year: int,
+    raw_dir: Path,
+    granularity: str
+) -> dict[str, pd.DataFrame]:
+
+    if year == 2020:
+        vmware_to_local = {
+            "dcaM": "VM01",
+            "pdcM": "VM02",
+            "R01": "VM03",
+            "R02": "VM04",
+            "R03": "VM05",
+            "S": "VM06",
+            "V01": "VM07",
+            "V02": "VM08",
+            "V04": "VM09",
+            "V": "VM10",
+        }
+
+        extract_func = (
+            extract_resource_consumption_from_dataset_2020_Y
+            if granularity == 'Y'
+            else extract_resource_consumption_from_dataset_2020_M
+        )
+
+        raw_dir = Path("data/raw/Dane - Polcom/2020/AGH2020")  # optionally override
+
+    elif year == 2022:
+        vmware_to_local = {
+            "DM": "VM01",
+            "PM": "VM02",
+            "R02": "VM03",
+            "R03": "VM04",
+            "R04": "VM05",
+            "S": "VM06",
+            "V02": "VM07",
+            "V03": "VM08",
+        }
+
+        extract_func = (
+            extract_resource_consumption_from_dataset_2022_Y
+            if granularity == 'Y'
+            else extract_resource_consumption_from_dataset_2022_M
+        )
+    else:
+        raise ValueError(f"Unsupported year: {year}")
+
+    local_to_vmware = {v: k for k, v in vmware_to_local.items()}
+    virtual_machines = list(vmware_to_local.values())
+
+    result = {}
+    for virtual_machine_id in virtual_machines:
+        vmware_server_id = local_to_vmware[virtual_machine_id]
+        metadata = get_metadata_about_resource_consumption(str(raw_dir / vmware_server_id), granularity)
+        dfs = extract_func(vmware_server_id, metadata)
+        df_merged = concat_dataframes_horizontally(dfs)
+        result[virtual_machine_id] = df_merged
+
+    return result
 
 @step
 def data_loader(
-    random_state: int, is_inference: bool = False
-) -> Tuple[
-    Annotated[pd.DataFrame, "dataset"],
-    Annotated[str, "target"],
-    Annotated[int, "random_state"],
-]:
-    """Dataset reader step.
+    raw_dir: Path,
+    data_granularity: str,
+    load_2022: bool,
+    load_2020: bool,
+) -> dict[str, pd.DataFrame]:
+    """Load and concatenate parquet files for a single VM."""
+    data = {}
+    if load_2022:
+        print(f"Extracting data for year 2022 with granularity {data_granularity}")
+        data = extract_consumption_data(year=2022, raw_dir=raw_dir, granularity='Y')
 
-    This is an example of a dataset reader step that load Breast Cancer dataset.
+    if load_2020:
+        print(f"Extracting data for year 2020 with granularity {data_granularity}")
+        data = extract_consumption_data(year=2020, raw_dir=raw_dir, granularity='M')
 
-    This step is parameterized, which allows you to configure the step
-    independently of the step code, before running it in a pipeline.
-    In this example, the step can be configured with number of rows and logic
-    to drop target column or not. See the documentation for more information:
+    if not data:
+        raise ValueError("No data loaded. Check the raw_dir and granularity parameters.")
 
-        https://docs.zenml.io/how-to/build-pipelines/use-pipeline-step-parameters
-
-    Args:
-        is_inference: If `True` subset will be returned and target column
-            will be removed from dataset.
-        random_state: Random state for sampling
-
-    Returns:
-        The dataset artifact as Pandas DataFrame and name of target column.
-    """
-    ### ADD YOUR OWN CODE HERE - THIS IS JUST AN EXAMPLE ###
-    dataset = load_breast_cancer(as_frame=True)
-    inference_size = int(len(dataset.target) * 0.05)
-    target = "target"
-    dataset: pd.DataFrame = dataset.frame
-    inference_subset = dataset.sample(inference_size, random_state=random_state)
-    if is_inference:
-        dataset = inference_subset
-        dataset.drop(columns=target, inplace=True)
-    else:
-        dataset.drop(inference_subset.index, inplace=True)
-    dataset.reset_index(drop=True, inplace=True)
-    logger.info(f"Dataset with {len(dataset)} records loaded!")
-    ### YOUR CODE ENDS HERE ###
-    return dataset, target, random_state
+    return data

@@ -58,18 +58,21 @@ logger = get_logger(__name__)
 
 
 @pipeline(on_failure=notify_on_failure)
-def cloud_resource_prediction_training(raw_dir: str, zip_path: str, raw_polcom_dir: str, raw_polcom_2022_dir: str
+def cloud_resource_prediction_training(raw_dir: str,
+                                       zip_path: str,
+                                       raw_polcom_2022_dir: str,
+                                       data_granularity: str,
+                                       dataset_year: int,
 ):
-    track_experiment_metadata({
-        "raw_dir": raw_dir,
-        "zip_path": zip_path,
-        "raw_polcom_dir": raw_polcom_dir,
-        "raw_polcom_2022_dir": raw_polcom_2022_dir
-    })
 
-    extracted_path = extractor(zip_path=zip_path, raw_dir=raw_dir, output_dir=raw_polcom_2022_dir)
-    cleaned_dfs = cleaner(extracted_path)
-    aggregated_dfs = aggregator(cleaned_dfs)
+
+
+    extracted_path = extractor(zip_path=zip_path, raw_dir=raw_dir, output_dir=raw_polcom_2022_dir, dataset_year=2020)
+
+    cleaned_dir = cleaner(raw_dir=extracted_path)
+
+    cleaned_dfs = data_loader(raw_dir=cleaned_dir, data_granularity=data_granularity, load_2022=True, load_2020=True)
+    """aggregated_dfs = aggregator(cleaned_dfs)
     trimmed_dfs = trimmer(dfs=aggregated_dfs, remove_nans=True)
     scaled = scaler(trimmed_dfs)
     verifier(scaled)
@@ -87,4 +90,4 @@ def cloud_resource_prediction_training(raw_dir: str, zip_path: str, raw_polcom_d
         fail_on_quality=True,
     )
 
-    register_model(model, name = "cnn_lstm_prod")
+    register_model(model, name = "cnn_lstm_prod")"""

@@ -71,5 +71,6 @@ extra:
 parameters:
   raw_dir: data/raw/
   zip_path: data/Dane - Polcom.zip
-  raw_polcom_dir: data/raw/Dane - Polcom/
   raw_polcom_2022_dir: data/raw/Dane - Polcom/2022/AGH2022/
+  data_granularity: M
+  dataset_year: 2020

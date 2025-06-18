@@ -6,95 +6,118 @@ import pandas as pd
 from extract import (
     extract_resource_consumption_from_dataset_2022_M,
     extract_resource_consumption_from_dataset_2022_Y,
+    extract_resource_consumption_from_dataset_2020_M,
+    extract_resource_consumption_from_dataset_2020_Y,
     get_metadata_about_resource_consumption
 )
 
+import shutil
+
+import re
+
 logger = get_logger(__name__)
 
-def concat_dataframes_horizontally(dataframes: list[pd.DataFrame]) -> pd.DataFrame:
-    # Create a set to track all column names across dataframes
-    all_columns = set()
 
-    # Create a list to store the processed dataframes
-    processed_dfs = []
 
-    for i, df in enumerate(dataframes):
-        new_cols = []
-        for col in df.columns:
-            if col in all_columns:
-                new_cols.append(f'df{i}_{col}')
-            else:
-                new_cols.append(col)
-            all_columns.add(new_cols[-1])
-        df.columns = new_cols
 
-        if not df.index.is_unique:
-            df = df.groupby(df.index).mean()
-        processed_dfs.append(df)
 
-    # Concatenate the dataframes horizontally
-    result = pd.concat(processed_dfs, axis=1)
+def reorganize_2020_data_to_vm_folders(base_2020_path: Path, vmware_to_local: dict):
+    # Źródłowe katalogi
+    cpu_mem_dir = base_2020_path / "CPUandRAM"
+    disk_dir = base_2020_path / "Disk"
+    net_dir = base_2020_path / "Network"
 
-    return result
+    agh2020_dir = base_2020_path / "AGH2020"
+    agh2020_dir.mkdir(exist_ok=True)
 
-def extract_consumption_data_from_dataset_2022_Y(raw_dir, type) -> dict[str, pd.DataFrame]:
+    for vmware_id, local_id in vmware_to_local.items():
+        target_dir = agh2020_dir / vmware_id
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        for granularity in ["M", "Y"]:
+            # CPU i Memory
+            for resource in ["cpu", "memory"]:
+                src = cpu_mem_dir / f"{vmware_id}_{resource}_1{granularity}.csv"
+                if src.exists():
+                    dst = target_dir / f"{vmware_id}_{resource}_1{granularity}.csv"
+                    #print(f"Moving {src} → {dst}")
+                    shutil.move(str(src), str(dst))
+
+            # Disk
+            for f in disk_dir.glob(f"{vmware_id}_node*_disk_1{granularity}.csv"):
+                #print(f"Moving {f} → {target_dir / f.name}")
+                shutil.move(str(f), str(target_dir / f.name))
+
+            # Network
+            for f in net_dir.glob(f"{vmware_id}_node*_network_1{granularity}.csv"):
+                #print(f"Moving {f} → {target_dir / f.name}")
+                shutil.move(str(f), str(target_dir / f.name))
+
+def move_and_rename_agh_files(base_2020_path: Path):
+    agh_dir = base_2020_path / "AGH"
+    target_dir = base_2020_path / "CPUandRAM"
+    target_dir.mkdir(exist_ok=True)
+
+    for file in agh_dir.glob("*.csv"):
+        if "_cpu.csv" in file.name or "_memory.csv" in file.name:
+            # Zmień np. R01_cpu.csv → R01_cpu_1Y.csv
+            new_name = file.stem + "_1Y.csv"
+            new_path = target_dir / new_name
+            #print(f"Moving {file} → {new_path}")
+            shutil.move(str(file), str(new_path))
+
+
+def override_csv_headers(header_overrides: dict[Path, list[str]]):
+    for path, new_header in header_overrides.items():
+        if not path.exists():
+            print(f"❌ File not found: {path}")
+            continue
+
+        with path.open("r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        if not lines:
+            print(f"⚠️ File is empty: {path}")
+            continue
+
+        lines[0] = ";".join(new_header) + "\n"
+
+        with path.open("w", encoding="utf-8") as f:
+            f.writelines(lines)
+
+        print(f"✅ Overridden header in {path.name} → {new_header}")
+
+
+@step(enable_cache=False)
+def cleaner(
+    raw_dir: Path,
+) -> Path:
+    """Load and concatenate parquet files for a single VM."""
+
     vmware_to_local = {
-        "DM": "VM01",
-        "PM": "VM02",
-        "R02": "VM03",
-        "R03": "VM04",
-        "R04": "VM05",
+        "dcaM": "VM01",
+        "pdcM": "VM02",
+        "R01": "VM03",
+        "R02": "VM04",
+        "R03": "VM05",
         "S": "VM06",
-        "V02": "VM07",
-        "V03": "VM08",
+        "V01": "VM07",
+        "V02": "VM08",
+        "V04": "VM09",
+        "V": "VM10",
     }
 
-    local_to_vmware = {v: k for k, v in vmware_to_local.items()}
+    base_2020 = Path("data/raw/Dane - Polcom/2020")
 
-    VIRTUAL_MACHINES = list(vmware_to_local.values())
+    move_and_rename_agh_files(base_2020)
 
-    if type == 'Y':
-        extract_resource_consumption_from_dataset_2022_func = extract_resource_consumption_from_dataset_2022_Y
-    else:
-        extract_resource_consumption_from_dataset_2022_func = extract_resource_consumption_from_dataset_2022_M
+    reorganize_2020_data_to_vm_folders(base_2020, vmware_to_local)
 
-    result = {}
-    for virtual_machine_id in VIRTUAL_MACHINES:
-
-        vmware_server_id: str = local_to_vmware[virtual_machine_id]
-
-        metadata = get_metadata_about_resource_consumption(str(raw_dir / vmware_server_id), type)
-
-        print(f"metadata path: {raw_dir / vmware_server_id}")
-        print(f"metadata: {metadata}")
-
-        #destination = f"{base_destination}{virtual_machine_id}.parquet"
-        #print("Final destination: ", destination)
-        #os.makedirs(os.path.dirname(destination), exist_ok=True)
-
-        dfs: list[pd.DataFrame] = extract_resource_consumption_from_dataset_2022_func(vmware_server_id, metadata)
-        print('Extracted data of length ', len(dfs))
-        print(dfs)
-        print('Concatenating data...')
-
-        df_merged: pd.DataFrame = concat_dataframes_horizontally(dfs)
-
-        #print(f"Saving {vmware_server_id} combined consumption data to {destination}")
-        #df_merged.to_parquet(destination)
-
-        result[virtual_machine_id] = df_merged
-
-    return result
-
-
-
-@step
-def cleaner(
-    raw_dir: Path
-) -> dict[str, pd.DataFrame]:
-    """Load and concatenate parquet files for a single VM."""
-    print("Cleaner step")
-
-    dfs = extract_consumption_data_from_dataset_2022_Y(raw_dir, "M")
-    return dfs
-
+    override_csv_headers({
+        Path("data/raw/Dane - Polcom/2020/AGH2020/dcaM/dcaM_node1_network_1Y.csv"): ["Time", "Usage for dcaM_n1"],
+        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node1_disk_1Y.csv"): ["Time,Usage for R01_n1"],
+        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node2_disk_1Y.csv"): ["Time,Usage for R01_n2"],
+        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node1_disk_1M.csv"): ["Time,Usage for R01_n1"],
+        Path("data/raw/Dane - Polcom/2020/AGH2020/R01/R01_node2_disk_1M.csv"): ["Time,Usage for R01_n2"],
+    })
+    return raw_dir
