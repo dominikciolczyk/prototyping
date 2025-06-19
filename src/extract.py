@@ -115,13 +115,11 @@ def extract_cpu_consumption_data_2020(vmware_server_id: str, df: pd.DataFrame) -
     lower_cols = {col.lower(): col for col in df.columns}
 
     usage_mhz_key = f"usage in mhz for {vmware_server_id.lower()}"
-    usage_percent_key = f"usage for {vmware_server_id.lower()}"
 
-    if usage_mhz_key not in lower_cols or usage_percent_key not in lower_cols:
+    if usage_mhz_key not in lower_cols:
         raise ValueError(f"Could not find expected CPU usage columns for {vmware_server_id}. Available columns: {df.columns.tolist()}")
 
     _df["CPU_USAGE_MHZ"] = df[lower_cols[usage_mhz_key]]
-    _df["CPU_USAGE_PERCENT"] = df[lower_cols[usage_percent_key]]
 
     return _df
 
@@ -134,6 +132,27 @@ def extract_memory_consumption_data(vmware_server_id: str, df: pd.DataFrame) -> 
         _df["MEMORY_USAGE_KB"] = df[f"Consumed for {vmware_server_id}"]
     elif f"Active for {vmware_server_id}" in df.columns:
         _df["MEMORY_USAGE_KB"] = df[f"Active for {vmware_server_id}"]
+        raise ValueError(
+            f"For testing purposes, the 'Active for {vmware_server_id}' column is used instead of 'Consumed for {vmware_server_id}'.")
+    else:
+        raise ValueError(f"Could not find expected memory usage columns for {vmware_server_id}. Available columns: {df.columns.tolist()}")
+    return _df
+
+
+def extract_memory_consumption_data_2020(vmware_server_id: str, df: pd.DataFrame) -> pd.DataFrame:
+    _df: pd.DataFrame = pd.DataFrame()
+    #print("Columns in DataFrame:", df.columns.tolist())
+
+    lower_cols = {col.lower(): col for col in df.columns}
+    consumed_key =  f"consumed for {vmware_server_id.lower()}"
+    active_key = f"active for {vmware_server_id.lower()}"
+
+    if consumed_key in lower_cols:
+        _df["MEMORY_USAGE_KB"] = df[lower_cols[consumed_key]]
+    elif active_key in lower_cols:
+        _df["MEMORY_USAGE_KB"] = df[lower_cols[active_key]]
+        raise ValueError(
+            f"For testing purposes, the 'Active for {vmware_server_id}' column is used instead of 'Consumed for {vmware_server_id}'.")
     else:
         raise ValueError(f"Could not find expected memory usage columns for {vmware_server_id}. Available columns: {df.columns.tolist()}")
     return _df
@@ -180,7 +199,7 @@ extractions_2022: dict[str, Callable] = {
 
 extractions_2020: dict[str, Callable] = {
     "cpu": extract_cpu_consumption_data_2020,
-    "memory": extract_memory_consumption_data,
+    "memory": extract_memory_consumption_data_2020,
     "disk": extract_disk_consumption_data,
     "network": extract_network_consumption_data,
 }
@@ -214,7 +233,7 @@ def extract_resource_consumption(vmware_server_id: str, metadata: dict, extracti
 
 
 def extract_resource_consumption_from_dataset_2020_M(vmware_server_id: str, metadata: dict) -> list[pd.DataFrame]:
-    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2022, read_csv=read_csv_dataset_2020_M)
+    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2020, read_csv=read_csv_dataset_2020_M)
 
 def extract_resource_consumption_from_dataset_2020_Y(vmware_server_id: str, metadata: dict) -> list[pd.DataFrame]:
     return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2020, read_csv=read_csv_dataset_2020_Y)
@@ -223,7 +242,7 @@ def extract_resource_consumption_from_dataset_2022_M(vmware_server_id: str, meta
     return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2022, read_csv=read_csv_dataset_2022_M)
 
 def extract_resource_consumption_from_dataset_2022_Y(vmware_server_id: str, metadata: dict) -> list[pd.DataFrame]:
-    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2020, read_csv=read_csv_dataset_2022_Y)
+    return extract_resource_consumption(vmware_server_id, metadata, extractions=extractions_2022, read_csv=read_csv_dataset_2022_Y)
 
 
 def get_metadata_about_resource_consumption(path: str, type : str) -> dict:

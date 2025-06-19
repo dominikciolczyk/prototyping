@@ -101,8 +101,13 @@ def cleaner(
     cleaned_polcom_2022_dir: Path,
     cleaned_polcom_2020_dir: Path,
 ) -> Path:
+    move_and_rename_agh_files(raw_polcom_2020_dir)
 
-    vmware_to_local = {
+    if cleaned_polcom_dir.exists() and cleaned_polcom_dir.is_dir():
+        print(f"Removing existing cleaned directory: {cleaned_polcom_dir}")
+        shutil.rmtree(cleaned_polcom_dir)
+
+    reorganize_2020_data_to_vm_folders(raw_polcom_2020_dir, cleaned_polcom_2020_dir, {
         "dcaM": "VM01",
         "pdcM": "VM02",
         "R01": "VM03",
@@ -113,15 +118,7 @@ def cleaner(
         "V02": "VM08",
         "V04": "VM09",
         "V": "VM10",
-    }
-
-    move_and_rename_agh_files(raw_polcom_2020_dir)
-
-    if cleaned_polcom_dir.exists() and cleaned_polcom_dir.is_dir():
-        print(f"Removing existing cleaned directory: {cleaned_polcom_dir}")
-        shutil.rmtree(cleaned_polcom_dir)
-
-    reorganize_2020_data_to_vm_folders(raw_polcom_2020_dir, cleaned_polcom_2020_dir, vmware_to_local)
+    })
     override_csv_headers({
         cleaned_polcom_2020_dir / "dcaM/dcaM_node1_network_1Y.csv": ["Time", "Usage for dcaM_n1"],
         cleaned_polcom_2020_dir / "R01/R01_node1_disk_1Y.csv": ["Time,Usage for R01_n1"],

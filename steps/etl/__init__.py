@@ -33,3 +33,4 @@ from .scaler import scaler
 from .dict_to_list_step import dict_to_list_step
 from .verifier import verifier
 from .column_selector import column_selector
+from .merger import merger

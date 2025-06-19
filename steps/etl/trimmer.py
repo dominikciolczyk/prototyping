@@ -1,10 +1,12 @@
 import pandas as pd
-import numpy as np
 from zenml import step
 from typing import Literal
 
-@step
-def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal["any", "all"]) -> dict[str, pd.DataFrame]:
+@step(enable_cache=False)
+def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal["any", "all"] = "any") -> dict[str, pd.DataFrame]:
+    if dropna_how == "all":
+        print("⚠️ Using 'all' for dropna_how. This will drop rows only if all values are NaN.")
+        remove_nans = False  # If we drop rows only if all values are NaN, we can't remove datasets with NaNs
     trimmed = {}
 
     for name, df in dfs.items():
@@ -16,6 +18,7 @@ def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal
         if valid.empty:
             trimmed_df = df
             print(f"⚠️ '{name}': No fully valid rows found. Dataset kept unchanged ({original_len} rows).")
+            print("df:", df)
         else:
             trimmed_df = df.loc[valid.index[0]:valid.index[-1]]
             new_len = len(trimmed_df)

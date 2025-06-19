@@ -79,7 +79,6 @@ parameters:
   data_granularity: M
   load_2022_data: True
   load_2020_data: True
-  aggregate_disc_and_network: True
   selected_columns:
     - CPU_USAGE_MHZ
     - MEMORY_USAGE_KB

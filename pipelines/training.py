@@ -1,26 +1,3 @@
-# MIT License
-#
-# Copyright (c) Dominik Ciołczyk 2025
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
-
 from steps import (
     data_loader,
     model_trainer,
@@ -45,6 +22,7 @@ from steps import (
     track_experiment_metadata,
     plot_time_series,
     column_selector,
+    merger,
 )
 from zenml import pipeline
 from zenml.logger import get_logger
@@ -71,11 +49,10 @@ def cloud_resource_prediction_training( raw_dir: str,
                                         data_granularity: str,
                                         load_2022_data: bool,
                                         load_2020_data: bool,
-                                        aggregate_disc_and_network: bool,
                                         selected_columns: List[str],
                                         group_scaling: bool,
 ):
-    recreate_dataset = True
+    recreate_dataset = False
 
     cleaned_polcom_2020_dir, cleaned_polcom_2022_dir, cleaned_polcom_dir, raw_dir, raw_polcom_2020_dir, raw_polcom_2022_dir, zip_path = convert_strings_to_paths(
         cleaned_polcom_2020_dir, cleaned_polcom_2022_dir, cleaned_polcom_dir, raw_dir, raw_polcom_2020_dir,
@@ -86,31 +63,24 @@ def cloud_resource_prediction_training( raw_dir: str,
         cleaned_polcom_2022_dir = cleaner(raw_polcom_2022_dir=raw_polcom_2022_dir, raw_polcom_2020_dir=raw_polcom_2020_dir, cleaned_polcom_dir=cleaned_polcom_dir, cleaned_polcom_2022_dir=cleaned_polcom_2022_dir, cleaned_polcom_2020_dir=cleaned_polcom_2020_dir)
 
     if load_2022_data:
-        loaded_2022_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir, data_granularity=data_granularity, year=2022)
-        plot_time_series(loaded_2022_data)
+        loaded_2022_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir, data_granularity=data_granularity, year=2022, load_2022_R04=data_granularity != "M")
+        plot_time_series(loaded_2022_data, "loaded_2022_data")
 
     if load_2020_data:
-        loaded_2020_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir, data_granularity=data_granularity, year=2020)
-        plot_time_series(loaded_2020_data)
+        loaded_2020_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir, data_granularity=data_granularity, year=2020, load_2022_R04=data_granularity != "M")
+        plot_time_series(loaded_2020_data, "loaded_2020_data")
 
-    merged_dfs = loaded_2020_data # TODO: temporary solution, should be replaced with conditional logic to merge 2022 data if needed
+    merged_dfs = merger(
+        dfs_2022=loaded_2022_data if load_2022_data else None,
+        dfs_2020=loaded_2020_data if load_2020_data else None,
+    )
     plot_time_series(merged_dfs, "merged_dfs")
-
-
 
     trimmed_dfs = trimmer(dfs=merged_dfs, remove_nans=True, dropna_how="any")
     plot_time_series(trimmed_dfs, "trimmed_dfs")
 
-    train_dfs, val_dfs, test_dfs = train_data_splitter(
-        dfs=merged_dfs,
-        val_size=0.15,
-        test_size=0.15,
-    )
-
     #TODO: Implement anomaly detection and removal
-
-
-
+    """
     reduced_dfs = trimmed_dfs
     plot_time_series(reduced_dfs, "reduced_dfs")
 
@@ -126,7 +96,13 @@ def cloud_resource_prediction_training( raw_dir: str,
     scaled_dfs, scalers = scaler(dfs=selected_columns_dfs, scaler_method="standard", group_scaling=group_scaling)
     plot_time_series(scaled_dfs, "scaled_dfs")
 
-    """
+    train_dfs, val_dfs, test_dfs = train_data_splitter(
+        dfs=scaled_dfs,
+        val_size=0.15,
+        test_size=0.15,
+    )
+
+    
     verifier(scaled_dfs)
     train_dict, test_dict = train_data_splitter(scaled, test_size=0.2)
 

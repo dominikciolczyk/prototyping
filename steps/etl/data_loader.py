@@ -103,13 +103,17 @@ def data_loader(
     polcom_2020_dir: Path,
     data_granularity: str,
     year: int,
+    load_2022_R04: bool,
 ) -> dict[str, pd.DataFrame]:
 
     if year == 2022:
         print(f"Extracting data for year {year} with granularity {data_granularity}")
-        return extract_consumption_data(
+        result = extract_consumption_data(
             year=year, input_dir=polcom_2022_dir, granularity=data_granularity
         )
+        if not load_2022_R04: # remove R04 if it is not needed because of Y data in R04_memory_1M.csv
+            del result["VM05"]
+        return result
     elif year == 2020:
         print(f"Extracting data for year {year} with granularity {data_granularity}")
         return extract_consumption_data(

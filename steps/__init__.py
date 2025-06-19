@@ -38,6 +38,7 @@ from .etl import (
     dict_to_list_step,
     verifier,
     column_selector,
+    merger,
 )
 from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search
 from .inference import inference_predict
