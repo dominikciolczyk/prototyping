@@ -15,7 +15,8 @@ from pathlib import Path
 
 @step(enable_cache=False)
 def plot_time_series(
-        data: Union[dict[str, pd.DataFrame], pd.DataFrame]
+        data: Union[dict[str, pd.DataFrame], pd.DataFrame],
+        folder_name_postfix: str,
 ) -> list[str]:
     """
     Generate interactive time series plots (one per DataFrame or key) and save as HTML files.
@@ -23,7 +24,7 @@ def plot_time_series(
     """
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    base_dir = Path("plots") / timestamp
+    base_dir = Path("plots") / f"{timestamp}_{folder_name_postfix}"
     plots_dir = base_dir / "plots"
     data_dir = base_dir / "data"
 

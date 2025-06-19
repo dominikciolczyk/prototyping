@@ -18,16 +18,6 @@ def column_selector(
     Returns:
     - Dictionary with same keys but filtered DataFrames.
     """
-    allowed_columns = {
-        "CPU_USAGE_MHZ",
-        "MEMORY_USAGE_KB",
-        "AVG_DISK_IO_RATE_KBPS",
-        "AVG_NETWORK_TR_KBPS",
-    }
-
-    invalid = [col for col in selected_columns if col not in allowed_columns]
-    if invalid:
-        raise ValueError(f"Invalid column(s) requested: {invalid}")
 
     filtered_dfs = {
         vm_name: df[selected_columns].copy()

@@ -8,12 +8,6 @@ def aggregator(dfs: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
         df = df.copy()
         df["AVG_DISK_IO_RATE_KBPS"] = df.filter(like="DISK_IO_RATE_KBPS").mean(axis=1)
         df["AVG_NETWORK_TR_KBPS"] = df.filter(like="NETWORK_TR_KBPS").mean(axis=1)
-        result[name] = df[[
-            "CPU_USAGE_MHZ",
-            "MEMORY_USAGE_KB",
-            "AVG_DISK_IO_RATE_KBPS",
-            "AVG_NETWORK_TR_KBPS"
-        ]]
-    print(result)
+        result[name] = df
     return result
 

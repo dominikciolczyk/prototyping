@@ -83,3 +83,4 @@ parameters:
   selected_columns:
     - CPU_USAGE_MHZ
     - MEMORY_USAGE_KB
+  group_scaling: True

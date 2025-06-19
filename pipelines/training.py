@@ -72,17 +72,15 @@ def cloud_resource_prediction_training( raw_dir: str,
                                         load_2022_data: bool,
                                         load_2020_data: bool,
                                         aggregate_disc_and_network: bool,
-                                        selected_columns: List[str]
+                                        selected_columns: List[str],
+                                        group_scaling: bool,
 ):
-    raw_dir = Path(raw_dir)
-    zip_path = Path(zip_path)
-    raw_polcom_2022_dir = Path(raw_polcom_2022_dir)
-    raw_polcom_2020_dir = Path(raw_polcom_2020_dir)
-    cleaned_polcom_dir = Path(cleaned_polcom_dir)
-    cleaned_polcom_2022_dir = Path(cleaned_polcom_2022_dir)
-    cleaned_polcom_2020_dir = Path(cleaned_polcom_2020_dir)
+    recreate_dataset = True
 
-    recreate_dataset = False
+    cleaned_polcom_2020_dir, cleaned_polcom_2022_dir, cleaned_polcom_dir, raw_dir, raw_polcom_2020_dir, raw_polcom_2022_dir, zip_path = convert_strings_to_paths(
+        cleaned_polcom_2020_dir, cleaned_polcom_2022_dir, cleaned_polcom_dir, raw_dir, raw_polcom_2020_dir,
+        raw_polcom_2022_dir, zip_path)
+
     if recreate_dataset:
         raw_polcom_2020_dir = extractor(zip_path=zip_path, raw_dir=raw_dir, raw_polcom_2020_dir=raw_polcom_2020_dir)
         cleaned_polcom_2022_dir = cleaner(raw_polcom_2022_dir=raw_polcom_2022_dir, raw_polcom_2020_dir=raw_polcom_2020_dir, cleaned_polcom_dir=cleaned_polcom_dir, cleaned_polcom_2022_dir=cleaned_polcom_2022_dir, cleaned_polcom_2020_dir=cleaned_polcom_2020_dir)
@@ -90,29 +88,46 @@ def cloud_resource_prediction_training( raw_dir: str,
     if load_2022_data:
         loaded_2022_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir, data_granularity=data_granularity, year=2022)
         plot_time_series(loaded_2022_data)
+
     if load_2020_data:
         loaded_2020_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir, data_granularity=data_granularity, year=2020)
         plot_time_series(loaded_2020_data)
 
-    loaded_2020_data = column_selector(
-        dfs=loaded_2020_data,
+    merged_dfs = loaded_2020_data # TODO: temporary solution, should be replaced with conditional logic to merge 2022 data if needed
+    plot_time_series(merged_dfs, "merged_dfs")
+
+
+
+    trimmed_dfs = trimmer(dfs=merged_dfs, remove_nans=True, dropna_how="any")
+    plot_time_series(trimmed_dfs, "trimmed_dfs")
+
+    train_dfs, val_dfs, test_dfs = train_data_splitter(
+        dfs=merged_dfs,
+        val_size=0.15,
+        test_size=0.15,
+    )
+
+    #TODO: Implement anomaly detection and removal
+
+
+
+    reduced_dfs = trimmed_dfs
+    plot_time_series(reduced_dfs, "reduced_dfs")
+
+    aggregated_dfs = aggregator(reduced_dfs)
+    plot_time_series(aggregated_dfs, "aggregated_dfs")
+
+    selected_columns_dfs = column_selector(
+        dfs=aggregated_dfs,
         selected_columns=selected_columns
     )
-    plot_time_series(loaded_2020_data)
-    aggregated_dfs = aggregator(loaded_2020_data)
+    plot_time_series(selected_columns_dfs, "selected_columns_dfs")
 
-    #verifier(aggregated_dfs)
-    trimmed_dfs = trimmer(dfs=aggregated_dfs, remove_nans=True, dropna_how="any")
-    #verifier(trimmed_dfs)
-
-    #plot_time_series(trimmed_dfs)
-
-    scaled_dfs, scalers = scaler(dfs=trimmed_dfs, scaling_mode="per_feature_per_vm", scaler_method="standard")
-    #verifier(scaled_dfs)
-
-    #plot_time_series(scaled_dfs)
+    scaled_dfs, scalers = scaler(dfs=selected_columns_dfs, scaler_method="standard", group_scaling=group_scaling)
+    plot_time_series(scaled_dfs, "scaled_dfs")
 
     """
+    verifier(scaled_dfs)
     train_dict, test_dict = train_data_splitter(scaled, test_size=0.2)
 
     model, best_params = model_trainer(train_dict)
@@ -127,3 +142,15 @@ def cloud_resource_prediction_training( raw_dir: str,
     )
 
     register_model(model, name = "cnn_lstm_prod")"""
+
+
+def convert_strings_to_paths(cleaned_polcom_2020_dir, cleaned_polcom_2022_dir, cleaned_polcom_dir, raw_dir,
+                             raw_polcom_2020_dir, raw_polcom_2022_dir, zip_path):
+    raw_dir = Path(raw_dir)
+    zip_path = Path(zip_path)
+    raw_polcom_2022_dir = Path(raw_polcom_2022_dir)
+    raw_polcom_2020_dir = Path(raw_polcom_2020_dir)
+    cleaned_polcom_dir = Path(cleaned_polcom_dir)
+    cleaned_polcom_2022_dir = Path(cleaned_polcom_2022_dir)
+    cleaned_polcom_2020_dir = Path(cleaned_polcom_2020_dir)
+    return cleaned_polcom_2020_dir, cleaned_polcom_2022_dir, cleaned_polcom_dir, raw_dir, raw_polcom_2020_dir, raw_polcom_2022_dir, zip_path
