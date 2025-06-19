@@ -78,13 +78,11 @@ def fix_separators_in_all_files(root_dir: Path) -> None:
 
 def read_csv_dataset_2020_Y(path: str) -> pd.DataFrame:
     df = pd.read_csv(path, sep=";")
-    if not "VM03" in path: # to jest średnie
-        df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
-    else:
-        # example: "Fri Sep 6 02:00:00 GMT+0200 2019" -> to separate function
-        df["Time"] = df["Time"].apply(lambda x: pd.to_datetime(str(x), format="%a %b %d %H:%M:%S GMT%z %Y").tz_convert('UTC'))
-        df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
+    # print("Columns in DataFrame:", df.columns.tolist())
+    if "VM03" in path:
+        raise ValueError("VM03 in path")
 
+    df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.date).drop(columns=["Time"])
     df.index.name = "DATE"
     df = df.fillna(0)
 
@@ -95,13 +93,10 @@ def read_csv_dataset_2020_M(path: str) -> pd.DataFrame:
 
     #print("Columns in DataFrame:", df.columns.tolist())
 
-    if not "VM03" in path: # to jest średnie
-        df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
-    else:
-        # example: "Fri Sep 6 02:00:00 GMT+0200 2019" -> to separate function
-        df["Time"] = df["Time"].apply(lambda x: pd.to_datetime(str(x), format="%a %b %d %H:%M:%S GMT%z %Y").tz_convert('UTC'))
-        df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
+    if "VM03" in path:
+        raise ValueError("VM03 in path")
 
+    df = df.set_index(pd.to_datetime(df["Time"], utc=True).dt.strftime("%Y-%m-%d %H:%M:%S")).drop(columns=["Time"])
     df.index.name = "DATE"
     df = df.fillna(0)
 
@@ -111,14 +106,12 @@ def extract_cpu_consumption_data(vmware_server_id: str, df: pd.DataFrame) -> pd.
     _df: pd.DataFrame = pd.DataFrame()
 
     _df["CPU_USAGE_MHZ"] = df[f"Usage in MHz for {vmware_server_id}"]
-    _df["CPU_USAGE_PERCENT"] = df[f"Usage for {vmware_server_id}"]
 
     return _df
 
 def extract_cpu_consumption_data_2020(vmware_server_id: str, df: pd.DataFrame) -> pd.DataFrame:
     _df: pd.DataFrame = pd.DataFrame()
 
-    # Zamień wszystkie nazwy kolumn na lower() i utwórz mapowanie
     lower_cols = {col.lower(): col for col in df.columns}
 
     usage_mhz_key = f"usage in mhz for {vmware_server_id.lower()}"
@@ -137,31 +130,12 @@ def extract_memory_consumption_data(vmware_server_id: str, df: pd.DataFrame) -> 
 
     #print("Columns in DataFrame:", df.columns.tolist())
 
-    # is_newer_vcenter = f"Active for {vmware_server_id}" in df.columns
-    is_older_vcenter = f"Host consumed % for {vmware_server_id}" in df.columns
-
-    if is_older_vcenter:
+    if f"Consumed for {vmware_server_id}" in df.columns:
         _df["MEMORY_USAGE_KB"] = df[f"Consumed for {vmware_server_id}"]
-        _df["MEMORY_USAGE_PERCENT"] = df[f"Host consumed % for {vmware_server_id}"]
-
+    elif f"Active for {vmware_server_id}" in df.columns:
+        _df["MEMORY_USAGE_KB"] = df[f"Active for {vmware_server_id}"]
     else:
-        if f"Active for {vmware_server_id}" in df.columns and f"Granted for {vmware_server_id}" in df.columns:
-            print(f"Calculating RAM usage percent based on (ACTIVE/GRANTED) * 100 for {vmware_server_id}")
-            _df["MEMORY_USAGE_KB"] = df[f"Active for {vmware_server_id}"]
-            _df["MEMORY_USAGE_PERCENT"] = (df[f"Active for {vmware_server_id}"] / df[f"Granted for {vmware_server_id}"]) * 100.0
-
-
-
-        # _df["MEMORY_USAGE_KB"] = df[f"Consumed for {vmware_server_id}"]
-        # if f"Active for {vmware_server_id}" in df.columns:
-        #     consumed = df[f"Active for {vmware_server_id}"]
-        #     _df["MEMORY_USAGE_PERCENT"] = (consumed / _df["MEMORY_ALLOCATED_KB"]) * 100.0
-        #     _df["MEMORY_USAGE_PERCENT"] = _df["MEMORY_USAGE_PERCENT"].fillna(0)
-        #     _df["MEMORY_USAGE_KB"] = consumed
-        # else:
-        #     if f"Usage for {vmware_server_id}" in df.columns:
-        #         _df["MEMORY_USAGE_PERCENT"] = df[f"Usage for {vmware_server_id}"]
-
+        raise ValueError(f"Could not find expected memory usage columns for {vmware_server_id}. Available columns: {df.columns.tolist()}")
     return _df
 
 

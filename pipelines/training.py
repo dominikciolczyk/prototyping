@@ -44,6 +44,7 @@ from steps import (
     register_model,
     track_experiment_metadata,
     plot_time_series,
+    column_selector,
 )
 from zenml import pipeline
 from zenml.logger import get_logger
@@ -55,6 +56,7 @@ import shutil
 from zenml.logger import get_logger
 from zenml.client import Client
 import mlflow
+from typing import List
 logger = get_logger(__name__)
 
 
@@ -69,6 +71,8 @@ def cloud_resource_prediction_training( raw_dir: str,
                                         data_granularity: str,
                                         load_2022_data: bool,
                                         load_2020_data: bool,
+                                        aggregate_disc_and_network: bool,
+                                        selected_columns: List[str]
 ):
     raw_dir = Path(raw_dir)
     zip_path = Path(zip_path)
@@ -90,11 +94,25 @@ def cloud_resource_prediction_training( raw_dir: str,
         loaded_2020_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir, data_granularity=data_granularity, year=2020)
         plot_time_series(loaded_2020_data)
 
-    """aggregated_dfs = aggregator(cleaned_dfs)
-    trimmed_dfs = trimmer(dfs=aggregated_dfs, remove_nans=True)
-    scaled = scaler(trimmed_dfs)
-    verifier(scaled)
+    loaded_2020_data = column_selector(
+        dfs=loaded_2020_data,
+        selected_columns=selected_columns
+    )
+    plot_time_series(loaded_2020_data)
+    aggregated_dfs = aggregator(loaded_2020_data)
 
+    #verifier(aggregated_dfs)
+    trimmed_dfs = trimmer(dfs=aggregated_dfs, remove_nans=True, dropna_how="any")
+    #verifier(trimmed_dfs)
+
+    #plot_time_series(trimmed_dfs)
+
+    scaled_dfs, scalers = scaler(dfs=trimmed_dfs, scaling_mode="per_feature_per_vm", scaler_method="standard")
+    #verifier(scaled_dfs)
+
+    #plot_time_series(scaled_dfs)
+
+    """
     train_dict, test_dict = train_data_splitter(scaled, test_size=0.2)
 
     model, best_params = model_trainer(train_dict)
