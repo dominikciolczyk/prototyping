@@ -2,7 +2,7 @@ from typing import Optional, Dict
 import pandas as pd
 from zenml import step
 
-@step(enable_cache=False)
+@step
 def merger(
     dfs_2020: Optional[Dict[str, pd.DataFrame]] = None,
     dfs_2022: Optional[Dict[str, pd.DataFrame]] = None,

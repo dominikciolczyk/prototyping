@@ -76,10 +76,12 @@ parameters:
   cleaned_polcom_dir: data/cleaned/Dane - Polcom/
   cleaned_polcom_2022_dir: data/cleaned/Dane - Polcom/2022/
   cleaned_polcom_2020_dir: data/cleaned/Dane - Polcom/2020/
-  data_granularity: M
+  data_granularity: Y
   load_2022_data: True
   load_2020_data: True
   selected_columns:
     - CPU_USAGE_MHZ
     - MEMORY_USAGE_KB
-  group_scaling: True
+    - AVG_DISK_IO_RATE_KBPS
+    - AVG_NETWORK_TR_KBPS
+  group_scaling: False
