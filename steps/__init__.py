@@ -39,7 +39,7 @@ from .etl import (
     verifier,
     column_selector,
     merger,
-    anomaly_detector_and_interpolator,
+    anomaly_reducer,
 )
 from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search
 from .inference import inference_predict
@@ -51,3 +51,4 @@ from .training import model_trainer, model_evaluator, register_model
 
 from .logging import track_experiment_metadata
 from .visualization import plot_time_series
+from .anomaly_reduction import anomaly_reducer
