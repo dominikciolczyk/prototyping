@@ -5,7 +5,7 @@ from zenml.integrations.mlflow.steps.mlflow_registry import mlflow_register_mode
 
 @step
 def register_model(
-    model,                  # your trained CNN_LSTM
+    model,
     name: str = "cnn_lstm_prod",
 ) -> None:
     """
@@ -13,5 +13,5 @@ def register_model(
     under the specified name, and return its URI.
     """
 
-    #mlflow_register_model_step.entrypoint(model, name=name)
+    mlflow_register_model_step.entrypoint(model, name=name)
     print(f"✅ Model registered as '{name}'")

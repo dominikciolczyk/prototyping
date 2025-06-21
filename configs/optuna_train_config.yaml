@@ -79,9 +79,3 @@ parameters:
   data_granularity: M
   load_2022_data: True
   load_2020_data: True
-  detection_method: iqr
-  reduction_method: interpolate_polynomial
-  scaler_method: standard
-  basic: True
-  cyclical: True
-  is_weekend_mode: numeric

@@ -36,6 +36,7 @@ from .etl import (
     verifier,
     column_selector,
     merger,
+    feature_expander,
 )
 from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search
 from .inference import inference_predict
