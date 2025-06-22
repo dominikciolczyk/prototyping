@@ -5,13 +5,6 @@ import plotly.express as px
 from datetime import datetime
 from pathlib import Path
 
-from zenml import step
-from typing import Union
-import pandas as pd
-import plotly.express as px
-from datetime import datetime
-from pathlib import Path
-
 
 @step(enable_cache=False)
 def plot_time_series(

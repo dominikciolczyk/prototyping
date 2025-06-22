@@ -1,6 +1,9 @@
-from typing import Literal, Optional
+from typing import Literal
 import pandas as pd
 import numpy as np
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
 
 Reduction = Literal[
     "interpolate_linear",
@@ -14,8 +17,12 @@ def reduce_anomalies(
     df: pd.DataFrame,
     anomaly_mask: pd.DataFrame,
     method: Reduction,
-    interpolation_order: Optional[int] = None,
+    interpolation_order: int,
 ) -> pd.DataFrame:
+
+    logger.info(f"Reducing anomalies using method: {method}, "
+                 f"interpolation_order: {interpolation_order}")
+
     clean = df.copy()
     clean.where(~anomaly_mask, np.nan, inplace=True)
     clean.index = pd.to_datetime(clean.index, errors="raise")
@@ -27,13 +34,9 @@ def reduce_anomalies(
         clean = clean.interpolate(method="time", limit_direction="both")
 
     elif method == "interpolate_polynomial":
-        if interpolation_order is None:
-            interpolation_order = 2
         clean = clean.interpolate(method="polynomial", order=interpolation_order, limit_direction="both")
 
     elif method == "interpolate_spline":
-        if interpolation_order is None:
-            interpolation_order = 3
         clean = clean.interpolate(method="spline", order=interpolation_order, limit_direction="both")
 
     elif method == "ffill_bfill":

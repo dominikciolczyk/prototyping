@@ -32,7 +32,6 @@ from typing_extensions import Annotated
 from zenml import log_metadata, step
 from zenml.logger import get_logger
 
-from utils import get_model_from_config
 
 logger = get_logger(__name__)
 
@@ -45,7 +44,8 @@ def hp_tuning_single_search(
     dataset_trn: pd.DataFrame,
     dataset_tst: pd.DataFrame,
     target: str,
-) -> Annotated[ClassifierMixin, "hp_result"]:
+#) -> Annotated[ClassifierMixin, "hp_result"]:
+):
     """Evaluate a trained model.
 
     This is an example of a model hyperparameter tuning step that takes
@@ -69,7 +69,7 @@ def hp_tuning_single_search(
 
     Returns:
         The best possible model for given config.
-    """
+
     model_class = get_model_from_config(model_package, model_class)
 
     for search_key in search_grid:
@@ -107,4 +107,6 @@ def hp_tuning_single_search(
         infer_artifact=True,
     )
     ### YOUR CODE ENDS HERE ###
-    return cv.best_estimator_
+
+    """
+

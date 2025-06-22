@@ -1,13 +1,14 @@
 from zenml import step
 import pandas as pd
 from typing import List
+from zenml.logger import get_logger
 
-#TODO: use ColumnsDropper?
+logger = get_logger(__name__)
+
 @step
 def column_selector(
         dfs: dict[str, pd.DataFrame],
-        selected_columns=None
-
+        selected_columns: List[str],
 ) -> dict[str, pd.DataFrame]:
     """
     Selects specific columns from each VM's DataFrame for modeling.
@@ -20,15 +21,10 @@ def column_selector(
     - Dictionary with same keys but filtered DataFrames.
     """
 
-    if selected_columns is None:
-        selected_columns = ["CPU_USAGE_MHZ", "MEMORY_USAGE_KB", "AVG_DISK_IO_RATE_KBPS", "AVG_NETWORK_TR_KBPS"]
-
     filtered_dfs = {
         vm_name: df[selected_columns].copy()
         for vm_name, df in dfs.items()
-        if all(col in df.columns for col in selected_columns)
     }
-
-    print(f"✅ Selected columns: {selected_columns} for {len(filtered_dfs)} VMs")
+    logger.info(f"✅ Selected columns: {selected_columns} for VMs: {list(filtered_dfs.keys())}")
 
     return filtered_dfs

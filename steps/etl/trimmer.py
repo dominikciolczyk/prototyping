@@ -1,11 +1,16 @@
 import pandas as pd
 from zenml import step
 from typing import Literal
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
 
 @step(enable_cache=False)
-def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal["any", "all"] = "any") -> dict[str, pd.DataFrame]:
+def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal["any"]) -> dict[str, pd.DataFrame]:
+    logger.info(f"Trimming datasets with remove_nans={remove_nans}, dropna_how={dropna_how}")
+
     if dropna_how == "all":
-        print("⚠️ Using 'all' for dropna_how. This will drop rows only if all values are NaN.")
+        logger.warning("⚠️ Using 'all' for dropna_how. This will drop rows only if all values are NaN.")
         remove_nans = False  # If we drop rows only if all values are NaN, we can't remove datasets with NaNs
     trimmed = {}
 
@@ -17,19 +22,19 @@ def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal
 
         if valid.empty:
             trimmed_df = df
-            print(f"⚠️ '{name}': No fully valid rows found. Dataset kept unchanged ({original_len} rows).")
-            print("df:", df)
+            logger.error(f"⚠️ '{name}': No fully valid rows found. Dataset kept unchanged ({original_len} rows).")
+            logger.error("df:", df)
         else:
             trimmed_df = df.loc[valid.index[0]:valid.index[-1]]
             new_len = len(trimmed_df)
             removed = original_len - new_len
-            print(f"✂️ '{name}': Trimmed {removed} rows ({original_len} → {new_len})")
+            logger.info(f"✂️ '{name}': Trimmed {removed} rows ({original_len} → {new_len})")
 
         if remove_nans and trimmed_df.isna().any().any():
-            print(f"❌ Dropping '{name}' due to remaining NaNs")
+            logger.info(f"❌ Dropping '{name}' due to remaining NaNs")
             continue
 
         trimmed[name] = trimmed_df
 
-    print(f"\n✅ Final number of datasets: {len(trimmed)}")
+    logger.info(f"\n✅ Final number of datasets: {len(trimmed)}")
     return trimmed

@@ -1,5 +1,8 @@
 from typing import Literal, Dict
 import pandas as pd
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
 
 Method = Literal["zscore", "robust_zscore", "iqr"]
 
@@ -7,9 +10,13 @@ def detect_anomalies(
     df: pd.DataFrame,
     stats: Dict[str, dict],
     method: Method,
-    z_th: float = 3.0,
-    iqr_k: float = 1.5,
+    z_th: float,
+    iqr_k: float,
 ) -> pd.DataFrame:
+
+    logger.info(f"Detecting anomalies using method: {method}, "
+                f"z_threshold: {z_th}, iqr_k: {iqr_k}")
+
     mask = pd.DataFrame(False, index=df.index, columns=df.columns)
 
     for col in df.columns:

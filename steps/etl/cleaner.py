@@ -1,22 +1,10 @@
 from pathlib import Path
-
 from zenml import step
 from zenml.logger import get_logger
-import pandas as pd
-from extract import (
-    extract_resource_consumption_from_dataset_2022_M,
-    extract_resource_consumption_from_dataset_2022_Y,
-    extract_resource_consumption_from_dataset_2020_M,
-    extract_resource_consumption_from_dataset_2020_Y,
-    get_metadata_about_resource_consumption, fix_separators_in_all_files
-)
-
+from utils.extract import fix_separators_in_all_files
 import shutil
 
-import re
-
 logger = get_logger(__name__)
-
 
 def reorganize_2020_data_to_vm_folders(base_2020_path: Path, cleaned_base_path: Path, vmware_to_local: dict):
     # Source directories
@@ -64,14 +52,14 @@ def move_and_rename_agh_files(base_2020_path: Path):
 def override_csv_headers(header_overrides: dict[Path, list[str]]):
     for path, new_header in header_overrides.items():
         if not path.exists():
-            print(f"❌ File not found: {path}")
+            logger.error(f"❌ File not found: {path}")
             continue
 
         with path.open("r", encoding="utf-8") as f:
             lines = f.readlines()
 
         if not lines:
-            print(f"⚠️ File is empty: {path}")
+            logger.error(f"⚠️ File is empty: {path}")
             continue
 
         lines[0] = ";".join(new_header) + "\n"
@@ -79,7 +67,7 @@ def override_csv_headers(header_overrides: dict[Path, list[str]]):
         with path.open("w", encoding="utf-8") as f:
             f.writelines(lines)
 
-        print(f"✅ Overridden header in {path} → {new_header}")
+        logger.info(f"✅ Overridden header in {path} → {new_header}")
 
 
 def copy_vm_folders_to_cleaned_dir(source_dir: Path, destination_dir: Path) -> None:
@@ -104,7 +92,7 @@ def cleaner(
     move_and_rename_agh_files(raw_polcom_2020_dir)
 
     if cleaned_polcom_dir.exists() and cleaned_polcom_dir.is_dir():
-        print(f"Removing existing cleaned directory: {cleaned_polcom_dir}")
+        logger.info(f"Removing existing cleaned directory: {cleaned_polcom_dir}")
         shutil.rmtree(cleaned_polcom_dir)
 
     reorganize_2020_data_to_vm_folders(raw_polcom_2020_dir, cleaned_polcom_2020_dir, {

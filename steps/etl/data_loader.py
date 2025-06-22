@@ -2,7 +2,7 @@ from pathlib import Path
 from zenml import step
 from zenml.logger import get_logger
 import pandas as pd
-from extract import (
+from utils.extract import (
     extract_resource_consumption_from_dataset_2022_M,
     extract_resource_consumption_from_dataset_2022_Y,
     extract_resource_consumption_from_dataset_2020_M,
@@ -106,18 +106,16 @@ def data_loader(
     load_2022_R04: bool,
 ) -> dict[str, pd.DataFrame]:
 
+    logger.info(f"Extracting data for year {year} with granularity {data_granularity}")
+
     if year == 2022:
-        print(f"Extracting data for year {year} with granularity {data_granularity}")
         result = extract_consumption_data(
-            year=year, input_dir=polcom_2022_dir, granularity=data_granularity
-        )
+            year=year, input_dir=polcom_2022_dir, granularity=data_granularity)
         if not load_2022_R04: # remove R04 if it is not needed because of Y data in R04_memory_1M.csv
             del result["VM05"]
         return result
     elif year == 2020:
-        print(f"Extracting data for year {year} with granularity {data_granularity}")
         return extract_consumption_data(
-            year=year, input_dir=polcom_2020_dir, granularity=data_granularity
-        )
+            year=year, input_dir=polcom_2020_dir, granularity=data_granularity)
     else:
         raise ValueError(f"Unsupported year: {year}. Supported years are 2020 and 2022.")

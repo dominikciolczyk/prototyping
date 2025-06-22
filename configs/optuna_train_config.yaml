@@ -76,6 +76,12 @@ parameters:
   cleaned_polcom_dir: data/cleaned/Dane - Polcom/
   cleaned_polcom_2022_dir: data/cleaned/Dane - Polcom/2022/
   cleaned_polcom_2020_dir: data/cleaned/Dane - Polcom/2020/
+  recreate_dataset: False
   data_granularity: M
   load_2022_data: True
   load_2020_data: True
+  val_size: 0.15
+  test_size: 0.15
+  test_teacher_size: 0.15
+  test_student_size: 0.15
+  online_size: 0.15

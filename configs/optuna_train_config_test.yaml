@@ -86,13 +86,9 @@ parameters:
     - MEMORY_USAGE_KB
     - SUM_DISK_IO_RATE_KBPS
     - SUM_NETWORK_TR_KBPS
-  anomaly_reducer_before_scaling: True
-  detection_method: iqr
   z_threshold: 3.0
   iqr_k: 1.5
-  reduction_method: interpolate_polynomial
   interpolation_order: 3
-  scaler_method: standard
   minmax_range: [ 0.0, 1.0 ]
   robust_quantile_range: [ 25.0, 75.0 ]
   use_hour_features: True

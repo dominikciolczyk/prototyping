@@ -20,11 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # 
-
+"""
 from zenml import Model, get_step_context, step
 from zenml.logger import get_logger
 
-from utils import promote_in_model_registry
 
 logger = get_logger(__name__)
 
@@ -36,7 +35,7 @@ def promote_with_metric_compare(
     mlflow_model_name: str,
     target_env: str,
 )->None:
-    """Try to promote trained model.
+    Try to promote trained model.
 
     This is an example of a model promotion step. It gets precomputed
     metrics for 2 model version: latest and currently promoted to target environment
@@ -58,7 +57,7 @@ def promote_with_metric_compare(
     Args:
         latest_metric: Recently trained model metric results.
         current_metric: Previously promoted model metric results.
-    """
+
 
     ### ADD YOUR OWN CODE HERE - THIS IS JUST AN EXAMPLE ###
     should_promote = True
@@ -116,3 +115,4 @@ def promote_with_metric_compare(
         f"Current model version in `{target_env}` is `{promoted_version}` registered in Model Registry"
     )
     ### YOUR CODE ENDS HERE ###
+"""
