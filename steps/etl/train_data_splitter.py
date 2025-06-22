@@ -14,7 +14,7 @@ def train_data_splitter(
         test_teacher_size: float,
         test_student_size: float,
         online_size: float,
-        seed: int = 42,
+        seed: int,
 ) -> Tuple[
     dict[str, pd.DataFrame],  # train
     dict[str, pd.DataFrame],  # val

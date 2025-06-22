@@ -20,9 +20,6 @@ def reduce_anomalies(
     interpolation_order: int,
 ) -> pd.DataFrame:
 
-    logger.info(f"Reducing anomalies using method: {method}, "
-                 f"interpolation_order: {interpolation_order}")
-
     clean = df.copy()
     clean.where(~anomaly_mask, np.nan, inplace=True)
     clean.index = pd.to_datetime(clean.index, errors="raise")

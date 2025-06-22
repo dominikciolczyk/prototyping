@@ -1,7 +1,3 @@
-# file: dpsoga_cnnlstm_step.py
-# --------------------------------------------------------------------------- #
-#  ZenML step: DPSO-GA-optimised CNN-LSTM for cloud-usage time-series
-# --------------------------------------------------------------------------- #
 import math
 import random
 import tempfile
@@ -282,6 +278,7 @@ def model_trainer(  # noqa: C901  (length ok for clarity)
     test: Dict[str, pd.DataFrame],
     input_seq_len: int,
     forecast_horizon: int,
+    seed: int,
     population: int = 6,
     iterations: int = 10,
     w: float = 0.5,           # inertia
@@ -296,25 +293,26 @@ def model_trainer(  # noqa: C901  (length ok for clarity)
     Path to the *best* model weights (torch .pt file)
     """
     logger.info(f"Starting DPSO-GA model training step\n"
-                f"Input sequence length: {input_seq_len}, forecast horizon: {forecast_horizon}"
-                f"Population size: {population}, iterations: {iterations}"
+                f"Input sequence length: {input_seq_len}, forecast horizon: {forecast_horizon}, "
+                f"Population size: {population}, iterations: {iterations}, "
                 f"Hyper-parameters: w={w}, c1={c1}, c2={c2}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # --------------- 5.1  Static datasets for all VMs -------------------- #
+
     train_ds = {
-        vm: _create_sequences(df, input_seq_len, forecast_horizon) for vm, df in train.items()
+        vm: _create_sequences(df=df, seq_len=input_seq_len, horizon=forecast_horizon) for vm, df in train.items()
     }
     val_ds = {
-        vm: _create_sequences(df, input_seq_len, forecast_horizon) for vm, df in val.items()
+        vm: _create_sequences(df=df, seq_len=input_seq_len, horizon=forecast_horizon) for vm, df in val.items()
     }
     test_ds = {
-        vm: _create_sequences(df, input_seq_len, forecast_horizon) for vm, df in test.items()
+        vm: _create_sequences(df=df, seq_len=input_seq_len, horizon=forecast_horizon) for vm, df in test.items()
     }
 
     # --------------- 5.2  DPSO-GA initialisation ------------------------ #
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed=seed)
     K = population
     X_rk = rng.random((K, D), dtype=np.float32)      # positions
     V_rk = np.zeros_like(X_rk)                       # velocities

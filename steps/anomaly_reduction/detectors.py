@@ -14,9 +14,6 @@ def detect_anomalies(
     iqr_k: float,
 ) -> pd.DataFrame:
 
-    logger.info(f"Detecting anomalies using method: {method}, "
-                f"z_threshold: {z_th}, iqr_k: {iqr_k}")
-
     mask = pd.DataFrame(False, index=df.index, columns=df.columns)
 
     for col in df.columns:

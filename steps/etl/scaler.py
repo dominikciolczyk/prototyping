@@ -1,4 +1,3 @@
-# steps/global_scaler.py
 from typing import Dict, Tuple, Literal
 import pandas as pd
 from sklearn.preprocessing import (
@@ -40,23 +39,6 @@ def scaler(
     Dict[str, pd.DataFrame],  # online_scaled
     Dict[str, object],        # scalers per feature (do inverse-transform / re-use)
 ]:
-    """
-    Global-per-feature scaling bez *data leakage*.
-
-    1. Łączy wszystkie ramki z `train` ➜ oblicza statystyki dla **każdej kolumny**.
-    2. Tym samym zestawem skalerów transformuje wszystkie pozostałe zbiory.
-    3. Zwraca pięć przeskalowanych słowników **oraz** dict z gotowymi skalerami.
-
-    Args:
-        train, val, test_teacher, test_student, online:
-            dict: VM-id ➜ DataFrame z tymi samymi kolumnami.
-        scaler_method:
-            Jedna z {"standard", "minmax", "robust", "max"}.
-
-    Returns:
-        (train_scaled, val_scaled, test_teacher_scaled,
-         test_student_scaled, online_scaled, scalers)
-    """
     logger.info(f"Scaler step with method: {scaler_method}, "
             f"minmax_range: {minmax_range}, "
             f"robust_quantile_range: {robust_quantile_range}")
@@ -77,11 +59,9 @@ def scaler(
             scaler = ScalerCls(quantile_range=robust_quantile_range)
         else:
             scaler = ScalerCls()  # standard, max
-        # fit on kolumnie (2-D array wymagane)
         scaler.fit(train_concat[[col]])
         scalers[col] = scaler
 
-    # 2️⃣  transform helper
     def _apply(dfs: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
         out: Dict[str, pd.DataFrame] = {}
         for name, df in dfs.items():
@@ -91,7 +71,6 @@ def scaler(
             out[name] = scaled
         return out
 
-    # 3️⃣  transform wszystkich zbiorów
     train_scaled = _apply(train)
     val_scaled = _apply(val)
     test_scaled = _apply(test)

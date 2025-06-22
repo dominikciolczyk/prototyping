@@ -72,15 +72,16 @@ parameters:
   cleaned_polcom_dir: data/cleaned/Dane - Polcom/
   cleaned_polcom_2022_dir: data/cleaned/Dane - Polcom/2022/
   cleaned_polcom_2020_dir: data/cleaned/Dane - Polcom/2020/
-  recreate_dataset: False
   data_granularity: M
   load_2022_data: True
   load_2020_data: True
+  recreate_dataset: False
   val_size: 0.15
   test_size: 0.15
   test_teacher_size: 0.15
   test_student_size: 0.15
   online_size: 0.15
+  seed: 42
   selected_columns:
     - CPU_USAGE_MHZ
     - MEMORY_USAGE_KB
@@ -92,8 +93,8 @@ parameters:
   minmax_range: [ 0.0, 1.0 ]
   robust_quantile_range: [ 25.0, 75.0 ]
   use_hour_features: True
-  use_weekend_features: True
   use_day_of_week_features: True
+  use_weekend_features: True
   is_weekend_mode: numeric
   model_input_seq_len: 84
   model_forecast_horizon: 84

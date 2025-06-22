@@ -18,9 +18,9 @@ def anomaly_reducer(
     test_student: Dict[str, pd.DataFrame],
     online: Dict[str, pd.DataFrame],
     detection_method: DetectMethod,
-    reduction_method: ReduceMethod,
     z_threshold: float,
     iqr_k: float,
+    reduction_method: ReduceMethod,
     interpolation_order: int,
 ) -> Tuple[
     Dict[str, pd.DataFrame],
