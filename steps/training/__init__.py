@@ -25,3 +25,4 @@
 from .model_evaluator import model_evaluator
 from .model_trainer import model_trainer
 from .register_model import register_model
+from .cnn_lstm_trainer import cnn_lstm_trainer

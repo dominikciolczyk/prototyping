@@ -24,3 +24,4 @@
 
 from .hp_tuning_select_best_model import hp_tuning_select_best_model
 from .hp_tuning_single_search import hp_tuning_single_search
+from .dpso_ga_searcher import dpso_ga_searcher

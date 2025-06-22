@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 experiment_tracker = Client().active_stack.experiment_tracker
 
 @step(experiment_tracker=experiment_tracker.name, enable_cache=False)
-def model_evaluator(path: Path) -> float:
+def model_evaluator() -> float:
     """Dummy evaluator step that returns a random float as a fake metric."""
     fake_mse = random.uniform(0.0, 1.0)  # Simulate MSE between 0 and 1
     mlflow.log_metric("mse", fake_mse)

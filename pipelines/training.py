@@ -2,6 +2,7 @@ from typing import List, Tuple
 from steps import (
     model_trainer,
     model_evaluator,
+    dpso_ga_searcher,
 )
 from utils.pipeline_utils import prepare_datasets_before_model_input
 from zenml import pipeline
@@ -76,19 +77,52 @@ def cloud_resource_prediction_training(
           use_weekend_features=use_weekend_features,
           is_weekend_mode=is_weekend_mode)
 
-    model_path = model_trainer(train=expanded_train_dfs,
-                                val=expanded_val_dfs,
-                                test=expanded_test_dfs,
-                                input_seq_len=model_input_seq_len,
-                                forecast_horizon=model_forecast_horizon,
-                                seed=seed)
+    search_space = {
+        # how many past time-steps the model sees
+        "seq_len": (20, 100),  # → int
+        # how many future time-steps to predict
+        "horizon": (1, 12),  # → int
+        # batch size
+        "batch": (16, 128),  # → int
 
-    """
-    register_model(model, name = "cnn_lstm_prod")
-    """
-    metric = model_evaluator(model_path)
+        # CNN part: two conv layers with channels + kernel sizes
+        "c1": (8.0, 64.0),  # → int, first conv channels
+        "k1": (2.0, 8.0),  # → int, first kernel size
+        "c2": (8.0, 64.0),  # → int, second conv channels
+        "k2": (2.0, 8.0),  # → int, second kernel size
 
+        # LSTM part
+        "h_lstm": (32.0, 256.0),  # → int, hidden units
+        "lstm_layers": (1.0, 3.0),  # → int
 
+        # regularization / loss
+        "drop": (0.0, 0.5),  # dropout rate
+        "alpha": (1.0, 5.0),  # QoS under-provision penalty
 
+        # optimizer
+        "lr": (1e-4, 1e-2),  # learning rate
+    }
 
+    # -----------------------------------------------------------
+    # ❷ PSO-GA constants: population size, iterations, inertia,
+    #    cognitive & social weights, mutation probability
+    # -----------------------------------------------------------
+    pso_const = {
+        "pop": 20,  # number of particles
+        "iter": 30,  # optimization iterations
+        "w": 0.5,  # inertia weight
+        "c1": 1.5,  # cognitive coefficient
+        "c2": 1.5,  # social coefficient
+        "pm": 0.1,  # mutation probability
+    }
 
+    best_model, best_cfg = dpso_ga_searcher(
+        train=expanded_train_dfs,
+        val=expanded_val_dfs,
+        test=expanded_test_dfs,
+        search_space=search_space,
+        pso_const=pso_const,
+    )
+
+    metric = model_evaluator()
+    #register_model(model, name = "cnn_lstm_prod")

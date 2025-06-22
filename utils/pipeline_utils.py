@@ -13,9 +13,9 @@ from steps import (
     anomaly_reducer,
     scaler,
     feature_expander,
-    plot_time_series,
 )
 from zenml.logger import get_logger
+from .plotter import plot_all, plot_time_series
 
 logger = get_logger(__name__)
 
@@ -83,12 +83,6 @@ def preprocess_data(dfs: Dict[str, pd.DataFrame], selected_columns: List[str], n
     plot_time_series(selected_columns_dfs, f"selected_columns_{name}_dfs")
 
     return selected_columns_dfs
-
-
-def plot_all(dfs_list: List[Dict[str, pd.DataFrame]], prefix: str):
-    names = ["train", "val", "test, ""test_teacher", "test_student", "online"]
-    for name, dfs in zip(names, dfs_list):
-        plot_time_series(dfs, f"{prefix}_{name}_dfs")
 
 
 def expand_features(reduced_and_scaled_train_dfs, reduced_and_scaled_val_dfs, reduced_and_scaled_test_dfs,

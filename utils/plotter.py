@@ -1,12 +1,10 @@
 from zenml import step
-from typing import Union
+from typing import Union, List, Dict
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
 from pathlib import Path
 
-
-@step(enable_cache=False)
 def plot_time_series(
         data: Union[dict[str, pd.DataFrame], pd.DataFrame],
         folder_name_postfix: str,
@@ -56,3 +54,8 @@ def plot_time_series(
             data.to_excel(data_path.with_suffix(".xlsx"), index=True)
 
     return output_files
+
+def plot_all(dfs_list: List[Dict[str, pd.DataFrame]], prefix: str):
+    names = ["train", "val", "test, ""test_teacher", "test_student", "online"]
+    for name, dfs in zip(names, dfs_list):
+        plot_time_series(dfs, f"{prefix}_{name}_dfs")

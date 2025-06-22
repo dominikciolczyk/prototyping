@@ -38,14 +38,13 @@ from .etl import (
     merger,
     feature_expander,
 )
-from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search
+from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search, dpso_ga_searcher
 from .inference import inference_predict
 from .promotion import (
     compute_performance_metrics_on_current_data,
     promote_with_metric_compare,
 )
-from .training import model_trainer, model_evaluator, register_model
+from .training import model_trainer, model_evaluator, register_model, cnn_lstm_trainer
 
 from .logging import track_experiment_metadata
-from .visualization import plot_time_series
 from .anomaly_reduction import anomaly_reducer
