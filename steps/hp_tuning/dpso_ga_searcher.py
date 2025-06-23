@@ -5,7 +5,6 @@ import torch
 from torch.utils.data import DataLoader
 from zenml import step
 from zenml.logger import get_logger
-
 from optim.dpso_ga import dpso_ga
 from steps.training.cnn_lstm_trainer import cnn_lstm_trainer
 from utils.window_dataset import make_loader
@@ -28,22 +27,21 @@ def dpso_ga_searcher(
 
     # ----------------------------------------------
     def _fitness(cfg: Dict[str, float]) -> float:
-        with mlflow.start_run(nested=True):
-            model = cnn_lstm_trainer(train=train, val=val, hyper_params=cfg)
-            # -------- Test evaluation ---------------
-            seq_len, horizon, batch = int(cfg["seq_len"]), int(cfg["horizon"]), 256
-            test_loader: DataLoader = make_loader(
-                test, seq_len, horizon, batch_size=batch, shuffle=False
-            )
-            criterion = AsymmetricL1(alpha=cfg["alpha"])
-            test_loss = 0.0
-            model.eval()
-            for X, y in test_loader:
-                with torch.no_grad():
-                    X, y = X.to(model.device), y.to(model.device)
-                    test_loss += criterion(model(X), y).item() * len(X)
-            test_loss /= len(test_loader.dataset)
-            mlflow.log_metric("test_loss", test_loss)
+        model = cnn_lstm_trainer(train=train, val=val, hyper_params=cfg)
+        # -------- Test evaluation ---------------
+        seq_len, horizon, batch = int(cfg["seq_len"]), int(cfg["horizon"]), 256
+        test_loader: DataLoader = make_loader(
+            test, seq_len, horizon, batch_size=batch, shuffle=False
+        )
+        criterion = AsymmetricL1(alpha=cfg["alpha"])
+        test_loss = 0.0
+        model.eval()
+        for X, y in test_loader:
+            with torch.no_grad():
+                X, y = X.to(model.device), y.to(model.device)
+                test_loss += criterion(model(X), y).item() * len(X)
+        test_loss /= len(test_loader.dataset)
+        mlflow.log_metric("test_loss", test_loss)
         return test_loss  # lower is better
 
     # ----------------------------------------------

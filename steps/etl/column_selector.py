@@ -1,11 +1,9 @@
-from zenml import step
 import pandas as pd
 from typing import List
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-@step
 def column_selector(
         dfs: dict[str, pd.DataFrame],
         selected_columns: List[str],

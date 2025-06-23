@@ -1,7 +1,5 @@
 import pandas as pd
-from zenml import step
 
-@step
 def aggregator(dfs: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     result = {}
     for name, df in dfs.items():

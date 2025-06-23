@@ -23,3 +23,5 @@
 
 
 from .anomaly_reducer import anomaly_reducer
+from .detectors import Method
+from .reducers import Reduction

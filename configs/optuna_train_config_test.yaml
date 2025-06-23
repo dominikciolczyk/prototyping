@@ -98,3 +98,4 @@ parameters:
   is_weekend_mode: numeric
   model_input_seq_len: 84
   model_forecast_horizon: 84
+  make_plots: True

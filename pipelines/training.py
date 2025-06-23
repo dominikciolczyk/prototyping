@@ -3,6 +3,7 @@ from steps import (
     model_trainer,
     model_evaluator,
     dpso_ga_searcher,
+    cnn_lstm_trainer,
 )
 from utils.pipeline_utils import prepare_datasets_before_model_input
 from zenml import pipeline
@@ -30,7 +31,7 @@ def cloud_resource_prediction_training(
     online_size: float,
     seed: int,
     selected_columns: List[str],
-    anomaly_reducer_before_scaling: bool,
+    anomaly_reduction_before_aggregation: bool,
     detection_method: str,
     z_threshold: float,
     iqr_k: float,
@@ -45,10 +46,12 @@ def cloud_resource_prediction_training(
     is_weekend_mode: str,
     model_input_seq_len: int,
     model_forecast_horizon: int,
+    make_plots: bool,
 ):
-    (expanded_train_dfs, expanded_val_dfs, expanded_test_dfs,
-     expanded_test_teacher_dfs, expanded_test_student_dfs, expanded_online_dfs)\
-        = prepare_datasets_before_model_input(raw_dir=raw_dir, zip_path=zip_path,
+    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, expanded_test_student_dfs, expanded_online_dfs, scalers =\
+        prepare_datasets_before_model_input(
+          raw_dir=raw_dir,
+          zip_path=zip_path,
           raw_polcom_2022_dir=raw_polcom_2022_dir,
           raw_polcom_2020_dir=raw_polcom_2020_dir,
           cleaned_polcom_dir=cleaned_polcom_dir,
@@ -64,7 +67,7 @@ def cloud_resource_prediction_training(
           online_size=online_size,
           seed=seed,
           selected_columns=selected_columns,
-          anomaly_reducer_before_scaling=anomaly_reducer_before_scaling,
+          anomaly_reduction_before_aggregation=anomaly_reduction_before_aggregation,
           detection_method=detection_method,
           z_threshold=z_threshold, iqr_k=iqr_k,
           reduction_method=reduction_method,
@@ -75,7 +78,8 @@ def cloud_resource_prediction_training(
           use_hour_features=use_hour_features,
           use_day_of_week_features=use_day_of_week_features,
           use_weekend_features=use_weekend_features,
-          is_weekend_mode=is_weekend_mode)
+          is_weekend_mode=is_weekend_mode,
+          make_plots=make_plots)
 
     search_space = {
         # how many past time-steps the model sees
@@ -116,6 +120,38 @@ def cloud_resource_prediction_training(
         "pm": 0.1,  # mutation probability
     }
 
+    model_hp = {
+        # how many past time-steps the model sees
+        "seq_len": 84,  # → int
+        # how many future time-steps to predict
+        "horizon": 84,  # → int
+        # batch size
+        "batch": 16,  # → int
+
+        # CNN part: two conv layers with channels + kernel sizes
+        "c1": 8.0,  # → int, first conv channels
+        "k1": 2.0,  # → int, first kernel size
+        "c2": 8.0,  # → int, second conv channels
+        "k2": 8.0,  # → int, second kernel size
+
+        "h_lstm": 32.0,  # → int, hidden units
+        "lstm_layers": 1.0,  # → int
+
+        # regularization / loss
+        "drop": 0.5,  # dropout rate
+        "alpha": 1.0,  # QoS under-provision penalty
+
+        # optimizer
+        "lr": 1e-4,  # learning rate
+    }
+
+    model = cnn_lstm_trainer(train=expanded_train_dfs,
+                             val=expanded_val_dfs,
+                             hyper_params=model_hp)
+
+    model_evaluator(model=model, test=expanded_test_dfs, hyper_params=model_hp)
+
+    """
     best_model, best_cfg = dpso_ga_searcher(
         train=expanded_train_dfs,
         val=expanded_val_dfs,
@@ -123,6 +159,7 @@ def cloud_resource_prediction_training(
         search_space=search_space,
         pso_const=pso_const,
     )
+    """
 
-    metric = model_evaluator()
+
     #register_model(model, name = "cnn_lstm_prod")

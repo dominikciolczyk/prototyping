@@ -5,7 +5,6 @@ from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-@step
 def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal["any"]) -> dict[str, pd.DataFrame]:
     logger.info(f"Trimming datasets with remove_nans={remove_nans}, dropna_how={dropna_how}")
 

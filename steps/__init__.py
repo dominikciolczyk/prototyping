@@ -37,6 +37,7 @@ from .etl import (
     column_selector,
     merger,
     feature_expander,
+    preprocessor,
 )
 from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search, dpso_ga_searcher
 from .inference import inference_predict

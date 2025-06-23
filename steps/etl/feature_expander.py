@@ -1,6 +1,5 @@
 from typing import Dict
 import pandas as pd
-from zenml import step
 import numpy as np
 from zenml.logger import get_logger
 from typing import Literal
@@ -32,13 +31,12 @@ def add_time_features(
 
     return df
 
-@step
 def feature_expander(
     dfs: Dict[str, pd.DataFrame],
     use_hour_features: bool,
     use_weekend_features: bool,
     use_day_of_week_features: bool,
-    is_weekend_mode: str,
+    is_weekend_mode: Literal["numeric", "categorical", "both"],
 ) -> Dict[str, pd.DataFrame]:
 
     logger.info(f"Expanding features with parameters:\n"

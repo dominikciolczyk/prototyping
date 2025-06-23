@@ -4,6 +4,15 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 from pathlib import Path
+from functools import partial
+from typing import Dict, Tuple, Any
+import mlflow
+import torch
+from torch.utils.data import DataLoader
+from zenml import step
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
 
 def plot_time_series(
         data: Union[dict[str, pd.DataFrame], pd.DataFrame],
@@ -27,7 +36,7 @@ def plot_time_series(
     if isinstance(data, dict):
         for key, df in data.items():
             if df.empty:
-                continue
+                raise ValueError("Dataframe cannot be empty")
 
             # Save plot
             fig = px.line(df, x=df.index, y=df.columns, title=f"{key} Time Series")
@@ -41,17 +50,19 @@ def plot_time_series(
             df.to_excel(data_output_path.with_suffix(".xlsx"), index=True)
 
     elif isinstance(data, pd.DataFrame):
-        if not data.empty:
-            # Plot
-            fig = px.line(data, x=data.index, y=data.columns, title="Time Series")
-            fig.update_layout(legend_title_text="Metrics")
-            plot_path = plots_dir / f"plot_{timestamp}.html"
-            fig.write_html(str(plot_path))
-            output_files.append(str(plot_path))
+        if data.empty:
+            raise ValueError("Dataframe cannot be empty")
 
-            # Save raw data
-            data_path = data_dir / f"data_{timestamp}.csv"
-            data.to_excel(data_path.with_suffix(".xlsx"), index=True)
+        # Plot
+        fig = px.line(data, x=data.index, y=data.columns, title="Time Series")
+        fig.update_layout(legend_title_text="Metrics")
+        plot_path = plots_dir / f"plot_{timestamp}.html"
+        fig.write_html(str(plot_path))
+        output_files.append(str(plot_path))
+
+        # Save raw data
+        data_path = data_dir / f"data_{timestamp}.csv"
+        data.to_excel(data_path.with_suffix(".xlsx"), index=True)
 
     return output_files
 

@@ -1,12 +1,10 @@
 from typing import Tuple
 import pandas as pd
-from zenml import step
 import random
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-@step
 def train_data_splitter(
         dfs: dict[str, pd.DataFrame],
         val_size: float,

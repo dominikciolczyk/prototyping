@@ -3,7 +3,6 @@ A *re-usable* training step – you can call it directly with fixed hyper-params
 outside of the search loop.
 """
 from typing import Dict, Any
-import mlflow
 import torch
 from torch import nn
 from torch.optim import Adam
@@ -14,6 +13,7 @@ import pandas as pd
 from models.cnn_lstm import CNNLSTM
 from losses.qos import AsymmetricL1
 from utils.window_dataset import make_loader
+import numpy as np
 
 logger = get_logger(__name__)
 
@@ -37,14 +37,39 @@ def cnn_lstm_trainer(
     torch.nn.Module – trained model on *train* with early-stopping on *val*.
     """
 
+    def check_dataset(dset_name: str, dset: Dict[str, pd.DataFrame]):
+        logger.info(f"\n--- {dset_name.upper()} ---")
+        for vm_id, df in dset.items():
+            if df.isnull().values.any():
+                logger.warning(f"[{vm_id}] contains NaNs!")
+            if np.isinf(df.values).any():
+                logger.warning(f"[{vm_id}] contains Infs!")
+
+            stats = df.describe().T[["min", "max"]]
+            logger.info(f"[{vm_id}] Min/Max per column:\n{stats}\n")
+
+    check_dataset("train", train)
+    check_dataset("val", val)
+
     ## — Data --------------------------------------------------------------
     seq_len = int(hyper_params["seq_len"])
     horizon = int(hyper_params["horizon"])
     batch   = int(hyper_params["batch"])
+
+    # right after you build `train` and `val`, before make_loader
+    for split_name, dset in (("train", train), ("val", val)):
+        for vm_id, df in dset.items():
+            if df.isnull().values.any() or np.isinf(df.values).any():
+                logger.info(f"{split_name} set VM {vm_id} has NaNs or infs:\n",
+                      df.isnull().sum(), df.isin([np.inf, -np.inf]).sum())
+
+
     train_loader = make_loader(train, seq_len, horizon, batch_size=batch, shuffle=True)
     val_loader   = make_loader(val,   seq_len, horizon, batch_size=batch, shuffle=False)
 
     n_features = next(iter(train.values())).shape[1]
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     ## — Model -------------------------------------------------------------
     model = CNNLSTM(
@@ -55,17 +80,18 @@ def cnn_lstm_trainer(
         lstm_hidden=int(hyper_params["h_lstm"]),
         lstm_layers=int(hyper_params["lstm_layers"]),
         dropout=hyper_params["drop"],
-    ).to("cuda" if torch.cuda.is_available() else "cpu")
+    ).to(device)
 
     criterion = AsymmetricL1(alpha=hyper_params["alpha"])
     optim = Adam(model.parameters(), lr=hyper_params["lr"])
 
     ## — Training loop w/ early-stopping ----------------------------------
     patience, best_val, best_state = 5, float("inf"), None
+    patience_counter = 0
     for epoch in range(50):  # hard upper-bound
         model.train()
         for X, y in train_loader:
-            X, y = X.to(model.device), y.to(model.device)
+            X, y = X.to(device), y.to(device)
             optim.zero_grad()
             y_hat = model(X)
             loss = criterion(y_hat, y)
@@ -77,12 +103,12 @@ def cnn_lstm_trainer(
         with torch.no_grad():
             val_loss = 0.0
             for X, y in val_loader:
-                X, y = X.to(model.device), y.to(model.device)
+                X, y = X.to(device), y.to(device)
                 val_loss += criterion(model(X), y).item() * len(X)
         val_loss /= len(val_loader.dataset)
 
         logger.info(f"[{epoch}] train_loss={loss.item():.4f}  val_loss={val_loss:.4f}")
-        mlflow.log_metric("val_loss", val_loss, step=epoch)
+        #mlflow.log_metric("val_loss", val_loss, step=epoch)
 
         if val_loss < best_val:
             best_val, best_state = val_loss, model.state_dict().copy()

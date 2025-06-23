@@ -6,7 +6,6 @@ from sklearn.preprocessing import (
     RobustScaler,
     MaxAbsScaler,
 )
-from zenml import step
 from utils.concat_train_frames import concat_train_frames
 from zenml.logger import get_logger
 
@@ -19,7 +18,6 @@ _SCALERS: Dict[str, type] = {
     "max": MaxAbsScaler,         # / |max|
 }
 
-@step
 def scaler(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],

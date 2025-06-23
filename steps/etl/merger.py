@@ -1,11 +1,9 @@
 from typing import Optional, Dict
 import pandas as pd
-from zenml import step
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-@step
 def merger(
     dfs_2020: Optional[Dict[str, pd.DataFrame]] = None,
     dfs_2022: Optional[Dict[str, pd.DataFrame]] = None,

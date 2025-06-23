@@ -87,7 +87,7 @@ parameters:
     - MEMORY_USAGE_KB
     - SUM_DISK_IO_RATE_KBPS
     - SUM_NETWORK_TR_KBPS
-  anomaly_reducer_before_scaling: True
+  anomaly_reduction_before_aggregation: True
   detection_method: iqr
   z_threshold: 3.0
   iqr_k: 1.5
@@ -102,3 +102,4 @@ parameters:
   is_weekend_mode: numeric
   model_input_seq_len: 84
   model_forecast_horizon: 84
+  make_plots: True

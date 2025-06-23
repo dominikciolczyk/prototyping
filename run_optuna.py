@@ -128,8 +128,8 @@ def main():
 
         # 1. Sample hyperparameters
         hparams = {
-            "anomaly_reducer_before_scaling": trial.suggest_categorical(
-                "anomaly_reducer_before_scaling", [True, False]),
+            "anomaly_reduction_before_aggregation": trial.suggest_categorical(
+                "anomaly_reduction_before_aggregation", [True, False]),
             "detection_method": detection_method,
             "reduction_method": reduction_method,
             "scaler_method": scaler_method,
