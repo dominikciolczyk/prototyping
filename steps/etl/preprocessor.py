@@ -1,8 +1,8 @@
 from pathlib import Path
-
 from .data_loader import data_loader
 from .merger import merger
 from .train_data_splitter import train_data_splitter
+from .column_preselector import column_preselector
 from .trimmer import trimmer
 from .aggregator import aggregator
 from .column_selector import column_selector
@@ -85,12 +85,30 @@ def preprocessor(
             online_size=online_size,
             seed=seed)
 
-    train_trimmed = trimmer(dfs=train, remove_nans=remove_nans, dropna_how=dropna_how)
-    val_trimmed = trimmer(dfs=val, remove_nans=remove_nans, dropna_how=dropna_how)
-    test_trimmed = trimmer(dfs=test, remove_nans=remove_nans, dropna_how=dropna_how)
-    test_teacher_trimmed = trimmer(dfs=test_teacher, remove_nans=remove_nans, dropna_how=dropna_how)
-    test_student_trimmed = trimmer(dfs=test_student, remove_nans=remove_nans, dropna_how=dropna_how)
-    online_trimmed = trimmer(dfs=online, remove_nans=remove_nans, dropna_how=dropna_how)
+    train_preselected_columns = column_preselector(dfs=train, selected_columns=selected_columns)
+    val_preselected_columns = column_preselector(dfs=val, selected_columns=selected_columns)
+    test_preselected_columns = column_preselector(dfs=test, selected_columns=selected_columns)
+    test_teacher_preselected_columns = column_preselector(dfs=test_teacher, selected_columns=selected_columns)
+    test_student_preselected_columns = column_preselector(dfs=test_student, selected_columns=selected_columns)
+    online_preselected_columns = column_preselector(dfs=online, selected_columns=selected_columns)
+
+    if make_plots:
+        plot_all([
+            train_preselected_columns,
+            val_preselected_columns,
+            test_preselected_columns,
+            test_teacher_preselected_columns,
+            test_student_preselected_columns,
+            online_preselected_columns
+        ], "preselected_columns")
+
+    train_trimmed = trimmer(dfs=train_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
+    val_trimmed = trimmer(dfs=val_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
+    test_trimmed = trimmer(dfs=test_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
+    test_teacher_trimmed = trimmer(dfs=test_teacher_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
+    test_student_trimmed = trimmer(dfs=test_student_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
+    online_trimmed = trimmer(dfs=online_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
+
     if make_plots:
         plot_all([
             train_trimmed,
@@ -115,28 +133,52 @@ def preprocessor(
             z_threshold=z_threshold,
             iqr_k=iqr_k,
             reduction_method=reduction_method,
-            interpolation_order=interpolation_order)
+            interpolation_order=interpolation_order,
+            data_granularity=data_granularity)
+
+        if make_plots:
+            plot_all([
+                train_reduced,
+                val_selected_columns,
+                test_selected_columns,
+                test_teacher_selected_columns,
+                test_student_selected_columns,
+                online_selected_columns
+            ], "select_reduced")
+
 
         train_select_columns_reduced = aggregate_and_select_columns(dfs=train_reduced, selected_columns=selected_columns)
     else:
         train_select_columns = aggregate_and_select_columns(dfs=train_trimmed, selected_columns=selected_columns)
+
+        if make_plots:
+            plot_all([
+                train_select_columns,
+                val_selected_columns,
+                test_selected_columns,
+                test_teacher_selected_columns,
+                test_student_selected_columns,
+                online_selected_columns
+            ], "aggregate_and_select_columns")
+
 
         train_select_columns_reduced = anomaly_reducer(train=train_select_columns,
                                         detection_method=detection_method,
                                         z_threshold=z_threshold,
                                         iqr_k=iqr_k,
                                         reduction_method=reduction_method,
-                                        interpolation_order=interpolation_order)
+                                        interpolation_order=interpolation_order,
+                                        data_granularity = data_granularity)
 
-        if make_plots:
-            plot_all([
-                train_select_columns_reduced,
-                val_selected_columns,
-                test_selected_columns,
-                test_teacher_selected_columns,
-                test_student_selected_columns,
-                online_selected_columns
-            ], "selected_columns")
+    if make_plots:
+        plot_all([
+            train_select_columns_reduced,
+            val_selected_columns,
+            test_selected_columns,
+            test_teacher_selected_columns,
+            test_student_selected_columns,
+            online_selected_columns
+        ], "aggregate_and_select_columns_reduced")
 
     train_scaled, val_scaled, test_scaled, test_teacher_scaled, test_student_scaled, online_scaled, scalers = scaler(train=train_select_columns_reduced,
         val=val_selected_columns,

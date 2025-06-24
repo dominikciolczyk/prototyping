@@ -1,5 +1,5 @@
 """
-DPSO-GA *exactly* mirrors the notation in the article:
+DPSO-GA :
 
     • Particle position  -> x_i
     • Velocity           -> v_i

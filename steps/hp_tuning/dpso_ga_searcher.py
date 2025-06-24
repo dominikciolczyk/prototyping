@@ -1,5 +1,4 @@
-from functools import partial
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple, Any, List
 import mlflow
 import torch
 from torch.utils.data import DataLoader
@@ -20,25 +19,31 @@ def dpso_ga_searcher(
     test: Dict[str, pd.DataFrame],
     search_space: Dict[str, Tuple[float, float]],
     pso_const: Dict[str, float],
+    selected_columns: List[str],
+    epochs: int
 ) -> Tuple[torch.nn.Module, Dict[str, Any]]:
     """
     Runs DPSO-GA and returns the *best* trained CNN-LSTM.
     """
 
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     # ----------------------------------------------
     def _fitness(cfg: Dict[str, float]) -> float:
-        model = cnn_lstm_trainer(train=train, val=val, hyper_params=cfg)
+        model = cnn_lstm_trainer(train=train, val=val, hyper_params=cfg, selected_columns=selected_columns, epochs=epochs)
         # -------- Test evaluation ---------------
         seq_len, horizon, batch = int(cfg["seq_len"]), int(cfg["horizon"]), 256
         test_loader: DataLoader = make_loader(
-            test, seq_len, horizon, batch_size=batch, shuffle=False
+            test, seq_len, horizon, batch_size=batch, shuffle=False, target_cols=selected_columns
         )
         criterion = AsymmetricL1(alpha=cfg["alpha"])
         test_loss = 0.0
         model.eval()
         for X, y in test_loader:
             with torch.no_grad():
-                X, y = X.to(model.device), y.to(model.device)
+                model.to(device)
+                X, y = X.to(device), y.to(device)
                 test_loss += criterion(model(X), y).item() * len(X)
         test_loss /= len(test_loader.dataset)
         mlflow.log_metric("test_loss", test_loss)

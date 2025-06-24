@@ -88,10 +88,10 @@ parameters:
     - SUM_DISK_IO_RATE_KBPS
     - SUM_NETWORK_TR_KBPS
   anomaly_reduction_before_aggregation: True
-  detection_method: iqr
-  z_threshold: 3.0
-  iqr_k: 1.5
-  reduction_method: interpolate_polynomial
+  detection_method: prophet
+  z_threshold: 4.0
+  iqr_k: 8.5
+  reduction_method: ffill_bfill
   interpolation_order: 3
   scaler_method: standard
   minmax_range: [ 0.0, 1.0 ]

@@ -11,7 +11,7 @@ from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-@pipeline
+@pipeline(enable_cache=False)
 def cloud_resource_prediction_training(
     raw_dir: str,
     zip_path: str,
@@ -82,28 +82,22 @@ def cloud_resource_prediction_training(
           make_plots=make_plots)
 
     search_space = {
-        # how many past time-steps the model sees
-        "seq_len": (20, 100),  # → int
-        # how many future time-steps to predict
-        "horizon": (1, 12),  # → int
+        "seq_len": (84, 84),  # → int
+        "horizon": (84, 84),  # → int
         # batch size
-        "batch": (16, 128),  # → int
+        "batch": (32, 32),  # → int
 
         # CNN part: two conv layers with channels + kernel sizes
-        "c1": (8.0, 64.0),  # → int, first conv channels
-        "k1": (2.0, 8.0),  # → int, first kernel size
-        "c2": (8.0, 64.0),  # → int, second conv channels
-        "k2": (2.0, 8.0),  # → int, second kernel size
+        "c1": (8.0, 64.0),
+        "k1": (2.0, 4.0),
+        "c2": (8.0, 64.0),
+        "k2": (2.0, 6.0),
 
-        # LSTM part
         "h_lstm": (32.0, 256.0),  # → int, hidden units
         "lstm_layers": (1.0, 3.0),  # → int
 
-        # regularization / loss
-        "drop": (0.0, 0.5),  # dropout rate
-        "alpha": (1.0, 5.0),  # QoS under-provision penalty
-
-        # optimizer
+        "drop": (0.0, 0.3),  # dropout rate
+        "alpha": (1.0, 1.0),  # QoS under-provision penalty
         "lr": (1e-4, 1e-2),  # learning rate
     }
 
@@ -120,46 +114,49 @@ def cloud_resource_prediction_training(
         "pm": 0.1,  # mutation probability
     }
 
-    model_hp = {
-        # how many past time-steps the model sees
-        "seq_len": 84,  # → int
-        # how many future time-steps to predict
-        "horizon": 84,  # → int
-        # batch size
-        "batch": 16,  # → int
+    best_model_hp = {
+        # longer history to capture weekly seasonality
+        "seq_len": 168,  # one full week of hourly data
+        # leave horizon at 84 (same as before), or consider 48 / 24 if you can
+        "horizon": 84,
+        # larger batch for stabler gradients
+        "batch": 32,
 
-        # CNN part: two conv layers with channels + kernel sizes
-        "c1": 8.0,  # → int, first conv channels
-        "k1": 2.0,  # → int, first kernel size
-        "c2": 8.0,  # → int, second conv channels
-        "k2": 8.0,  # → int, second kernel size
+        # deeper, wider CNN backbone
+        "c1": 16,  # double the channels
+        "k1": 3,  # small kernel to capture local patterns
+        "c2": 32,  # more channels in layer 2
+        "k2": 5,  # slightly larger receptive field
 
-        "h_lstm": 32.0,  # → int, hidden units
-        "lstm_layers": 1.0,  # → int
+        # beefier LSTM
+        "h_lstm": 64,  # twice the hidden dims
+        "lstm_layers": 2,  # stack 2 LSTM layers
 
         # regularization / loss
-        "drop": 0.5,  # dropout rate
-        "alpha": 1.0,  # QoS under-provision penalty
+        "drop": 0.2,  # lower dropout, since we have more data
+        "alpha": 1.0,  # keep your penalty balanced
 
         # optimizer
-        "lr": 1e-4,  # learning rate
+        "lr": 1e-3,  # faster convergence early on
     }
-
+    """
     model = cnn_lstm_trainer(train=expanded_train_dfs,
                              val=expanded_val_dfs,
-                             hyper_params=model_hp)
+                             hyper_params=best_model_hp,
+                             selected_columns=selected_columns,
+                             epochs=15)
 
-    model_evaluator(model=model, test=expanded_test_dfs, hyper_params=model_hp)
-
-    """
-    best_model, best_cfg = dpso_ga_searcher(
+    
+    model, best_model_hp = dpso_ga_searcher(
         train=expanded_train_dfs,
         val=expanded_val_dfs,
         test=expanded_test_dfs,
         search_space=search_space,
         pso_const=pso_const,
+        selected_columns=selected_columns,
+        epochs=5
     )
+
+    model_evaluator(model=model, test=expanded_test_teacher_dfs, hyper_params=best_model_hp, selected_columns=selected_columns, scalers=scalers)
     """
-
-
     #register_model(model, name = "cnn_lstm_prod")
