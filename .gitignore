@@ -177,3 +177,6 @@ pyrightconfig.json
 
 # Ignore plots directory
 plots/
+
+# Ignore AWS access keys
+aws/*.csv
