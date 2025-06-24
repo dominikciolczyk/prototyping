@@ -32,7 +32,7 @@ def main():
     logger.info("Starting Optuna hyperparameter optimization...")
     def objective(trial):
         """Single Optuna trial running the full ZenML pipeline."""
-        detection_method = trial.suggest_categorical("detection_method", ["zscore", "robust_zscore", "iqr"])
+        threshold_strategy = trial.suggest_categorical("threshold_strategy", ["zscore", "robust_zscore", "iqr"])
         reduction_method = trial.suggest_categorical("reduction_method", ["interpolate_time", "interpolate_polynomial", "interpolate_spline", "ffill_bfill"])
         scaler_method = trial.suggest_categorical("scaler_method", ["standard", "minmax", "robust", "max"])
 
@@ -130,7 +130,7 @@ def main():
         hparams = {
             "anomaly_reduction_before_aggregation": trial.suggest_categorical(
                 "anomaly_reduction_before_aggregation", [True, False]),
-            "detection_method": detection_method,
+            "threshold_strategy": threshold_strategy,
             "reduction_method": reduction_method,
             "scaler_method": scaler_method,
         }

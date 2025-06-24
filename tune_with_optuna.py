@@ -3,7 +3,7 @@ from zenml.client import Client
 from train_pipeline import training_pipeline
 
 def objective(trial: optuna.Trial) -> float:
-    detection_method = trial.suggest_categorical("detection_method", ["zscore", "iqr", "robust_zscore"])
+    threshold_strategy = trial.suggest_categorical("threshold_strategy", ["zscore", "iqr", "robust_zscore"])
     reduction_method = trial.suggest_categorical("reduction_method", ["interpolate_linear", "interpolate_polynomial"])
     scaler_method = trial.suggest_categorical("scaler_method", ["standard", "minmax"])
     basic = trial.suggest_categorical("basic", [True, False])

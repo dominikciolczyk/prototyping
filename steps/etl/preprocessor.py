@@ -6,7 +6,7 @@ from .column_preselector import column_preselector
 from .trimmer import trimmer
 from .aggregator import aggregator
 from .column_selector import column_selector
-from steps.anomaly_reduction import anomaly_reducer, Method as DetectMethod, Reduction as ReduceMethod
+from steps.anomaly_reduction import anomaly_reducer, Reduction as ReduceMethod, ThresholdStrategy
 from .feature_expander import feature_expander
 from .scaler import scaler
 from typing import Dict, List, Literal, Tuple
@@ -38,7 +38,7 @@ def preprocessor(
     seed: int,
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,
-    detection_method: DetectMethod,
+    threshold_strategy: ThresholdStrategy,
     z_threshold: float,
     iqr_k: float,
     reduction_method: ReduceMethod,
@@ -129,7 +129,7 @@ def preprocessor(
 
     if anomaly_reduction_before_aggregation:
         train_reduced = anomaly_reducer(train=train_trimmed,
-            detection_method=detection_method,
+            threshold_strategy=threshold_strategy,
             z_threshold=z_threshold,
             iqr_k=iqr_k,
             reduction_method=reduction_method,
@@ -163,7 +163,7 @@ def preprocessor(
 
 
         train_select_columns_reduced = anomaly_reducer(train=train_select_columns,
-                                        detection_method=detection_method,
+                                        threshold_strategy=threshold_strategy,
                                         z_threshold=z_threshold,
                                         iqr_k=iqr_k,
                                         reduction_method=reduction_method,

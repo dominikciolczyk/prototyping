@@ -1,83 +1,50 @@
-from typing import Literal, Dict, Optional
+from typing import Literal, Dict
 import pandas as pd
-from zenml.logger import get_logger
-from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.seasonal import MSTL
-
-try:
-    from prophet import Prophet
-except ImportError:
-    Prophet = None
+from scipy.stats import median_abs_deviation
+from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-Method = Literal["stl", "prophet"]
+ThresholdStrategy = Literal["mad", "std", "quantile", "rolling_std"]
 
 def detect_anomalies(
     df: pd.DataFrame,
-    method: Method,
-    threshold: float = 3.0,
-    weekly_period: Optional[int] = None,
-    daily_period: Optional[int] = None,
-    monthly_period: Optional[int] = None
+    config: Dict[str, Dict]  # config: column -> settings
 ) -> pd.DataFrame:
-    """
-    Detect anomalies using STL decomposition (multi-seasonal) or Prophet forecast residuals.
-
-    Parameters:
-    - df: DataFrame with datetime index and numeric columns.
-    - method: "stl" for STL decomposition, "prophet" for Prophet.
-    - threshold: number of std deviations to mark anomaly.
-    - weekly_period: optional STL weekly period.
-    - daily_period: optional STL daily period.
-    - monthly_period: optional STL monthly period.
-
-    Returns:
-    - DataFrame of booleans, True where anomaly detected.
-    """
     mask = pd.DataFrame(False, index=df.index, columns=df.columns)
 
-    if method == "stl":
-        if not any([weekly_period, daily_period, monthly_period]):
-            raise ValueError("At least one of weekly_period, daily_period, or monthly_period must be provided for STL method")
+    for col in df.columns:
+        col_config = config.get(col)
+        if not col_config:
+            logger.info(f"No col config for col {col}, skipping...")
+            continue
 
-        for col in df.columns:
-            series = df[col].dropna()
+        if df[col].isna().any():
+            raise ValueError(f"Column '{col}' contains NaNs. Please clean or interpolate before anomaly detection.")
 
-            components = []
-            if monthly_period:
-                components.append(("monthly", monthly_period))
-            if weekly_period:
-                components.append(("weekly", weekly_period))
-            if daily_period:
-                components.append(("daily", daily_period))
+        periods = col_config["seasonality"]
+        threshold_strategy = col_config["threshold_strategy"]
+        threshold = col_config["threshold"]
+        stl = MSTL(df[col], periods=periods, stl_kwargs={"robust": True}).fit()
+        residual = stl.resid
 
-            try:
-                # MSTL automatycznie dopasowuje wiele sezonowości
-                # podaj listę okresów jako `seasonal_periods`
-                mstl = MSTL(series, periods=[p for _, p in components]).fit()
-                residual = mstl.resid
+        if threshold_strategy == "mad":
+            mad = median_abs_deviation(residual, scale='normal')
+            mask[col] = residual.abs() > threshold * mad
 
-                thresh = residual.abs().quantile(0.995)
-                mask[col] = residual.abs() > thresh
+        elif threshold_strategy == "std":
+            std = residual.std()
+            mask[col] = residual.abs() > threshold * std
 
-            except Exception as e:
-                logger.warning(f"MSTL decomposition failed on column '{col}': {e}")
+        elif threshold_strategy == "quantile":
+            q = col_config["quantile_value"]
+            mask[col] = residual.abs() > residual.abs().quantile(q)
 
-    elif method == "prophet":
-        if Prophet is None:
-            raise ImportError("prophet library is required for 'prophet' method")
-        for col in df.columns:
-            series = df[col].dropna().reset_index()
-            series.columns = ["ds", "y"]
-            m = Prophet(daily_seasonality=True, weekly_seasonality=True, yearly_seasonality=False)
-            m.fit(series)
-            forecast = m.predict(series)
-            resid = series["y"] - forecast["yhat"]
-            thresh = resid.std() * threshold
-            mask[col] = resid.abs().values > thresh
-
-    else:
-        raise ValueError(f"Unknown method: {method}")
+        elif threshold_strategy == "rolling_std":
+            rw = col_config["rolling_window"]
+            mean = residual.rolling(rw, center=True).mean()
+            std = residual.rolling(rw, center=True).std()
+            mask[col] = (residual - mean).abs() > threshold * std
 
     return mask

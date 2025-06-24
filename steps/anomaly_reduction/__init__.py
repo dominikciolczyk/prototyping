@@ -23,5 +23,5 @@
 
 
 from .anomaly_reducer import anomaly_reducer
-from .detectors import Method
+from .detectors import ThresholdStrategy
 from .reducers import Reduction

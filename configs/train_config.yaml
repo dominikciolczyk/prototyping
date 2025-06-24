@@ -88,7 +88,7 @@ parameters:
     - SUM_DISK_IO_RATE_KBPS
     - SUM_NETWORK_TR_KBPS
   anomaly_reduction_before_aggregation: True
-  detection_method: prophet
+  threshold_strategy: mstl
   z_threshold: 4.0
   iqr_k: 8.5
   reduction_method: ffill_bfill
