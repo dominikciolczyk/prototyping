@@ -9,7 +9,7 @@ from torch import nn
 
 class AsymmetricL1(nn.Module):
     """|err| if over-provision,   α*|err| if under-provision (α>1)."""
-    def __init__(self, alpha: float = 2.0):
+    def __init__(self, alpha: float):
         super().__init__()
         self.alpha = alpha
 
@@ -25,7 +25,7 @@ class AsymmetricL1(nn.Module):
 
 class AsymmetricSmoothL1(nn.Module):
     """Huber-like but asymmetric."""
-    def __init__(self, beta: float = 1.0, alpha: float = 2.0):
+    def __init__(self, beta: float, alpha: float):
         super().__init__()
         self.beta, self.alpha = beta, alpha
 

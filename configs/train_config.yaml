@@ -90,7 +90,7 @@ parameters:
   anomaly_reduction_before_aggregation: True
   min_strength: 0.1
   threshold_strategy: std
-  threshold: 3
+  threshold: 4
   q: 0.975
   reduction_method: ffill_bfill
   interpolation_order: 3

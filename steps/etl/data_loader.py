@@ -106,7 +106,7 @@ def data_loader(
     load_2022_R04: bool,
 ) -> dict[str, pd.DataFrame]:
 
-    logger.info(f"Extracting data for year {year} with granularity {data_granularity}")
+    logger.info(f"Loading data for year {year} with granularity {data_granularity}")
 
     if year == 2022:
         result = extract_consumption_data(

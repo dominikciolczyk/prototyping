@@ -27,7 +27,7 @@ def extractor(
 ) -> Path:
     if Path(raw_dir).exists():
         shutil.rmtree(raw_dir)
-        logger.info("Removed existing raw directory:", raw_dir)
+        logger.info(f"Removed existing raw directory: {raw_dir}")
 
     Path(raw_dir).mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path) as zf:

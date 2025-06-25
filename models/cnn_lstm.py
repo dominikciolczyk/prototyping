@@ -1,10 +1,3 @@
-"""
-Utility that can build a CNN-LSTM whose depth, kernel sizes, hidden sizes,
-sequence length (`τ`) and prediction horizon (`H`) are all configurable.
-
-INPUT  SHAPE : (batch, τ, n_features)
-OUTPUT SHAPE : (batch, H, n_features)
-"""
 from typing import List, Tuple
 import torch
 from torch import nn

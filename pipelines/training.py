@@ -137,7 +137,7 @@ def cloud_resource_prediction_training(
 
         # regularization / loss
         "drop": 0.2,  # lower dropout, since we have more data
-        "alpha": 1.0,  # keep your penalty balanced
+        "alpha": 2.0,  # keep your penalty balanced
 
         # optimizer
         "lr": 1e-3,  # faster convergence early on
