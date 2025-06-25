@@ -20,7 +20,6 @@ def read_csv_dataset_2022_Y(path: str) -> pd.DataFrame:
 
     return df
 
-
 def replace_commas(df):
     for col in df.columns:
         if df[col].dtype == "object":
@@ -31,7 +30,7 @@ def replace_commas(df):
                 pass
     return df
 
-def fix_separator_and_overwrite(path: str | Path):
+def fix_separator_and_overwrite(path: Path):
     path = Path(path)
 
     def try_fix(sep: str, label: str):
