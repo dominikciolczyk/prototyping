@@ -32,9 +32,10 @@ def cloud_resource_prediction_training(
     seed: int,
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,
+    min_strength: float,
     threshold_strategy: str,
-    z_threshold: float,
-    iqr_k: float,
+    threshold: float,
+    q: float,
     reduction_method: str,
     interpolation_order: int,
     scaler_method: str,
@@ -68,8 +69,10 @@ def cloud_resource_prediction_training(
           seed=seed,
           selected_columns=selected_columns,
           anomaly_reduction_before_aggregation=anomaly_reduction_before_aggregation,
+          min_strength=min_strength,
           threshold_strategy=threshold_strategy,
-          z_threshold=z_threshold, iqr_k=iqr_k,
+          threshold=threshold,
+          q=q,
           reduction_method=reduction_method,
           interpolation_order=interpolation_order,
           scaler_method=scaler_method,
@@ -139,14 +142,14 @@ def cloud_resource_prediction_training(
         # optimizer
         "lr": 1e-3,  # faster convergence early on
     }
-    """
+
     model = cnn_lstm_trainer(train=expanded_train_dfs,
                              val=expanded_val_dfs,
                              hyper_params=best_model_hp,
                              selected_columns=selected_columns,
                              epochs=15)
 
-    
+    """
     model, best_model_hp = dpso_ga_searcher(
         train=expanded_train_dfs,
         val=expanded_val_dfs,
@@ -156,7 +159,7 @@ def cloud_resource_prediction_training(
         selected_columns=selected_columns,
         epochs=5
     )
-
-    model_evaluator(model=model, test=expanded_test_teacher_dfs, hyper_params=best_model_hp, selected_columns=selected_columns, scalers=scalers)
     """
+    model_evaluator(model=model, test=expanded_test_teacher_dfs, hyper_params=best_model_hp, selected_columns=selected_columns, scalers=scalers)
+
     #register_model(model, name = "cnn_lstm_prod")

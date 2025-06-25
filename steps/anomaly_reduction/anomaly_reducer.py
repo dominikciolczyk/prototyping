@@ -1,55 +1,22 @@
 from typing import Dict, List
 import pandas as pd
-from .detectors import detect_anomalies
+from .detectors import detect_anomalies, ThresholdStrategy
 from .reducers import reduce_anomalies, Reduction as ReduceMethod
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-# Complete anomaly config structure per granularity -> VM -> column
-ANOMALY_CONFIG: Dict[str, Dict[str, Dict[str, Dict]]] = {
-    "M": {
-        "2020_VM05": {
-            "NODE_1_NETWORK_TR_KBPS": {
-                "method": "mstl",
-                "seasonality": [12, 84],
-                "threshold_strategy": "mad",
-                "threshold": 2.0,
-            },
-            "NODE_2_NETWORK_TR_KBPS": {
-                "method": "mstl",
-                "seasonality": [12, 24, 84],
-                "threshold_strategy": "quantile",
-                "threshold": 3.0,
-                "quantile_value": 0.999,
-            },
-        },
-    },
-    "Y": {
-        "2022_VM08": {
-            "value": {
-                "method": "mstl",
-                "seasonality": [12, 24, 84],
-                "threshold_strategy": "quantile",
-                "threshold": 4.0,
-                "quantile_value": 0.9995,
-                "rolling_window": 48,
-            },
-        }
-    },
-}
-
 def anomaly_reducer(
     train: Dict[str, pd.DataFrame],
     data_granularity: str,
+    min_strength: float,
+    threshold_strategy: ThresholdStrategy,
+    threshold: float,
+    q: float,
     reduction_method: ReduceMethod,
     interpolation_order: int,
 ) -> Dict[str, pd.DataFrame]:
-
-    if data_granularity not in ANOMALY_CONFIG:
-        raise ValueError(f"Unsupported granularity: {data_granularity}")
-
-    config_for_granularity = ANOMALY_CONFIG[data_granularity]
+    seasonality_candidates = [12, 24, 84] if data_granularity == "M" else [7, 30]
 
     logger.info(f"Anomaly reduction step with parameters:\n"
                 f"  reduction_method: {reduction_method}\n"
@@ -57,22 +24,23 @@ def anomaly_reducer(
 
     out = {}
     for vm, df in train.items():
-        vm_config = config_for_granularity.get(vm, {})
         mask = pd.DataFrame(False, index=df.index, columns=df.columns)
 
         for col in df.columns:
-            col_config = vm_config.get(col)
-            if not col_config:
-                continue
-
+            logger.info(f"Reducing for VM: {vm}, col {col}")
             col_df = df[[col]].dropna()
+
             if col_df.empty:
-                continue
+                raise ValueError(f"Empty column {col} for vm {vm}.")
 
             try:
                 col_mask = detect_anomalies(
                     df=col_df,
-                    config={col: col_config}
+                    seasonality_candidates=seasonality_candidates,
+                    min_strength=min_strength,
+                    threshold_strategy=threshold_strategy,
+                    threshold=threshold,
+                    q=q,
                 )
                 mask[col] = col_mask[col]
             except Exception as e:

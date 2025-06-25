@@ -38,9 +38,10 @@ def preprocessor(
     seed: int,
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,
+    min_strength: float,
     threshold_strategy: ThresholdStrategy,
-    z_threshold: float,
-    iqr_k: float,
+    threshold: float,
+    q: float,
     reduction_method: ReduceMethod,
     interpolation_order: int,
     scaler_method: Literal["standard", "minmax", "robust", "max"],
@@ -129,12 +130,14 @@ def preprocessor(
 
     if anomaly_reduction_before_aggregation:
         train_reduced = anomaly_reducer(train=train_trimmed,
-            threshold_strategy=threshold_strategy,
-            z_threshold=z_threshold,
-            iqr_k=iqr_k,
-            reduction_method=reduction_method,
-            interpolation_order=interpolation_order,
-            data_granularity=data_granularity)
+                                        data_granularity=data_granularity,
+                                        min_strength=min_strength,
+                                        threshold_strategy=threshold_strategy,
+                                        threshold=threshold,
+                                        q=q,
+                                        reduction_method=reduction_method,
+                                        interpolation_order=interpolation_order,
+                                        )
 
         if make_plots:
             plot_all([
@@ -163,12 +166,14 @@ def preprocessor(
 
 
         train_select_columns_reduced = anomaly_reducer(train=train_select_columns,
+                                        data_granularity=data_granularity,
+                                        min_strength=min_strength,
                                         threshold_strategy=threshold_strategy,
-                                        z_threshold=z_threshold,
-                                        iqr_k=iqr_k,
+                                        threshold=threshold,
+                                        q=q,
                                         reduction_method=reduction_method,
                                         interpolation_order=interpolation_order,
-                                        data_granularity = data_granularity)
+                                        )
 
     if make_plots:
         plot_all([
