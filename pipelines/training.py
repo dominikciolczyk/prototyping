@@ -11,7 +11,7 @@ from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-@pipeline(enable_cache=False)
+@pipeline
 def cloud_resource_prediction_training(
     raw_dir: str,
     zip_path: str,
@@ -30,6 +30,7 @@ def cloud_resource_prediction_training(
     test_student_size: float,
     online_size: float,
     seed: int,
+    only_train_val_test_sets: int,
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,
     min_strength: float,
@@ -67,6 +68,7 @@ def cloud_resource_prediction_training(
           test_student_size=test_student_size,
           online_size=online_size,
           seed=seed,
+          only_train_val_test_sets=only_train_val_test_sets,
           selected_columns=selected_columns,
           anomaly_reduction_before_aggregation=anomaly_reduction_before_aggregation,
           min_strength=min_strength,
@@ -117,49 +119,48 @@ def cloud_resource_prediction_training(
         "pm": 0.1,  # mutation probability
     }
 
-    best_model_hp = {
-        # longer history to capture weekly seasonality
-        "seq_len": 168,  # one full week of hourly data
-        # leave horizon at 84 (same as before), or consider 48 / 24 if you can
-        "horizon": 84,
-        # larger batch for stabler gradients
-        "batch": 32,
+    if False:
+        model, best_model_hp = dpso_ga_searcher(
+            train=expanded_train_dfs,
+            val=expanded_val_dfs,
+            test=expanded_test_dfs,
+            search_space=search_space,
+            pso_const=pso_const,
+            selected_columns=selected_columns,
+            epochs=5
+        )
+        model_evaluator(model=model, test=expanded_test_teacher_dfs, hyper_params=best_model_hp,
+                        selected_columns=selected_columns, scalers=scalers)
 
-        # deeper, wider CNN backbone
-        "c1": 16,  # double the channels
-        "k1": 3,  # small kernel to capture local patterns
-        "c2": 32,  # more channels in layer 2
-        "k2": 5,  # slightly larger receptive field
+    else:
 
-        # beefier LSTM
-        "h_lstm": 64,  # twice the hidden dims
-        "lstm_layers": 2,  # stack 2 LSTM layers
+        best_model_hp = {
+            "seq_len": 96 ,  # one full week of hourly data
+            "horizon": 12,
+            "batch": 32,
 
-        # regularization / loss
-        "drop": 0.2,  # lower dropout, since we have more data
-        "alpha": 2.0,  # keep your penalty balanced
+            "cnn_channels": [32, 64, 64],  # 3 layers for 3 seasonalities
+            "kernels": [12, 24, 84],
 
-        # optimizer
-        "lr": 1e-3,  # faster convergence early on
-    }
+            # beefier LSTM
+            "hidden_lstm": 256,
+            "lstm_layers": 2,
 
-    model = cnn_lstm_trainer(train=expanded_train_dfs,
-                             val=expanded_val_dfs,
-                             hyper_params=best_model_hp,
-                             selected_columns=selected_columns,
-                             epochs=15)
+            # regularization / loss
+            "dropout_rate": 0.3,
+            "alpha": 10.0,
 
-    """
-    model, best_model_hp = dpso_ga_searcher(
-        train=expanded_train_dfs,
-        val=expanded_val_dfs,
-        test=expanded_test_dfs,
-        search_space=search_space,
-        pso_const=pso_const,
-        selected_columns=selected_columns,
-        epochs=5
-    )
-    """
-    model_evaluator(model=model, test=expanded_test_teacher_dfs, hyper_params=best_model_hp, selected_columns=selected_columns, scalers=scalers)
+            # optimizer
+            "lr": 1e-4,
+        }
+
+        model = cnn_lstm_trainer(train=expanded_train_dfs,
+                                 val=expanded_val_dfs,
+                                 hyper_params=best_model_hp,
+                                 selected_columns=selected_columns,
+                                 epochs=50,
+                                 early_stop_epochs=15)
+
+        model_evaluator(model=model, test=expanded_test_dfs, hyper_params=best_model_hp, selected_columns=selected_columns, scalers=scalers)
 
     #register_model(model, name = "cnn_lstm_prod")

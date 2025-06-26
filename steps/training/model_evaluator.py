@@ -106,18 +106,19 @@ def model_evaluator(
 
     horizon = int(hyper_params["horizon"])
     seq_len = int(hyper_params["seq_len"])
-    batch   = int(hyper_params.get("batch_eval", 256))
+    batch   = int(hyper_params["batch"])
 
     # 1) ---- torch prediction for only selected_columns ------------
-    device      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     test_loader = make_loader(
-        test,
-        seq_len,
-        horizon,
+        dfs=test,
+        seq_len=seq_len,
+        horizon=horizon,
         batch_size=batch,
         shuffle=False,
-        target_cols=selected_columns,   # <<< restrict y to these cols
+        target_cols=selected_columns,
     )
+
     y_true_model, y_pred_model = _predict_model(model, test_loader, device)
     # Shapes: (n_vms * batch_per_vm, horizon, n_targets)
 

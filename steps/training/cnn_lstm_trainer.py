@@ -1,30 +1,17 @@
-"""
-A *re-usable* training step – you can call it directly with fixed hyper-params
-outside of the search loop.
-
-Changes introduced
-------------------
-* `selected_columns`   – list of target variables to forecast
-* data loaders         – now told which columns are targets
-* model                – initialised with `n_targets`
-* extensive logging    – shapes and memory footprints at each stage
-"""
 from typing import Dict, Any, List
-
 import pandas as pd
 import numpy as np
 import torch
 from torch import nn
 from torch.optim import Adam
 from zenml import step
+from models.cnn_lstm import CNNLSTM
+from losses.qos import AsymmetricL1
+from utils.window_dataset import make_loader
+import copy
 from zenml.logger import get_logger
 
-from models.cnn_lstm import CNNLSTM          # ← expects new arg `n_targets`
-from losses.qos import AsymmetricL1
-from utils.window_dataset import make_loader # ← expects new arg `target_cols`
-
 logger = get_logger(__name__)
-
 
 @step(enable_cache=False)
 def cnn_lstm_trainer(
@@ -33,33 +20,19 @@ def cnn_lstm_trainer(
     hyper_params: Dict[str, Any],
     selected_columns: List[str],
     epochs: int,
+    early_stop_epochs: int
 ) -> nn.Module:
-    """
-    Parameters
-    ----------
-    train / val : Dict[str, pd.DataFrame]
-        Keys are VM IDs – **never merged**.
-        Columns = *all* regressors (numeric).
-    hyper_params : Dict[str, Any]
-        Must contain the keys produced by DPSO-GA.
-    selected_columns : List[str]
-        Columns to forecast – everything else is an input-only regressor.
-    Returns
-    -------
-    torch.nn.Module – trained model with early-stopping on *val*.
-    """
-
     # ------------------------------------------------------------------ #
     # 0. Sanity-check the raw DataFrames
     # ------------------------------------------------------------------ #
     def _inspect_split(name: str, split: Dict[str, pd.DataFrame]) -> None:
-        logger.info(f"\n--- {name.upper()} ({len(split)} VMs) ---")
+        logger.info(f"\n--- Inspecting {name} ({len(split)} VMs) ---")
         for vm_id, df in split.items():
             # NaN / Inf diagnostics
             if df.isnull().values.any():
-                logger.warning(f"[{vm_id}] contains NaNs!")
+                raise ValueError(f"[{vm_id}] contains NaNs!")
             if np.isinf(df.values).any():
-                logger.warning(f"[{vm_id}] contains Infs!")
+                raise ValueError(f"[{vm_id}] contains Infs!")
 
             # Min / Max per column
             stats = df.describe().T[["min", "max"]]
@@ -88,20 +61,20 @@ def cnn_lstm_trainer(
     #    y ∈ ℝ[batch, horizon, n_targets]
     # ------------------------------------------------------------------ #
     train_loader = make_loader(
-        train,
-        seq_len,
-        horizon,
+        dfs=train,
+        seq_len=seq_len,
+        horizon=horizon,
         batch_size=batch,
         shuffle=True,
-        target_cols=selected_columns,   # ← **NEW**
+        target_cols=selected_columns,
     )
-    val_loader   = make_loader(
-        val,
-        seq_len,
-        horizon,
+    val_loader = make_loader(
+        dfs=val,
+        seq_len=seq_len,
+        horizon=horizon,
         batch_size=batch,
         shuffle=False,
-        target_cols=selected_columns,   # ← **NEW**
+        target_cols=selected_columns,
     )
 
     # infer sizes
@@ -121,24 +94,25 @@ def cnn_lstm_trainer(
 
     model = CNNLSTM(
         n_features=n_features,
-        n_targets=n_targets,            # ← **NEW**
+        n_targets=n_targets,
         horizon=horizon,
-        cnn_channels=[int(hyper_params["c1"]), int(hyper_params["c2"])],
-        kernels=[int(hyper_params["k1"]), int(hyper_params["k2"])],
-        lstm_hidden=int(hyper_params["h_lstm"]),
+        cnn_channels=hyper_params["cnn_channels"],
+        kernels=hyper_params["kernels"],
+        lstm_hidden=int(hyper_params["hidden_lstm"]),
         lstm_layers=int(hyper_params["lstm_layers"]),
-        dropout=hyper_params["drop"],
+        dropout=float(hyper_params["dropout_rate"]),
     ).to(device)
 
-    criterion = AsymmetricL1(alpha=hyper_params["alpha"])
-    optim     = Adam(model.parameters(), lr=hyper_params["lr"])
+    criterion = AsymmetricL1(alpha=float(hyper_params["alpha"]))
+    optim     = Adam(model.parameters(), lr=float(hyper_params["lr"]))
 
     # ------------------------------------------------------------------ #
     # 4. Training loop – early stopping
     # ------------------------------------------------------------------ #
-    patience, best_val = 5, float("inf")
+    patience, best_val = early_stop_epochs, float("inf")
     best_state, patience_counter = None, 0
-    for epoch in range(epochs):  # hard upper-bound
+    best_epoch = -1
+    for epoch in range(epochs):
         # 4.1 —— Training ------------------------------------------------
         model.train()
         running_loss = 0.0
@@ -170,8 +144,9 @@ def cnn_lstm_trainer(
 
         # 4.3 —— Early stopping logic ----------------------------------
         if val_loss < best_val:
-            best_val, best_state = val_loss, model.state_dict().copy()
+            best_val, best_state = val_loss, copy.deepcopy(model.state_dict())
             patience_counter = 0
+            best_epoch = epoch
         else:
             patience_counter += 1
             if patience_counter >= patience:
@@ -181,6 +156,9 @@ def cnn_lstm_trainer(
     # ------------------------------------------------------------------ #
     # 5. Restore best weights & finish
     # ------------------------------------------------------------------ #
-    model.load_state_dict(best_state)
-    logger.info("Finished training – best val_loss = %.4f", best_val)
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    else:
+        logger.warning("No improvement observed during training – using final weights.")
+    logger.info("Best model from epoch %d with val_loss = %.4f", best_epoch, best_val)
     return model

@@ -82,6 +82,7 @@ parameters:
   test_student_size: 0.15
   online_size: 0.15
   seed: 42
+  only_train_val_test_sets: True
   selected_columns:
     - CPU_USAGE_MHZ
     - MEMORY_USAGE_KB

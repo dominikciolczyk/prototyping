@@ -1,5 +1,4 @@
 import math
-import random
 import tempfile
 import shutil
 from pathlib import Path
@@ -46,6 +45,8 @@ def _create_sequences(
         # y[i] shape: (horizon, n_cols) –  future usage to predict
         y[i] = data[i + seq_len : i + seq_len + horizon]
 
+    logging.info(f"_create_sequences output X shape: {X.shape}, y shape: {y.shape}")
+
     return X, y
 
 
@@ -64,6 +65,7 @@ def _build_dataloaders(
     for vm, (X, y) in datasets.items():
         ds = TensorDataset(torch.from_numpy(X), torch.from_numpy(y))
         loaders[vm] = DataLoader(ds, batch_size=batch_size, shuffle=True, drop_last=True)
+        logging.info(f"{vm} loader: X shape {X.shape}, y shape {y.shape}")
     return loaders
 
 

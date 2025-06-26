@@ -1,17 +1,11 @@
-"""
-Slices each VM dataframe into (X, y) windows WITHOUT merging VMs.
-Every VM keeps its own scaler / seasonal pattern.
-
-Now supports `target_cols`: only these columns become the y‐windows.
-If `target_cols` is empty, behaves as before (y = all columns).
-"""
-from typing import Dict, Tuple, List, Optional
-
+from typing import Dict, Tuple, List
 import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, ConcatDataset, DataLoader
+from zenml.logger import get_logger
 
+logger = get_logger(__name__)
 
 class TimeSeriesDataset(Dataset):
     def __init__(
@@ -20,7 +14,7 @@ class TimeSeriesDataset(Dataset):
         y_arr: np.ndarray,
         seq_len: int,
         horizon: int,
-        vm_id: Optional[str] = None,
+        vm_id: str,
     ):
         """
         X_arr shape : (T, F)   contiguous in *time*, input regressors.
@@ -96,18 +90,16 @@ def make_loader(
         # 1. slice inputs vs targets
         #    full regressor array: shape = (T, F_all)
         X_arr = df.values
+        logger.info(f"VM {vm_id} values: {X_arr[0]}")
         #    target array: if user passed none, use all columns
-        if target_cols:
-            # preserve order of target_cols
-            y_arr = df[target_cols].values
-        else:
-            # fallback to predicting everything
-            y_arr = df.values
+
+        # preserve order of target_cols
+        y_arr = df[target_cols].values
 
         # log sizes before building dataset
         T, F_all = X_arr.shape
         _, Tgt = y_arr.shape
-        print(
+        logger.info(
             f"[{vm_id}] raw shapes: "
             f"X_arr=(T={T}, F_all={F_all}), "
             f"y_arr=(T={T}, Tgt={Tgt})"
@@ -122,7 +114,7 @@ def make_loader(
             vm_id=vm_id,
         )
         #   each ds.__len__() = T - τ - H + 1
-        print(f"[{vm_id}] #samples = {len(ds)}")
+        logger.info(f"[{vm_id}] #samples = {len(ds)}")
 
         datasets.append(ds)
 
@@ -133,14 +125,6 @@ def make_loader(
         shuffle=shuffle,
         num_workers=0,
         pin_memory=True,
-    )
-
-    # inspect first batch
-    Xb, yb = next(iter(loader))
-    print(
-        "First batch shapes: "
-        f"Xb = {tuple(Xb.shape)}  (B, τ, F_all), "
-        f"yb = {tuple(yb.shape)}  (B, H, Tgt)"
     )
 
     return loader

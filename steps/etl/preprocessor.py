@@ -36,6 +36,7 @@ def preprocessor(
     test_student_size: float,
     online_size: float,
     seed: int,
+    only_train_val_test_sets: bool,
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,
     min_strength: float,
@@ -84,7 +85,8 @@ def preprocessor(
             test_teacher_size=test_teacher_size,
             test_student_size=test_student_size,
             online_size=online_size,
-            seed=seed)
+            seed=seed,
+            only_train_val_test_sets=only_train_val_test_sets)
 
     train_preselected_columns = column_preselector(dfs=train, selected_columns=selected_columns)
     val_preselected_columns = column_preselector(dfs=val, selected_columns=selected_columns)

@@ -13,6 +13,7 @@ def train_data_splitter(
         test_student_size: float,
         online_size: float,
         seed: int,
+        only_train_val_test_sets: bool,
 ) -> Tuple[
     dict[str, pd.DataFrame],  # train
     dict[str, pd.DataFrame],  # val
@@ -37,7 +38,7 @@ def train_data_splitter(
         Tuple of five dicts: (train, val, test_teacher, test_student, online)
     """
     # Validate input fractions
-    sizes = [val_size, test_size, test_teacher_size, test_student_size, online_size]
+    sizes = [val_size, test_size] if only_train_val_test_sets else [val_size, test_size, test_teacher_size, test_student_size, online_size]
     if any(not (0 < s < 1) for s in sizes):
         raise ValueError("All split sizes must be between 0 and 1.")
     if sum(sizes) >= 1.0:
@@ -49,9 +50,18 @@ def train_data_splitter(
     # Calculate absolute counts
     n_val = max(1, int(total_vms * val_size))
     n_test = max(1, int(total_vms * test_size))
-    n_tt = max(1, int(total_vms * test_teacher_size))
-    n_ts = max(1, int(total_vms * test_student_size))
-    n_online = max(1, int(total_vms * online_size))
+    n_tt = int(total_vms * test_teacher_size)
+    n_ts = int(total_vms * test_student_size)
+    n_online = int(total_vms * online_size)
+
+    if only_train_val_test_sets:
+        n_tt = 0
+        n_ts = 0
+        n_online = 0
+    else:
+        n_tt = max(1, n_tt)
+        n_ts = max(1, n_ts)
+        n_online = max(1, n_online)
 
     # Shuffle for random split
     random.seed(seed)
