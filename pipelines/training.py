@@ -155,6 +155,7 @@ def cloud_resource_prediction_training(
 
             "dropout_rate": dropout_rate,
             "alpha": alpha,
+            "beta": 1,  # not used in CNN-LSTM
             "lr": lr,
         }
 

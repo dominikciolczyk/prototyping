@@ -6,7 +6,7 @@ from torch import nn
 from torch.optim import Adam
 from zenml import step
 from models.cnn_lstm import CNNLSTM
-from losses.qos import AsymmetricL1
+from losses.qos import AsymmetricL1, AsymmetricSmoothL1
 from utils.window_dataset import make_loader
 import copy
 from zenml.client import Client
@@ -17,7 +17,7 @@ experiment_tracker = Client().active_stack.experiment_tracker
 
 logger = get_logger(__name__)
 
-@step(experiment_tracker=experiment_tracker.name, enable_cache=False)
+@step(enable_cache=False)
 def cnn_lstm_trainer(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
@@ -107,7 +107,10 @@ def cnn_lstm_trainer(
         dropout=float(hyper_params["dropout_rate"]),
     ).to(device)
 
-    criterion = AsymmetricL1(alpha=float(hyper_params["alpha"]))
+    criterion = AsymmetricSmoothL1(
+        alpha=float(hyper_params["alpha"]),
+        beta=float(hyper_params["beta"])
+    )
     optim     = Adam(model.parameters(), lr=float(hyper_params["lr"]))
 
     # ------------------------------------------------------------------ #

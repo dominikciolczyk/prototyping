@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torch import nn
-from losses.qos import AsymmetricL1
+from losses.qos import AsymmetricL1, AsymmetricSmoothL1
 from utils.window_dataset import make_loader
 from utils.plotter import plot_time_series
 from zenml.logger import get_logger
@@ -134,7 +134,10 @@ def model_evaluator(
     y_true_max, y_pred_max = _predict_max_baseline_sliding(test_loader, device)
 
     # 3) ---- compute AsymmetricL1 on model vs baseline ----------
-    criterion = AsymmetricL1(alpha=hyper_params["alpha"])
+    criterion = AsymmetricSmoothL1(
+        alpha=float(hyper_params["alpha"]),
+        beta=float(hyper_params["beta"])
+    )
     to_tensor = lambda arr: torch.tensor(arr, dtype=torch.float32)
 
     # Use scaled values for loss

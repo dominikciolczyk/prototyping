@@ -2,7 +2,6 @@ from typing import List, Tuple
 import torch
 from torch import nn
 
-
 class CNNLSTM(nn.Module):
     def __init__(
         self,
