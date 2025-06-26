@@ -93,7 +93,7 @@ parameters:
   threshold_strategy: std
   threshold: 4
   q: 0.975
-  reduction_method: ffill_bfill
+  reduction_method: interpolate_linear
   interpolation_order: 3
   scaler_method: standard
   minmax_range: [ 0.0, 1.0 ]
@@ -105,13 +105,6 @@ parameters:
   model_input_seq_len: 84
   model_forecast_horizon: 84
   make_plots: True
-  batch: 64
-  cnn_channels: [ 32, 64 ]
-  kernels: [ 12, 24 ]
-  hidden_lstm: 512
-  lstm_layers: 2
-  dropout_rate: 0.3
   alpha: 10
-  lr: 1e-5
   epochs: 50
-  early_stop_epochs: 15
+  early_stop_epochs: 20

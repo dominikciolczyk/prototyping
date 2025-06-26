@@ -53,7 +53,6 @@ class TimeSeriesDataset(Dataset):
         # convert to torch.Tensor
         return torch.from_numpy(x_win), torch.from_numpy(y_win)
 
-
 def make_loader(
     dfs: Dict[str, pd.DataFrame],
     seq_len: int,
@@ -61,51 +60,36 @@ def make_loader(
     batch_size: int,
     shuffle: bool,
     target_cols: List[str],
-) -> DataLoader:
+) -> Tuple[DataLoader, Dict[str, Tuple[int, int]]]:
     """
-    Creates one PyTorch DataLoader by concatenating VM-specific datasets.
-
-    Parameters
-    ----------
-    dfs : Dict[str, pd.DataFrame]
-        Each DF has shape (T, F_all), where F_all = number of all regressors.
-    seq_len : int
-        Number of past timesteps per sample (τ).
-    horizon : int
-        Number of future timesteps to predict (H).
-    batch_size : int
-    shuffle : bool
-    target_cols : List[str]
-        Columns to forecast (Tgt). If empty, Tgt = F_all (old behavior).
+    Creates one PyTorch DataLoader by concatenating VM-specific datasets,
+    and returns index ranges for each VM's contribution.
 
     Returns
     -------
-    DataLoader
-        Batches of (X, y) where
-          X ∈ ℝ[B, τ, F_all]
-          y ∈ ℝ[B, H, Tgt]
+    Tuple:
+      - DataLoader
+      - Dict[str, Tuple[int, int]] → VM name → (start_idx, end_idx) in the global prediction arrays
     """
     datasets = []
-    for vm_id, df in dfs.items():
-        # 1. slice inputs vs targets
-        #    full regressor array: shape = (T, F_all)
-        X_arr = df.values
-        logger.info(f"VM {vm_id} values: {X_arr[0]}")
-        #    target array: if user passed none, use all columns
+    vm_window_ranges = {}
+    start = 0
 
-        # preserve order of target_cols
+    for vm_id, df in dfs.items():
+        df = df[[col for col in df.columns if col not in target_cols] + target_cols]
+
+        # Get full feature array and target-only array
+        X_arr = df.values
         y_arr = df[target_cols].values
 
-        # log sizes before building dataset
         T, F_all = X_arr.shape
         _, Tgt = y_arr.shape
+
         logger.info(
-            f"[{vm_id}] raw shapes: "
-            f"X_arr=(T={T}, F_all={F_all}), "
+            f"[{vm_id}] raw shapes: X_arr=(T={T}, F_all={F_all}), "
             f"y_arr=(T={T}, Tgt={Tgt})"
         )
 
-        # 2. build VM-specific dataset
         ds = TimeSeriesDataset(
             X_arr=X_arr,
             y_arr=y_arr,
@@ -113,12 +97,16 @@ def make_loader(
             horizon=horizon,
             vm_id=vm_id,
         )
-        #   each ds.__len__() = T - τ - H + 1
-        logger.info(f"[{vm_id}] #samples = {len(ds)}")
+
+        length = len(ds)  # number of sliding windows
+        if length <= 0:
+            raise ValueError(f"[{vm_id}] has insufficient data")
+
+        vm_window_ranges[vm_id] = (start, start + length)
+        start += length
 
         datasets.append(ds)
 
-    # 3. concat and wrap in DataLoader
     loader = DataLoader(
         ConcatDataset(datasets),
         batch_size=batch_size,
@@ -127,4 +115,4 @@ def make_loader(
         pin_memory=True,
     )
 
-    return loader
+    return loader, vm_window_ranges

@@ -9,11 +9,15 @@ from models.cnn_lstm import CNNLSTM
 from losses.qos import AsymmetricL1
 from utils.window_dataset import make_loader
 import copy
+from zenml.client import Client
+from zenml import step
 from zenml.logger import get_logger
+
+experiment_tracker = Client().active_stack.experiment_tracker
 
 logger = get_logger(__name__)
 
-@step(enable_cache=False)
+@step(experiment_tracker=experiment_tracker.name, enable_cache=False)
 def cnn_lstm_trainer(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
@@ -60,7 +64,7 @@ def cnn_lstm_trainer(
     #    X ∈ ℝ[batch, seq_len, n_features]
     #    y ∈ ℝ[batch, horizon, n_targets]
     # ------------------------------------------------------------------ #
-    train_loader = make_loader(
+    train_loader, _ = make_loader(
         dfs=train,
         seq_len=seq_len,
         horizon=horizon,
@@ -68,7 +72,7 @@ def cnn_lstm_trainer(
         shuffle=True,
         target_cols=selected_columns,
     )
-    val_loader = make_loader(
+    val_loader, _ = make_loader(
         dfs=val,
         seq_len=seq_len,
         horizon=horizon,

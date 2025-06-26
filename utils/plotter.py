@@ -6,7 +6,6 @@ from datetime import datetime
 from pathlib import Path
 from functools import partial
 from typing import Dict, Tuple, Any
-import mlflow
 import torch
 from torch.utils.data import DataLoader
 from zenml import step

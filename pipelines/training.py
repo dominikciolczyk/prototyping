@@ -1,6 +1,5 @@
 from typing import List, Tuple
 from steps import (
-    model_trainer,
     model_evaluator,
     dpso_ga_searcher,
     cnn_lstm_trainer,
@@ -49,6 +48,16 @@ def cloud_resource_prediction_training(
     model_input_seq_len: int,
     model_forecast_horizon: int,
     make_plots: bool,
+    batch: int,
+    cnn_channels: List[int],
+    kernels: List[int],
+    hidden_lstm: int,
+    lstm_layers: int,
+    dropout_rate: float,
+    alpha: float,
+    lr: float,
+    epochs: int,
+    early_stop_epochs: int,
 ):
     expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, expanded_test_student_dfs, expanded_online_dfs, scalers =\
         prepare_datasets_before_model_input(
@@ -127,39 +136,34 @@ def cloud_resource_prediction_training(
             search_space=search_space,
             pso_const=pso_const,
             selected_columns=selected_columns,
-            epochs=5
+            epochs=epochs
         )
         model_evaluator(model=model, test=expanded_test_teacher_dfs, hyper_params=best_model_hp,
                         selected_columns=selected_columns, scalers=scalers)
 
     else:
-
         best_model_hp = {
-            "seq_len": 96 ,  # one full week of hourly data
-            "horizon": 12,
-            "batch": 32,
+            "seq_len": model_input_seq_len,
+            "horizon": model_forecast_horizon,
+            "batch": batch,
 
-            "cnn_channels": [32, 64, 64],  # 3 layers for 3 seasonalities
-            "kernels": [12, 24, 84],
+            "cnn_channels": cnn_channels,
+            "kernels": kernels,
 
-            # beefier LSTM
-            "hidden_lstm": 256,
-            "lstm_layers": 2,
+            "hidden_lstm": hidden_lstm,
+            "lstm_layers": lstm_layers,
 
-            # regularization / loss
-            "dropout_rate": 0.3,
-            "alpha": 10.0,
-
-            # optimizer
-            "lr": 1e-4,
+            "dropout_rate": dropout_rate,
+            "alpha": alpha,
+            "lr": lr,
         }
 
         model = cnn_lstm_trainer(train=expanded_train_dfs,
                                  val=expanded_val_dfs,
                                  hyper_params=best_model_hp,
                                  selected_columns=selected_columns,
-                                 epochs=50,
-                                 early_stop_epochs=15)
+                                 epochs=epochs,
+                                 early_stop_epochs=early_stop_epochs)
 
         model_evaluator(model=model, test=expanded_test_dfs, hyper_params=best_model_hp, selected_columns=selected_columns, scalers=scalers)
 

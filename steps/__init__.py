@@ -45,7 +45,7 @@ from .promotion import (
     compute_performance_metrics_on_current_data,
     promote_with_metric_compare,
 )
-from .training import model_trainer, model_evaluator, register_model, cnn_lstm_trainer
+from .training import model_evaluator, register_model, cnn_lstm_trainer
 
 from .logging import track_experiment_metadata
 from .anomaly_reduction import anomaly_reducer
