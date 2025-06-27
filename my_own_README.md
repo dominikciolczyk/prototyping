@@ -45,3 +45,15 @@ AsymmetricL1  |  model: 0.5515  |  baseline: 0.6964
 Alfa 10 beta 0.2125
 [model_evaluator] AsymmetricL1  |  model: 0.5606  |  baseline: 0.6952
 
+Alfa 10 beta 0.65
+AsymmetricL1  |  model: 0.3715  |  baseline: 0.5070
+
+Alfa 10 beta 0.65 bez weekend
+AsymmetricL1  |  model: 0.3281  |  baseline: 0.5070
+
+Alfa 10 beta 0.65 bez day of week - najlepszy wizualnie
+model: 0.3360  |  baseline: 0.5070
+
+
+
+

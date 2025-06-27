@@ -62,6 +62,8 @@ def cnn_lstm_trainer(
     logger.info(f"Hyper-parameters:\n"
                 f"  seq_len = {seq_len}\n"
                 f"  horizon = {horizon}\n"
+                f"  alpha   = {alpha}\n"
+                f"  beta    = {beta}\n"
                 f"  batch   = {batch}\n"
                 f"  epochs  = {epochs}\n"
                 f"  early_stop_epochs = {early_stop_epochs}\n"

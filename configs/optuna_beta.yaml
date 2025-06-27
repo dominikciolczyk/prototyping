@@ -112,7 +112,7 @@ parameters:
   lstm_layers: 1
   dropout_rate: 0.1
   alpha: 10
-  beta: 0.65
+  beta: 1.3
   lr: 3e-4
   epochs: 50
   early_stop_epochs: 10

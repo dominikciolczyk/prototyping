@@ -43,12 +43,12 @@ def find_seasonal_candidates(
         strength = seasonal_strength(series, period)
 
         if strength < min_strength:
+            logger.info(f"Skipping period {period} with strength {strength:.2f} < min_strength {min_strength:.2f}")
             continue
 
         is_harmonic = False
         for accepted_period in accepted_seasonals:
             if period % accepted_period == 0:
-                # Oblicz korelację, aby upewnić się, że sezonowość się różni
                 decomp_curr = seasonal_decompose(series, period=period, extrapolate_trend="freq")
                 decomp_existing = seasonal_decompose(series, period=accepted_period, extrapolate_trend="freq")
 
