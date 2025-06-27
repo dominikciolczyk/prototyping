@@ -32,6 +32,7 @@ def cloud_resource_prediction_training(
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,
     min_strength: float,
+    correlation_threshold: float,
     threshold_strategy: str,
     threshold: float,
     q: float,
@@ -54,6 +55,7 @@ def cloud_resource_prediction_training(
     lstm_layers: int,
     dropout_rate: float,
     alpha: float,
+    beta: float,
     lr: float,
     epochs: int,
     early_stop_epochs: int,
@@ -79,6 +81,7 @@ def cloud_resource_prediction_training(
           selected_columns=selected_columns,
           anomaly_reduction_before_aggregation=anomaly_reduction_before_aggregation,
           min_strength=min_strength,
+          correlation_threshold=correlation_threshold,
           threshold_strategy=threshold_strategy,
           threshold=threshold,
           q=q,
@@ -108,7 +111,7 @@ def cloud_resource_prediction_training(
         "pm": 0.1,  # mutation probability
     }
 
-    if True:
+    if False:
         # 1. search-space
         MAX_CONV_LAYERS = 2
         search_space: Dict[str, Tuple[float, float]] = {
@@ -136,7 +139,7 @@ def cloud_resource_prediction_training(
             seq_len=model_input_seq_len,
             horizon=model_forecast_horizon,
             alpha=alpha,
-            beta=1,
+            beta=beta,
             search_space=search_space,
             pso_const=pso_const,
             selected_columns=selected_columns,
@@ -149,7 +152,7 @@ def cloud_resource_prediction_training(
                         seq_len=model_input_seq_len,
                         horizon=model_forecast_horizon,
                         alpha=alpha,
-                        beta=1,
+                        beta=beta,
                         hyper_params=best_model_hp,
                         selected_columns=selected_columns,
                         scalers=scalers)
@@ -173,7 +176,7 @@ def cloud_resource_prediction_training(
                                  seq_len=model_input_seq_len,
                                  horizon=model_forecast_horizon,
                                  alpha=alpha,
-                                 beta=1,
+                                 beta=beta,
                                  hyper_params=best_model_hp,
                                  selected_columns=selected_columns,
                                  epochs=epochs,
@@ -184,7 +187,7 @@ def cloud_resource_prediction_training(
                         seq_len=model_input_seq_len,
                         horizon=model_forecast_horizon,
                         alpha=alpha,
-                        beta=1,
+                        beta=beta,
                         hyper_params=best_model_hp,
                         selected_columns=selected_columns,
                         scalers=scalers)

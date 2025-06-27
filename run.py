@@ -2,7 +2,7 @@ import click
 from datetime import datetime as dt
 from zenml.logger import get_logger
 
-from pipelines import cloud_resource_prediction_batch_inference, cloud_resource_prediction_training, cloud_resource_prediction_deployment
+from pipelines import cloud_resource_prediction_training
 import os
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)

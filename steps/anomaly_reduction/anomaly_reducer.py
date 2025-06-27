@@ -10,13 +10,14 @@ def anomaly_reducer(
     train: Dict[str, pd.DataFrame],
     data_granularity: str,
     min_strength: float,
+    correlation_threshold: float,
     threshold_strategy: ThresholdStrategy,
     threshold: float,
     q: float,
     reduction_method: ReduceMethod,
     interpolation_order: int,
 ) -> Dict[str, pd.DataFrame]:
-    seasonality_candidates = [12, 24, 84] if data_granularity == "M" else [7, 30]
+    seasonality_candidates = [12, 24] if data_granularity == "M" else [7, 30]
 
     logger.info(f"Anomaly reduction step with parameters:\n"
                 f"  reduction_method: {reduction_method}\n"
@@ -27,17 +28,20 @@ def anomaly_reducer(
         mask = pd.DataFrame(False, index=df.index, columns=df.columns)
 
         for col in df.columns:
-            logger.info(f"Reducing for VM: {vm}, col {col}")
+            logger.info(f"Reducing for VM: {vm}, col {col} ==============")
             col_df = df[[col]].dropna()
 
             if col_df.empty:
                 raise ValueError(f"Empty column {col} for vm {vm}.")
+
+
 
             try:
                 col_mask = detect_anomalies(
                     df=col_df,
                     seasonality_candidates=seasonality_candidates,
                     min_strength=min_strength,
+                    correlation_threshold=correlation_threshold,
                     threshold_strategy=threshold_strategy,
                     threshold=threshold,
                     q=q,

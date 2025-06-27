@@ -16,35 +16,18 @@ import joblib
 
 logger = get_logger(__name__)
 
-def save_best_model(model: torch.nn.Module,
-                    model_config: dict,
+def save_best_model(model_config: dict,
                     selected_columns: list,
                     seq_len: int,
                     horizon: int,
                     actual_n_features: int,
                     scalers: Dict[str, Any],
                     base_dir: str = "saved_models") -> str:
-    """
-    Saves the best model and config to a timestamped directory.
 
-    Returns:
-        Path to the saved directory.
-    """
     # Create a timestamped directory
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     save_dir = Path(base_dir) / f"best_{timestamp}"
     save_dir.mkdir(parents=True, exist_ok=False)
-
-    # Save the model weights and config
-    model_path = save_dir / "model.pth"
-    torch.save({
-        "model_state_dict": model.state_dict(),
-        "model_config": model_config,
-        "selected_columns": selected_columns,
-        "seq_len": seq_len,
-        "horizon": horizon,
-        "n_features": actual_n_features,
-    }, model_path)
 
     scalers_path = save_dir / "scalers.pkl"
     joblib.dump(scalers, scalers_path)
@@ -60,7 +43,7 @@ def save_best_model(model: torch.nn.Module,
             "n_features": actual_n_features,
         }, f, indent=2)
 
-    logger.info(f"✅ Model and config saved to: {save_dir}")
+    logger.info(f"✅ Config saved to: {save_dir}")
     return str(save_dir)
 
 def plot_trajectory(trajectory: List[float]) -> None:
@@ -192,20 +175,7 @@ def dpso_ga_searcher(
 
     plot_trajectory(trajectory)
 
-    # train BEST model once more on full (train+val)
-    best_model = cnn_lstm_trainer(train=train,
-                                  val=val,
-                                  seq_len=seq_len,
-                                  horizon=horizon,
-                                  alpha=alpha,
-                                  beta=1,
-                                  hyper_params=_build_hp(best_cfg),
-                                  selected_columns=selected_columns,
-                                  epochs=epochs,
-                                  early_stop_epochs=early_stop_epochs)
-
     save_best_model(
-        model=best_model,
         model_config=_build_hp(best_cfg),
         selected_columns=selected_columns,
         seq_len=seq_len,
@@ -214,4 +184,4 @@ def dpso_ga_searcher(
         scalers=scalers,
     )
 
-    return best_model, best_cfg
+    return best_cfg

@@ -88,9 +88,10 @@ parameters:
     - SUM_DISK_IO_RATE_KBPS
     - SUM_NETWORK_TR_KBPS
   anomaly_reduction_before_aggregation: True
-  min_strength: 0.1
+  min_strength: 0.66
+  correlation_threshold: 0.98
   threshold_strategy: std
-  threshold: 4
+  threshold: 5
   q: 0.975
   reduction_method: ffill_bfill
   interpolation_order: 3
@@ -106,11 +107,12 @@ parameters:
   make_plots: True
   batch: 32
   cnn_channels: [64]
-  kernels: [12]
+  kernels: [13]
   hidden_lstm: 1024
   lstm_layers: 1
   dropout_rate: 0.1
-  alpha: 5
+  alpha: 10
+  beta: 0.21
   lr: 3e-4
   epochs: 50
-  early_stop_epochs: 5
+  early_stop_epochs: 10

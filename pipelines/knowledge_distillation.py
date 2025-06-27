@@ -1,5 +1,4 @@
-from typing import List, Tuple, Dict, Any
-
+from typing import List, Tuple
 import joblib
 from steps import (
     model_evaluator,
@@ -7,56 +6,45 @@ from steps import (
 )
 from utils.pipeline_utils import prepare_datasets_before_model_input
 from zenml import pipeline
-from zenml.logger import get_logger
-
-logger = get_logger(__name__)
-
 import torch
 import json
 from pathlib import Path
 from models.cnn_lstm import CNNLSTMWithAttention
 from zenml import step
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
+
 @step
-def load_saved_model(model_dir: str) -> Tuple[CNNLSTMWithAttention, Dict[str, Any], Dict[str, Any]]:
+def load_saved_model(model_dir: str) -> Tuple[dict, dict]:
     """
-    Loads a CNN-LSTM model from a saved directory.
+    Loads a CNN-LSTM model config and scalers from a saved directory.
 
     Args:
-        model_dir: Path to the directory containing model.pth and config.json.
+        model_dir: Path to the directory containing config.json and scalers.pkl.
 
     Returns:
-        A loaded PyTorch model in eval mode.
+        The model (uninitialized), model config, and scalers.
     """
     model_dir = Path(model_dir)
-    model_path = model_dir / "model.pth"
+    config_path = model_dir / "config.json"
     scalers_path = model_dir / "scalers.pkl"
 
-    # Load checkpoint
-    checkpoint = torch.load(model_path, map_location=torch.device("cpu"))
+    # Load config
+    with open(config_path, "r") as f:
+        config = json.load(f)
 
-    model_config = checkpoint["model_config"]
-    selected_columns = checkpoint["selected_columns"]
-    seq_len = checkpoint["seq_len"]
-    horizon = checkpoint["horizon"]
-    n_features = checkpoint["n_features"]
+    model_config = config["model_config"]
+    selected_columns = config["selected_columns"]
+    seq_len = config["seq_len"]
+    horizon = config["horizon"]
+    n_features = config["n_features"]
 
-    model = CNNLSTMWithAttention(
-        n_features=n_features,
-        n_targets=len(selected_columns),
-        horizon=horizon,
-        cnn_channels=model_config["cnn_channels"],
-        kernels=model_config["kernels"],
-        lstm_hidden=model_config["hidden_lstm"],
-        lstm_layers=model_config["lstm_layers"],
-        dropout=model_config["dropout_rate"],
-    )
-    model.load_state_dict(checkpoint["model_state_dict"])
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-    model.eval()
 
-    print(f"✅ Model loaded from: {model_path}")
-    return model, model_config, joblib.load(scalers_path)
+    print(f"✅ Config loaded from: {config_path}")
+    return model_config, joblib.load(scalers_path)
 
 @pipeline
 def cloud_resource_prediction_knowledge_distillation(
@@ -80,6 +68,7 @@ def cloud_resource_prediction_knowledge_distillation(
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,
     min_strength: float,
+    correlation_threshold: float,
     threshold_strategy: str,
     threshold: float,
     q: float,
@@ -127,6 +116,7 @@ def cloud_resource_prediction_knowledge_distillation(
           selected_columns=selected_columns,
           anomaly_reduction_before_aggregation=anomaly_reduction_before_aggregation,
           min_strength=min_strength,
+          correlation_threshold=correlation_threshold,
           threshold_strategy=threshold_strategy,
           threshold=threshold,
           q=q,
