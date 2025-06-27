@@ -79,7 +79,6 @@ parameters:
   val_size: 0.2
   test_size: 0.2
   test_teacher_size: 0.1
-  test_student_size: 0.1
   online_size: 0.1
   seed: 42
   only_train_val_test_sets: True
@@ -107,4 +106,4 @@ parameters:
   make_plots: True
   alpha: 10
   epochs: 50
-  early_stop_epochs: 20
+  early_stop_epochs: 10

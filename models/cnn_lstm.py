@@ -1,6 +1,15 @@
-from typing import List, Tuple
+from typing import List
 import torch
 from torch import nn
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
+
+def init_weights(module):
+    if isinstance(module, nn.LSTM):
+        for name, param in module.named_parameters():
+            if "weight" in name:
+                nn.init.kaiming_uniform_(param)
 
 class CNNLSTM(nn.Module):
     def __init__(
@@ -15,8 +24,20 @@ class CNNLSTM(nn.Module):
         dropout: float,
     ):
 
+        logger.info(f"CNNLSTMWithAttention params: n_features={n_features}, n_targets={n_targets}, horizon={horizon}, "
+                    f"cnn_channels={cnn_channels}, kernels={kernels}, lstm_hidden={lstm_hidden}, "
+                    f"lstm_layers={lstm_layers}, dropout={dropout}")
+
         super().__init__()
-        assert len(cnn_channels) == len(kernels), "Number of channels must match number of kernel sizes"
+        assert len(cnn_channels) == len(kernels), "Mismatch between CNN channels and kernel sizes"
+        assert lstm_layers > 0, "LSTM layers must be at least 1"
+        assert horizon > 0, "Horizon must be greater than 0"
+        assert n_targets > 0, "Number of targets must be greater than 0"
+        assert n_features > 0, "Number of features must be greater than 0"
+        assert 0.0 <= dropout < 1.0, "Dropout must be in range [0.0, 1.0)"
+        assert all(k % 2 == 1 for k in kernels), "All kernel sizes must be odd"
+        assert all(k > 0 for k in kernels), "All kernel sizes must be greater than 0"
+        assert all(c > 0 for c in cnn_channels), "All CNN channels must be greater than 0"
 
         # Build CNN block: converts input from shape (batch, n_features, sequence_length)
         # to shape (batch, last_cnn_channels, sequence_length)
@@ -25,6 +46,7 @@ class CNNLSTM(nn.Module):
         for out_channels, kernel_size in zip(cnn_channels, kernels):
             layers += [
                 nn.Conv1d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, padding="same"),
+                nn.BatchNorm1d(out_channels),
                 nn.ReLU(),
                 nn.Dropout(dropout),
             ]
@@ -40,6 +62,8 @@ class CNNLSTM(nn.Module):
             batch_first=True,
             dropout=dropout if lstm_layers > 1 else 0.0,
         )
+
+        self.lstm.apply(init_weights)
 
         # Fully connected layer to project LSTM output to (horizon × n_targets)
         self.proj = nn.Linear(lstm_hidden, horizon * n_targets)
@@ -69,6 +93,7 @@ class CNNLSTM(nn.Module):
 
         # Reshape to final output: (batch, forecast_horizon, num_targets)
         batch_size = proj_out.size(0)
+
         return proj_out.view(batch_size, self.horizon, self.n_targets)
 
 class CNNLSTMWithAttention(nn.Module):
@@ -83,9 +108,20 @@ class CNNLSTMWithAttention(nn.Module):
         lstm_layers: int,
         dropout: float,
     ):
+        logger.info(f"CNNLSTMWithAttention params: n_features={n_features}, n_targets={n_targets}, horizon={horizon}, "
+                     f"cnn_channels={cnn_channels}, kernels={kernels}, lstm_hidden={lstm_hidden}, "
+                     f"lstm_layers={lstm_layers}, dropout={dropout}")
 
         super().__init__()
         assert len(cnn_channels) == len(kernels), "Mismatch between CNN channels and kernel sizes"
+        assert lstm_layers > 0, "LSTM layers must be at least 1"
+        assert horizon > 0, "Horizon must be greater than 0"
+        assert n_targets > 0, "Number of targets must be greater than 0"
+        assert n_features > 0, "Number of features must be greater than 0"
+        assert 0.0 <= dropout < 1.0, "Dropout must be in range [0.0, 1.0)"
+        assert all(k % 2 == 1 for k in kernels), "All kernel sizes must be odd"
+        assert all(k > 0 for k in kernels), "All kernel sizes must be greater than 0"
+        assert all(c > 0 for c in cnn_channels), "All CNN channels must be greater than 0"
 
         # CNN block
         cnn_layers = []
@@ -93,6 +129,7 @@ class CNNLSTMWithAttention(nn.Module):
         for out_channels, kernel_size in zip(cnn_channels, kernels):
             cnn_layers += [
                 nn.Conv1d(in_channels, out_channels, kernel_size=kernel_size, padding="same"),
+                nn.BatchNorm1d(out_channels),
                 nn.ReLU(),
                 nn.Dropout(dropout),
             ]
@@ -107,6 +144,8 @@ class CNNLSTMWithAttention(nn.Module):
             batch_first=True,
             dropout=dropout if lstm_layers > 1 else 0.0,
         )
+
+        self.lstm.apply(init_weights)
 
         # Attention block
         self.attention = nn.Sequential(

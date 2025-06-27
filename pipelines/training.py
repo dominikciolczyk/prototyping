@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from steps import (
     model_evaluator,
     dpso_ga_searcher,
@@ -26,7 +26,6 @@ def cloud_resource_prediction_training(
     val_size: float,
     test_size: float,
     test_teacher_size: float,
-    test_student_size: float,
     online_size: float,
     seed: int,
     only_train_val_test_sets: int,
@@ -59,7 +58,7 @@ def cloud_resource_prediction_training(
     epochs: int,
     early_stop_epochs: int,
 ):
-    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, expanded_test_student_dfs, expanded_online_dfs, scalers =\
+    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, expanded_online_dfs, scalers =\
         prepare_datasets_before_model_input(
           raw_dir=raw_dir,
           zip_path=zip_path,
@@ -74,7 +73,6 @@ def cloud_resource_prediction_training(
           recreate_dataset=recreate_dataset,
           val_size=val_size, test_size=test_size,
           test_teacher_size=test_teacher_size,
-          test_student_size=test_student_size,
           online_size=online_size,
           seed=seed,
           only_train_val_test_sets=only_train_val_test_sets,
@@ -95,25 +93,7 @@ def cloud_resource_prediction_training(
           is_weekend_mode=is_weekend_mode,
           make_plots=make_plots)
 
-    search_space = {
-        "seq_len": (84, 84),  # → int
-        "horizon": (84, 84),  # → int
-        # batch size
-        "batch": (32, 32),  # → int
 
-        # CNN part: two conv layers with channels + kernel sizes
-        "c1": (8.0, 64.0),
-        "k1": (2.0, 4.0),
-        "c2": (8.0, 64.0),
-        "k2": (2.0, 6.0),
-
-        "h_lstm": (32.0, 256.0),  # → int, hidden units
-        "lstm_layers": (1.0, 3.0),  # → int
-
-        "drop": (0.0, 0.3),  # dropout rate
-        "alpha": (1.0, 1.0),  # QoS under-provision penalty
-        "lr": (1e-4, 1e-2),  # learning rate
-    }
 
     # -----------------------------------------------------------
     # ❷ PSO-GA constants: population size, iterations, inertia,
@@ -121,30 +101,61 @@ def cloud_resource_prediction_training(
     # -----------------------------------------------------------
     pso_const = {
         "pop": 20,  # number of particles
-        "iter": 30,  # optimization iterations
+        "iter": 40,  # optimization iterations
         "w": 0.5,  # inertia weight
         "c1": 1.5,  # cognitive coefficient
         "c2": 1.5,  # social coefficient
         "pm": 0.1,  # mutation probability
     }
 
-    if False:
+    if True:
+        # 1. search-space
+        MAX_CONV_LAYERS = 2
+        search_space: Dict[str, Tuple[float, float]] = {
+            # fixed stuff
+            "batch": (32.0, 128.0),
+
+            # how many conv layers to *keep*
+            "n_conv": (1.0, float(MAX_CONV_LAYERS)),
+
+            # slots for channels / kernels (unused ones will be ignored)
+            **{f"c{i}": (8.0, 64.0) for i in range(MAX_CONV_LAYERS)},
+            **{f"k{i}": (3.0, 12.0) for i in range(MAX_CONV_LAYERS)},
+
+            # rest of the model
+            "hidden_lstm": (32.0, 512.0),
+            "lstm_layers": (1.0, 2.0),
+            "dropout": (0.0, 0.3),
+            "lr": (1e-4, 1e-2),
+        }
+
         model, best_model_hp = dpso_ga_searcher(
             train=expanded_train_dfs,
             val=expanded_val_dfs,
             test=expanded_test_dfs,
+            seq_len=model_input_seq_len,
+            horizon=model_forecast_horizon,
+            alpha=alpha,
+            beta=1,
             search_space=search_space,
             pso_const=pso_const,
             selected_columns=selected_columns,
-            epochs=epochs
+            epochs=epochs,
+            early_stop_epochs=early_stop_epochs,
+            scalers=scalers,
         )
-        model_evaluator(model=model, test=expanded_test_teacher_dfs, hyper_params=best_model_hp,
-                        selected_columns=selected_columns, scalers=scalers)
+        model_evaluator(model=model,
+                        test=expanded_test_teacher_dfs,
+                        seq_len=model_input_seq_len,
+                        horizon=model_forecast_horizon,
+                        alpha=alpha,
+                        beta=1,
+                        hyper_params=best_model_hp,
+                        selected_columns=selected_columns,
+                        scalers=scalers)
 
     else:
         best_model_hp = {
-            "seq_len": model_input_seq_len,
-            "horizon": model_forecast_horizon,
             "batch": batch,
 
             "cnn_channels": cnn_channels,
@@ -154,18 +165,28 @@ def cloud_resource_prediction_training(
             "lstm_layers": lstm_layers,
 
             "dropout_rate": dropout_rate,
-            "alpha": alpha,
-            "beta": 1,  # not used in CNN-LSTM
             "lr": lr,
         }
 
         model = cnn_lstm_trainer(train=expanded_train_dfs,
                                  val=expanded_val_dfs,
+                                 seq_len=model_input_seq_len,
+                                 horizon=model_forecast_horizon,
+                                 alpha=alpha,
+                                 beta=1,
                                  hyper_params=best_model_hp,
                                  selected_columns=selected_columns,
                                  epochs=epochs,
                                  early_stop_epochs=early_stop_epochs)
 
-        model_evaluator(model=model, test=expanded_test_dfs, hyper_params=best_model_hp, selected_columns=selected_columns, scalers=scalers)
+        model_evaluator(model=model,
+                        test=expanded_test_dfs,
+                        seq_len=model_input_seq_len,
+                        horizon=model_forecast_horizon,
+                        alpha=alpha,
+                        beta=1,
+                        hyper_params=best_model_hp,
+                        selected_columns=selected_columns,
+                        scalers=scalers)
 
     #register_model(model, name = "cnn_lstm_prod")

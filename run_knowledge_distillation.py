@@ -2,7 +2,7 @@ import click
 from datetime import datetime as dt
 from zenml.logger import get_logger
 
-from pipelines import cloud_resource_prediction_batch_inference, cloud_resource_prediction_training, cloud_resource_prediction_deployment
+from pipelines import cloud_resource_prediction_knowledge_distillation
 import os
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
@@ -75,9 +75,9 @@ def main(
         )
         pipeline_args[
             "run_name"
-        ] = f"cloud-resource-prediction_training_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
-        cloud_resource_prediction_training.with_options(**pipeline_args)(**run_args_train)
-        logger.info("Training pipeline finished successfully!")
+        ] = f"cloud_resource_prediction_knowledge_distillation_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+        cloud_resource_prediction_knowledge_distillation.with_options(**pipeline_args)(**run_args_train)
+        logger.info("knowledge distillation pipeline finished successfully!")
 
 if __name__ == "__main__":
     main()

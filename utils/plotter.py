@@ -66,6 +66,6 @@ def plot_time_series(
     return output_files
 
 def plot_all(dfs_list: List[Dict[str, pd.DataFrame]], prefix: str):
-    names = ["train", "val", "test, ""test_teacher", "test_student", "online"]
+    names = ["train", "val", "test", "test_teacher", "online"]
     for name, dfs in zip(names, dfs_list):
         plot_time_series(dfs, f"{prefix}_{name}_dfs")

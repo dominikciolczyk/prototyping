@@ -23,7 +23,6 @@ def scaler(
     val: Dict[str, pd.DataFrame],
     test: Dict[str, pd.DataFrame],
     test_teacher: Dict[str, pd.DataFrame],
-    test_student: Dict[str, pd.DataFrame],
     online: Dict[str, pd.DataFrame],
     scaler_method: Literal["standard", "minmax", "robust", "max"],
     minmax_range: Tuple[float, float],
@@ -33,7 +32,6 @@ def scaler(
     Dict[str, pd.DataFrame],  # val_scaled
     Dict[str, pd.DataFrame],  # test_scaled
     Dict[str, pd.DataFrame],  # test_teacher_scaled
-    Dict[str, pd.DataFrame],  # test_student_scaled
     Dict[str, pd.DataFrame],  # online_scaled
     Dict[str, object],        # scalers per feature (do inverse-transform / re-use)
 ]:
@@ -73,7 +71,6 @@ def scaler(
     val_scaled = _apply(val)
     test_scaled = _apply(test)
     test_teacher_scaled = _apply(test_teacher)
-    test_student_scaled = _apply(test_student)
     online_scaled = _apply(online)
 
     return (
@@ -81,7 +78,6 @@ def scaler(
         val_scaled,
         test_scaled,
         test_teacher_scaled,
-        test_student_scaled,
         online_scaled,
         scalers,
     )

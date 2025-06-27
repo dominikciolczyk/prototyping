@@ -11,7 +11,7 @@ e.g. [n_cnn_layers, ch_1, k_1, ..., lstm_hidden, lr, dropout]
 """
 import random
 import numpy as np
-from copy import deepcopy
+import copy
 from typing import Callable, Tuple, Dict, List
 
 Particle = Dict[str, float]  # hyperparameter dictionary
@@ -36,47 +36,65 @@ def dpso_ga(
     c1: float = 1.5,
     c2: float = 1.5,
     mutation_rate: float = 0.1,
+    vmax_fraction:  float = 0.20,
 ) -> Tuple[Particle, List[float]]:
     """
     Returns best hyper-param *dict* and the fitness trajectory.
     """
-    # === Initialization ====================================================
-    particles = [_initial_particle(space) for _ in range(pop_size)]
-    vel = [{k: 0.0 for k in space} for _ in range(pop_size)]
-    p_best = deepcopy(particles)
-    p_best_score = [fitness_fn(p) for p in particles]
-    g_best_idx = int(np.argmin(p_best_score))
-    g_best = deepcopy(p_best[g_best_idx])
-    g_best_score = p_best_score[g_best_idx]
-    trajectory = [g_best_score]
 
-    # === Main loop =========================================================
-    for t in range(max_iter):
-        for i, x_i in enumerate(particles):
-            # 1️⃣  PSO velocity / position update
+    # --- helpers: encode(real) <--> unit ∈ [0,1] --------------------------
+    lo = {k: lo for k, (lo, hi) in space.items()}
+    rng = {k: hi - lo for k, (lo, hi) in space.items()}
+
+    def encode(cfg: Particle) -> Particle:
+        return {k: (cfg[k] - lo[k]) / rng[k] for k in space}
+
+    def decode(unit: Particle) -> Particle:
+        return {k: unit[k] * rng[k] + lo[k] for k in space}
+
+    V_MAX = vmax_fraction  # same for every dim
+
+    # --- initial swarm ----------------------------------------------------
+    particles_u = [encode({k: random.uniform(*space[k]) for k in space})
+                   for _ in range(pop_size)]
+    vel_u = [{k: 0.0 for k in space} for _ in range(pop_size)]
+
+    p_best_u = copy.deepcopy(particles_u)
+    p_best_s = [fitness_fn(decode(u)) for u in particles_u]
+
+    g_idx = int(np.argmin(p_best_s))
+    g_best_u = copy.deepcopy(p_best_u[g_idx])
+    g_best_s = p_best_s[g_idx]
+
+    trajectory = [g_best_s]
+
+    # --- main loop --------------------------------------------------------
+    for _ in range(max_iter):
+        for i, u_i in enumerate(particles_u):
+            # 1️⃣  PSO update in unit-space
             for k in space:
                 r1, r2 = random.random(), random.random()
-                vel[i][k] = (
-                    w * vel[i][k]
-                    + c1 * r1 * (p_best[i][k] - x_i[k])
-                    + c2 * r2 * (g_best[k] - x_i[k])
+                vel_u[i][k] = (
+                        w * vel_u[i][k]
+                        + c1 * r1 * (p_best_u[i][k] - u_i[k])
+                        + c2 * r2 * (g_best_u[k] - u_i[k])
                 )
-                x_i[k] += vel[i][k]
-            _clip(x_i, space)
+                # velocity clamp
+                vel_u[i][k] = max(-V_MAX, min(vel_u[i][k], V_MAX))
+                # position update
+                u_i[k] = max(0.0, min(u_i[k] + vel_u[i][k], 1.0))
 
-            # 2️⃣  GA mutation
-            for k in space:
+                # 2️⃣  GA mutation (also in unit-space)
                 if random.random() < mutation_rate:
-                    lo, hi = space[k]
-                    x_i[k] = random.uniform(lo, hi)
+                    u_i[k] = random.random()
 
-            # 3️⃣  Evaluate
-            score = fitness_fn(x_i)
-            if score < p_best_score[i]:
-                p_best[i], p_best_score[i] = deepcopy(x_i), score
-                if score < g_best_score:
-                    g_best, g_best_score = deepcopy(x_i), score
+            # 3️⃣  Evaluate decoded particle
+            score = fitness_fn(decode(u_i))
+            if score < p_best_s[i]:
+                p_best_u[i], p_best_s[i] = copy.deepcopy(u_i), score
+                if score < g_best_s:
+                    g_best_u, g_best_s = copy.deepcopy(u_i), score
 
-        trajectory.append(g_best_score)
+        trajectory.append(g_best_s)
 
-    return g_best, trajectory
+    return decode(g_best_u), trajectory

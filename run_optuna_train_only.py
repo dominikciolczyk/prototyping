@@ -124,7 +124,8 @@ def main():
     logger.info("Starting Optuna hyperparameter optimization...")
     def objective(trial):
         try:
-            batch = trial.suggest_categorical("batch", [16, 32, 64])
+            #batch = trial.suggest_categorical("batch", [16, 32, 64])
+            batch = 32
 
             CNN_TEMPLATES = {
                 """
@@ -189,11 +190,12 @@ def main():
                     "cnn_channels": [16, 32, 32],
                     "kernels": [12, 24, 84],
                 },
-                """
+                
                 "triple_seasonal_64_channels": {
                     "cnn_channels": [32, 64, 64],
                     "kernels": [12, 24, 84],
                 },
+                """
                 "bottleneck_64_32": {
                     "cnn_channels": [64, 32],
                     "kernels": [12, 24],
@@ -224,14 +226,17 @@ def main():
 
             # LSTM
             hidden_lstm = trial.suggest_categorical("hidden_lstm", [128, 256, 512])
-            lstm_layers = 1
+            lstm_layers = trial.suggest_categorical("lstm_layers", [1, 2])
 
             # Regularization & optimizer
-            dropout_rate = trial.suggest_float("dropout_rate", 0.1, 0.3, step=0.2)
+            #dropout_rate = trial.suggest_float("dropout_rate", 0.1, 0.3, step=0.2)
+            dropout_rate = 0.2
+
             #alpha = trial.suggest_float("alpha", 1.0, 20.0, log=True)
 
             #lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
-            lr = trial.suggest_categorical("lr", [3e-4, 1e-3, 1e-2])
+            #lr = trial.suggest_categorical("lr", [3e-4, 1e-3, 1e-2])
+            lr = 1e-2
 
             # Final params dict for trainer step
             best_model_hp = {
@@ -267,7 +272,7 @@ def main():
             return float("inf")  # Or some large number so Optuna skips it
 
     study = optuna.create_study(direction="minimize", sampler=TPESampler(seed=42))
-    study.optimize(objective, n_trials=50, callbacks=[save_checkpoint])
+    study.optimize(objective, n_trials=75, callbacks=[save_checkpoint])
 
     save_best_result(study)
     save_full_report(study, top_k=30)

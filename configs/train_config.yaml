@@ -76,13 +76,12 @@ parameters:
   load_2022_data: True
   load_2020_data: True
   recreate_dataset: False
-  val_size: 0.2
-  test_size: 0.2
-  test_teacher_size: 0.1
-  test_student_size: 0.1
-  online_size: 0.1
+  val_size: 0.15
+  test_size: 0.15
+  test_teacher_size: 0.15
+  online_size: 0.15
   seed: 42
-  only_train_val_test_sets: True
+  only_train_val_test_sets: False
   selected_columns:
     - CPU_USAGE_MHZ
     - MEMORY_USAGE_KB
@@ -95,8 +94,8 @@ parameters:
   q: 0.975
   reduction_method: ffill_bfill
   interpolation_order: 3
-  scaler_method: standard
-  minmax_range: [ 0.0, 1.0 ]
+  scaler_method: minmax
+  minmax_range: [ -1.0, 1.0 ]
   robust_quantile_range: [ 25.0, 75.0 ]
   use_hour_features: True
   use_day_of_week_features: True
@@ -105,13 +104,13 @@ parameters:
   model_input_seq_len: 84
   model_forecast_horizon: 84
   make_plots: True
-  batch: 64
-  cnn_channels: [ 32, 64 ]
-  kernels: [ 12, 24 ]
-  hidden_lstm: 512
-  lstm_layers: 2
-  dropout_rate: 0.3
-  alpha: 10
-  lr: 1e-5
+  batch: 32
+  cnn_channels: [64]
+  kernels: [12]
+  hidden_lstm: 1024
+  lstm_layers: 1
+  dropout_rate: 0.1
+  alpha: 5
+  lr: 3e-4
   epochs: 50
-  early_stop_epochs: 15
+  early_stop_epochs: 5

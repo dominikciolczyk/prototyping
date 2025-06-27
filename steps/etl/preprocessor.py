@@ -12,7 +12,7 @@ from .scaler import scaler
 from typing import Dict, List, Literal, Tuple
 import pandas as pd
 from zenml import step
-from utils.plotter import plot_all
+from utils.plotter import plot_all, plot_time_series
 
 from zenml.logger import get_logger
 
@@ -33,7 +33,6 @@ def preprocessor(
     val_size: float,
     test_size: float,
     test_teacher_size: float,
-    test_student_size: float,
     online_size: float,
     seed: int,
     only_train_val_test_sets: bool,
@@ -54,13 +53,12 @@ def preprocessor(
     is_weekend_mode: Literal["numeric", "categorical", "both"],
     make_plots: bool
 ) -> Tuple[
-    Dict[str, pd.DataFrame],  # train_scaled
-    Dict[str, pd.DataFrame],  # val_scaled
-    Dict[str, pd.DataFrame],  # test_scaled
-    Dict[str, pd.DataFrame],  # test_teacher_scaled
-    Dict[str, pd.DataFrame],  # test_student_scaled
-    Dict[str, pd.DataFrame],  # online_scaled
-    Dict[str, object],  # scalers per feature (do inverse-transform / re-use)
+    Dict[str, pd.DataFrame],  # train
+    Dict[str, pd.DataFrame],  # val
+    Dict[str, pd.DataFrame],  # test
+    Dict[str, pd.DataFrame],  # test_teacher
+    Dict[str, pd.DataFrame],  # online
+    Dict[str, object],
 ]:
     dropna_how = "any"
     remove_nans = True
@@ -69,21 +67,20 @@ def preprocessor(
     if load_2022_data:
         loaded_2022_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir,
                                        data_granularity=data_granularity, year=2022, load_2022_R04=load_2022_R04)
-        # plot_time_series(loaded_2022_data, "loaded_2022_data")
+        plot_time_series(loaded_2022_data, "loaded_2022_data")
 
     if load_2020_data:
         loaded_2020_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir,
                                        data_granularity=data_granularity, year=2020, load_2022_R04=load_2022_R04)
-        # plot_time_series(loaded_2020_data, "loaded_2020_data")
+        plot_time_series(loaded_2020_data, "loaded_2020_data")
 
     merged_dfs = merger(dfs_2020=loaded_2020_data, dfs_2022=loaded_2022_data)
 
-    train, val, test, test_teacher, test_student, online = train_data_splitter(
+    train, val, test, test_teacher, online = train_data_splitter(
             dfs=merged_dfs,
             val_size=val_size,
             test_size=test_size,
             test_teacher_size=test_teacher_size,
-            test_student_size=test_student_size,
             online_size=online_size,
             seed=seed,
             only_train_val_test_sets=only_train_val_test_sets)
@@ -92,7 +89,6 @@ def preprocessor(
     val_preselected_columns = column_preselector(dfs=val, selected_columns=selected_columns)
     test_preselected_columns = column_preselector(dfs=test, selected_columns=selected_columns)
     test_teacher_preselected_columns = column_preselector(dfs=test_teacher, selected_columns=selected_columns)
-    test_student_preselected_columns = column_preselector(dfs=test_student, selected_columns=selected_columns)
     online_preselected_columns = column_preselector(dfs=online, selected_columns=selected_columns)
 
     if make_plots:
@@ -101,7 +97,6 @@ def preprocessor(
             val_preselected_columns,
             test_preselected_columns,
             test_teacher_preselected_columns,
-            test_student_preselected_columns,
             online_preselected_columns
         ], "preselected_columns")
 
@@ -109,7 +104,6 @@ def preprocessor(
     val_trimmed = trimmer(dfs=val_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
     test_trimmed = trimmer(dfs=test_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
     test_teacher_trimmed = trimmer(dfs=test_teacher_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
-    test_student_trimmed = trimmer(dfs=test_student_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
     online_trimmed = trimmer(dfs=online_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
 
     if make_plots:
@@ -118,15 +112,12 @@ def preprocessor(
             val_trimmed,
             test_trimmed,
             test_teacher_trimmed,
-            test_student_trimmed,
             online_trimmed
         ], "trimmed")
 
     val_selected_columns = aggregate_and_select_columns(dfs=val_trimmed, selected_columns=selected_columns)
     test_selected_columns = aggregate_and_select_columns(dfs=test_trimmed, selected_columns=selected_columns)
     test_teacher_selected_columns = aggregate_and_select_columns(dfs=test_teacher_trimmed,
-                                                               selected_columns=selected_columns)
-    test_student_selected_columns = aggregate_and_select_columns(dfs=test_student_trimmed,
                                                                selected_columns=selected_columns)
     online_selected_columns = aggregate_and_select_columns(dfs=online_trimmed, selected_columns=selected_columns)
 
@@ -147,7 +138,6 @@ def preprocessor(
                 val_selected_columns,
                 test_selected_columns,
                 test_teacher_selected_columns,
-                test_student_selected_columns,
                 online_selected_columns
             ], "select_reduced")
 
@@ -162,7 +152,6 @@ def preprocessor(
                 val_selected_columns,
                 test_selected_columns,
                 test_teacher_selected_columns,
-                test_student_selected_columns,
                 online_selected_columns
             ], "aggregate_and_select_columns")
 
@@ -183,15 +172,13 @@ def preprocessor(
             val_selected_columns,
             test_selected_columns,
             test_teacher_selected_columns,
-            test_student_selected_columns,
             online_selected_columns
         ], "aggregate_and_select_columns_reduced")
 
-    train_scaled, val_scaled, test_scaled, test_teacher_scaled, test_student_scaled, online_scaled, scalers = scaler(train=train_select_columns_reduced,
+    train_scaled, val_scaled, test_scaled, test_teacher_scaled, online_scaled, scalers = scaler(train=train_select_columns_reduced,
         val=val_selected_columns,
         test=test_selected_columns,
         test_teacher=test_teacher_selected_columns,
-        test_student=test_student_selected_columns,
         online=online_selected_columns,
         scaler_method=scaler_method,
         minmax_range=minmax_range,
@@ -203,7 +190,6 @@ def preprocessor(
             val_scaled,
             test_scaled,
             test_teacher_scaled,
-            test_student_scaled,
             online_scaled
         ], "scaled")
 
@@ -239,14 +225,6 @@ def preprocessor(
         is_weekend_mode=is_weekend_mode
     )
 
-    test_student_feature_expanded = feature_expander(
-        dfs=test_student_scaled,
-        use_hour_features=use_hour_features,
-        use_weekend_features=use_weekend_features,
-        use_day_of_week_features=use_day_of_week_features,
-        is_weekend_mode=is_weekend_mode
-    )
-
     online_feature_expanded = feature_expander(
         dfs=online_scaled,
         use_hour_features=use_hour_features,
@@ -261,7 +239,6 @@ def preprocessor(
             val_feature_expanded,
             test_feature_expanded,
             test_teacher_feature_expanded,
-            test_student_feature_expanded,
             online_feature_expanded,
         ], "feature_expanded")
 
@@ -270,7 +247,6 @@ def preprocessor(
         val_feature_expanded,
         test_feature_expanded,
         test_teacher_feature_expanded,
-        test_student_feature_expanded,
         online_feature_expanded,
         scalers,
     )

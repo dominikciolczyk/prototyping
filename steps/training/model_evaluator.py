@@ -99,10 +99,14 @@ def inverse_transform_predictions(
 
     return y_true_inv, y_pred_inv
 
-@step(experiment_tracker=experiment_tracker.name, enable_cache=False)
+@step(enable_cache=False)
 def model_evaluator(
     model: nn.Module,
     test: Dict[str, pd.DataFrame],
+    seq_len: int,
+    horizon: int,
+    alpha: float,
+    beta: float,
     hyper_params: Dict[str, Any],
     selected_columns: List[str],
     scalers: Dict[str, Any]
@@ -113,8 +117,6 @@ def model_evaluator(
     Now restricted to forecasting only `selected_columns`.
     """
 
-    horizon = int(hyper_params["horizon"])
-    seq_len = int(hyper_params["seq_len"])
     batch   = int(hyper_params["batch"])
 
     # 1) ---- torch prediction for only selected_columns ------------
@@ -135,8 +137,8 @@ def model_evaluator(
 
     # 3) ---- compute AsymmetricL1 on model vs baseline ----------
     criterion = AsymmetricSmoothL1(
-        alpha=float(hyper_params["alpha"]),
-        beta=float(hyper_params["beta"])
+        alpha=float(alpha),
+        beta=float(beta)
     )
     to_tensor = lambda arr: torch.tensor(arr, dtype=torch.float32)
 

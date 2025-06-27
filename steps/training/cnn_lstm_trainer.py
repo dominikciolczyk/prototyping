@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.optim import Adam
 from zenml import step
-from models.cnn_lstm import CNNLSTM
+from models.cnn_lstm import CNNLSTM, CNNLSTMWithAttention
 from losses.qos import AsymmetricL1, AsymmetricSmoothL1
 from utils.window_dataset import make_loader
 import copy
@@ -21,6 +21,10 @@ logger = get_logger(__name__)
 def cnn_lstm_trainer(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
+    seq_len: int,
+    horizon: int,
+    alpha: float,
+    beta: float,
     hyper_params: Dict[str, Any],
     selected_columns: List[str],
     epochs: int,
@@ -48,15 +52,20 @@ def cnn_lstm_trainer(
                 raise KeyError(
                     f"[{vm_id}] is missing target column(s): {missing}"
                 )
-    _inspect_split("train", train)
-    _inspect_split("val",   val)
+    #_inspect_split("train", train)
+    #_inspect_split("val",   val)
 
     # ------------------------------------------------------------------ #
     # 1. Hyper-parameters
     # ------------------------------------------------------------------ #
-    seq_len = int(hyper_params["seq_len"])
-    horizon = int(hyper_params["horizon"])
     batch   = int(hyper_params["batch"])
+    logger.info(f"Hyper-parameters:\n"
+                f"  seq_len = {seq_len}\n"
+                f"  horizon = {horizon}\n"
+                f"  batch   = {batch}\n"
+                f"  epochs  = {epochs}\n"
+                f"  early_stop_epochs = {early_stop_epochs}\n"
+                f"  selected_columns = {selected_columns}")
 
     # ------------------------------------------------------------------ #
     # 2. Data loaders
@@ -96,7 +105,7 @@ def cnn_lstm_trainer(
     # ------------------------------------------------------------------ #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = CNNLSTM(
+    model = CNNLSTMWithAttention(
         n_features=n_features,
         n_targets=n_targets,
         horizon=horizon,
@@ -108,8 +117,8 @@ def cnn_lstm_trainer(
     ).to(device)
 
     criterion = AsymmetricSmoothL1(
-        alpha=float(hyper_params["alpha"]),
-        beta=float(hyper_params["beta"])
+        alpha=float(alpha),
+        beta=float(beta)
     )
     optim     = Adam(model.parameters(), lr=float(hyper_params["lr"]))
 
