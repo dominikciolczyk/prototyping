@@ -1,24 +1,26 @@
 from typing import Dict, Any, List, Tuple
+
 import numpy as np
 import pandas as pd
 import torch
-from torch import nn
-from losses.qos import AsymmetricL1, AsymmetricSmoothL1
-from utils.window_dataset import make_loader
-from utils.plotter import plot_time_series
-from zenml.logger import get_logger
+from losses.qos import AsymmetricSmoothL1
 from steps.logging.track_params import track_experiment_metadata
-from zenml.client import Client
+from torch import nn
+from utils.plotter import plot_time_series
+from utils.window_dataset import make_loader
 from zenml import step
+from zenml.client import Client
+from zenml.logger import get_logger
 
 experiment_tracker = Client().active_stack.experiment_tracker
 
 logger = get_logger(__name__)
 
+
 def _predict_model(
-    model: nn.Module,
-    loader: torch.utils.data.DataLoader,
-    device: torch.device,
+        model: nn.Module,
+        loader: torch.utils.data.DataLoader,
+        device: torch.device,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Return stacked (y_true, y_pred) for the whole loader."""
     model.eval()
@@ -30,9 +32,10 @@ def _predict_model(
             y_pred.append(model(X).cpu().numpy())
     return np.concatenate(y_true), np.concatenate(y_pred)
 
+
 def _predict_max_baseline_sliding(
-    loader: torch.utils.data.DataLoader,
-    device: torch.device,
+        loader: torch.utils.data.DataLoader,
+        device: torch.device,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Baseline: for each sliding window, predict the maximum *target* value
@@ -55,9 +58,10 @@ def _predict_max_baseline_sliding(
 
     return np.concatenate(y_true), np.concatenate(y_pred)
 
+
 def _predict_last_value_baseline_sliding(
-    loader: torch.utils.data.DataLoader,
-    device: torch.device,
+        loader: torch.utils.data.DataLoader,
+        device: torch.device,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Baseline: for each sliding window, predict the last observed value
@@ -67,7 +71,7 @@ def _predict_last_value_baseline_sliding(
     with torch.no_grad():
         for X, y in loader:
             X, y = X.to(device), y.to(device)  # shapes: (B, seq_len, F), (B, H, F)
-            last_val = X[:, -1, :]             # shape: (B, F)
+            last_val = X[:, -1, :]  # shape: (B, F)
             # Repeat last_val across the horizon dimension
             repeated = last_val.unsqueeze(1).repeat(1, y.shape[1], 1)  # shape: (B, H, F)
             y_true.append(y.cpu().numpy())
@@ -81,35 +85,31 @@ def inverse_transform_predictions(
     selected_columns: List[str],
     scalers: Dict[str, Any],
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Inverse-transform predictions and targets using fitted scalers.
-    Assumes input shapes: (n_samples, horizon, n_features)
-    """
-    assert y_true.shape == y_pred.shape, "Shape mismatch between y_true and y_pred"
-    assert len(selected_columns) == y_true.shape[2], "selected_columns length doesn't match number of features"
-
-    n_samples, horizon, n_features = y_true.shape
     y_true_inv = np.zeros_like(y_true)
     y_pred_inv = np.zeros_like(y_pred)
 
     for i, col in enumerate(selected_columns):
         scaler = scalers[col]
-        y_true_inv[:, :, i] = scaler.inverse_transform(y_true[:, :, i].reshape(-1, 1)).reshape(n_samples, horizon)
-        y_pred_inv[:, :, i] = scaler.inverse_transform(y_pred[:, :, i].reshape(-1, 1)).reshape(n_samples, horizon)
+        mu = scaler.means[col]
+        var = scaler.vars[col]
+        std = np.sqrt(var) + 1e-8  # stabilizacja numeryczna
+
+        y_true_inv[:, :, i] = y_true[:, :, i] * std + mu
+        y_pred_inv[:, :, i] = y_pred[:, :, i] * std + mu
 
     return y_true_inv, y_pred_inv
 
 @step(enable_cache=False)
 def model_evaluator(
-    model: nn.Module,
-    test: Dict[str, pd.DataFrame],
-    seq_len: int,
-    horizon: int,
-    alpha: float,
-    beta: float,
-    hyper_params: Dict[str, Any],
-    selected_columns: List[str],
-    scalers: Dict[str, Any]
+        model: nn.Module,
+        test: Dict[str, pd.DataFrame],
+        seq_len: int,
+        horizon: int,
+        alpha: float,
+        beta: float,
+        hyper_params: Dict[str, Any],
+        selected_columns: List[str],
+        scalers: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
     Evaluate the trained CNN-LSTM against a naïve Last-Value baseline.
@@ -117,7 +117,7 @@ def model_evaluator(
     Now restricted to forecasting only `selected_columns`.
     """
 
-    batch   = int(hyper_params["batch"])
+    batch = int(hyper_params["batch"])
 
     # 1) ---- torch prediction for only selected_columns ------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -160,8 +160,8 @@ def model_evaluator(
     )
 
     # 4) ---- log to MLflow ---------------------------------------
-    #mlflow.log_metric("AsymmetricL1_model",    model_loss)
-    #mlflow.log_metric("AsymmetricL1_baseline", baseline_loss)
+    # mlflow.log_metric("AsymmetricL1_model",    model_loss)
+    # mlflow.log_metric("AsymmetricL1_baseline", baseline_loss)
 
     # 5) ---- build and save interactive plots --------------------
     merged_plots = {}
@@ -202,7 +202,7 @@ def model_evaluator(
 
     return {
         "metrics": {
-            "AsymmetricL1_model":    model_loss,
+            "AsymmetricL1_model": model_loss,
             "AsymmetricL1_baseline": baseline_loss,
         },
         "plot_paths": plot_paths,

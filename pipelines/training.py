@@ -38,9 +38,6 @@ def cloud_resource_prediction_training(
     q: float,
     reduction_method: str,
     interpolation_order: int,
-    scaler_method: str,
-    minmax_range: Tuple[float, float],
-    robust_quantile_range: Tuple[float, float],
     use_hour_features: bool,
     use_day_of_week_features: bool,
     use_weekend_features: bool,
@@ -60,7 +57,7 @@ def cloud_resource_prediction_training(
     epochs: int,
     early_stop_epochs: int,
 ):
-    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, expanded_online_dfs, scalers =\
+    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, _, scalers =\
         prepare_datasets_before_model_input(
           raw_dir=raw_dir,
           zip_path=zip_path,
@@ -87,16 +84,11 @@ def cloud_resource_prediction_training(
           q=q,
           reduction_method=reduction_method,
           interpolation_order=interpolation_order,
-          scaler_method=scaler_method,
-          minmax_range=minmax_range,
-          robust_quantile_range=robust_quantile_range,
           use_hour_features=use_hour_features,
           use_day_of_week_features=use_day_of_week_features,
           use_weekend_features=use_weekend_features,
           is_weekend_mode=is_weekend_mode,
           make_plots=make_plots)
-
-
 
     # -----------------------------------------------------------
     # ❷ PSO-GA constants: population size, iterations, inertia,
@@ -160,13 +152,10 @@ def cloud_resource_prediction_training(
     else:
         best_model_hp = {
             "batch": batch,
-
             "cnn_channels": cnn_channels,
             "kernels": kernels,
-
             "hidden_lstm": hidden_lstm,
             "lstm_layers": lstm_layers,
-
             "dropout_rate": dropout_rate,
             "lr": lr,
         }
@@ -183,7 +172,7 @@ def cloud_resource_prediction_training(
                                  early_stop_epochs=early_stop_epochs)
 
         model_evaluator(model=model,
-                        test=expanded_test_dfs,
+                        test=expanded_test_teacher_dfs,
                         seq_len=model_input_seq_len,
                         horizon=model_forecast_horizon,
                         alpha=alpha,
@@ -191,5 +180,3 @@ def cloud_resource_prediction_training(
                         hyper_params=best_model_hp,
                         selected_columns=selected_columns,
                         scalers=scalers)
-
-    #register_model(model, name = "cnn_lstm_prod")

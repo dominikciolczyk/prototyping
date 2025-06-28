@@ -28,13 +28,11 @@ def anomaly_reducer(
         mask = pd.DataFrame(False, index=df.index, columns=df.columns)
 
         for col in df.columns:
-            logger.info(f"Reducing for VM: {vm}, col {col} ==============")
+            logger.info(f"\nReducing for VM: {vm}, col {col} ======================")
             col_df = df[[col]].dropna()
 
             if col_df.empty:
                 raise ValueError(f"Empty column {col} for vm {vm}.")
-
-
 
             try:
                 col_mask = detect_anomalies(

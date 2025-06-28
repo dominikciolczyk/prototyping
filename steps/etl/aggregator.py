@@ -17,9 +17,12 @@ def aggregator(dfs: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
         # 1) compute the KB/s summary columns
         for new_col, pattern, agg in summary_cols:
             block = df.filter(like=pattern)
+            if block.empty:
+                continue
             df[new_col] = block.mean(axis=1) if agg == "mean" else block.sum(axis=1)
 
         # 2) for every numeric column, create a percent‐of‐max version
+        """
         num_cols = df.select_dtypes(include="number").columns
         for col in num_cols:
             if "is_anomaly" in col:
@@ -31,6 +34,7 @@ def aggregator(dfs: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
                 raise ValueError(
                     f"Column '{col}' in VM '{name}' has no positive peak value."
                 )
+        """
 
         result[name] = df
 

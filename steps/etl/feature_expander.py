@@ -17,10 +17,14 @@ def add_time_features(
     df.index = pd.to_datetime(df.index)
 
     if use_weekend_features:
-      if is_weekend_mode in ("numeric", "both"):
-          df["is_weekend"] = (df.index.dayofweek >= 5).astype(int)
-      if is_weekend_mode in ("categorical", "both"):
-          df["is_weekend_cat"] = df.index.dayofweek.map(lambda x: "Weekend" if x >= 5 else "Weekday")
+        is_weekend = df.index.dayofweek >= 5
+
+        if is_weekend_mode in ("numeric", "both"):
+            df["is_weekend"] = is_weekend.astype(int)
+
+        if is_weekend_mode in ("categorical", "both"):
+            df["is_weekend_weekend"] = is_weekend.astype(int)
+            df["is_weekend_weekday"] = (~is_weekend).astype(int)
 
     if use_hour_features:
         df["hour_sin"] = np.sin(2 * np.pi * df.index.hour / 24)

@@ -18,8 +18,7 @@ conda activate zenml-env
 pip install "zenml[server]"
 zenml integration install pandas sklearn pytorch mlflow evidently s3 -y
 #pip install statsmodels sktime boto3 s3fs
-pip install statsmodels sktime openpyxl optuna psycopg2-binary datetime
-
+pip install statsmodels sktime openpyxl optuna psycopg2-binary datetime river
 
 
 Alfa 9:
@@ -30,20 +29,17 @@ Alfa 10:
 Alfa 8:
 AsymmetricL1  |  model: 0.1782  |  baseline: 0.3841
 
-
 Alfa 10 beta 0.5
 symmetricL1  |  model: 0.4028  |  baseline: 0.5654
 
-
 Alfa 10 beta 0.2 0 - super
 AsymmetricL1  |  model: 0.5560  |  baseline: 0.7014
-
 
 Alfa 10 beta 0.21
 AsymmetricL1  |  model: 0.5515  |  baseline: 0.6964
 
 Alfa 10 beta 0.2125
-[model_evaluator] AsymmetricL1  |  model: 0.5606  |  baseline: 0.6952
+AsymmetricL1  |  model: 0.5606  |  baseline: 0.6952
 
 Alfa 10 beta 0.65
 AsymmetricL1  |  model: 0.3715  |  baseline: 0.5070
@@ -55,5 +51,4 @@ Alfa 10 beta 0.65 bez day of week - najlepszy wizualnie
 model: 0.3360  |  baseline: 0.5070
 
 
-
-
+Można odrzucić kolumnę DISC.

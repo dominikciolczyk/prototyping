@@ -7,7 +7,6 @@ logger = get_logger(__name__)
 
 Reduction = Literal[
     "interpolate_linear",
-    "interpolate_time",
     "interpolate_polynomial",
     "interpolate_spline",
     "ffill_bfill",
@@ -26,9 +25,6 @@ def reduce_anomalies(
 
     if method == "interpolate_linear":
         clean = clean.interpolate(method="linear", limit_direction="both")
-
-    elif method == "interpolate_time":
-        clean = clean.interpolate(method="time", limit_direction="both")
 
     elif method == "interpolate_polynomial":
         clean = clean.interpolate(method="polynomial", order=interpolation_order, limit_direction="both")

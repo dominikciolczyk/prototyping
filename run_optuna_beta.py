@@ -13,7 +13,7 @@ os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
 
 from run import set_seed
-from run_optuna_train_only import save_best_result, save_full_report, generate_json_result, save_checkpoint, get_latest_trial_path, get_loss, _seen_trial_paths, CHECKPOINT_FILE
+from run_optuna_train_only import save_best_result, save_full_report, save_checkpoint, get_loss
 
 @click.command()
 def main():
@@ -21,7 +21,7 @@ def main():
 
     def objective(trial):
         try:
-            beta = trial.suggest_float("beta", 0.2, 1.8, step=0.05)
+            beta = trial.suggest_float("beta", 0.2, 1.9, step=0.05)
 
             pipeline_args = {
                 "config_path": str(Path(__file__).parent / "configs" / "optuna_beta.yaml"),
@@ -39,7 +39,7 @@ def main():
             return optuna.TrialPruned()
 
     param_grid = {
-        "beta": [round(0.2 + i * 0.05, 2) for i in range(33)]
+        "beta": [round(0.5 + i * 0.05, 2) for i in range(30)]
     }
 
     study = optuna.create_study(direction="minimize", sampler=GridSampler(seed=42, search_space=param_grid))

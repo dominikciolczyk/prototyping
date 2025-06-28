@@ -45,9 +45,6 @@ def preprocessor(
     q: float,
     reduction_method: ReduceMethod,
     interpolation_order: int,
-    scaler_method: Literal["standard", "minmax", "robust", "max"],
-    minmax_range: Tuple[float, float],
-    robust_quantile_range: Tuple[float, float],
     use_hour_features: bool,
     use_weekend_features: bool,
     use_day_of_week_features: bool,
@@ -178,14 +175,11 @@ def preprocessor(
             online_selected_columns
         ], "aggregate_and_select_columns_reduced")
 
-    train_scaled, val_scaled, test_scaled, test_teacher_scaled, online_scaled, scalers = scaler(train=train_select_columns_reduced,
+    train_scaled, val_scaled, test_scaled, test_teacher_scaled, scalers = scaler(
+        train=train_select_columns_reduced,
         val=val_selected_columns,
         test=test_selected_columns,
-        test_teacher=test_teacher_selected_columns,
-        online=online_selected_columns,
-        scaler_method=scaler_method,
-        minmax_range=minmax_range,
-        robust_quantile_range=robust_quantile_range)
+        test_teacher=test_teacher_selected_columns)
 
     if make_plots:
         plot_all([
@@ -193,7 +187,7 @@ def preprocessor(
             val_scaled,
             test_scaled,
             test_teacher_scaled,
-            online_scaled
+            online_selected_columns
         ], "scaled")
 
     train_feature_expanded = feature_expander(
@@ -229,7 +223,7 @@ def preprocessor(
     )
 
     online_feature_expanded = feature_expander(
-        dfs=online_scaled,
+        dfs=online_selected_columns,
         use_hour_features=use_hour_features,
         use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
