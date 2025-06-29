@@ -79,7 +79,7 @@ parameters:
   val_size: 0.15
   test_size: 0.15
   test_teacher_size: 0.15
-  online_size: 0.15
+  online_size: 0.01
   seed: 42
   only_train_val_test_sets: False
   selected_columns:
@@ -99,8 +99,8 @@ parameters:
   use_day_of_week_features: True
   use_weekend_features: True
   is_weekend_mode: categorical
-  model_input_seq_len: 84
-  model_forecast_horizon: 84
+  model_input_seq_len: 24
+  model_forecast_horizon: 24
   make_plots: True
   batch: 32
   cnn_channels: [64]
@@ -109,7 +109,7 @@ parameters:
   lstm_layers: 1
   dropout_rate: 0.1
   alpha: 10
-  beta: 0.65
+  beta: 1.11
   lr: 3e-4
   epochs: 50
   early_stop_epochs: 10

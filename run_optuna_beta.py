@@ -19,9 +19,13 @@ from run_optuna_train_only import save_best_result, save_full_report, save_check
 def main():
     logger.info("Starting Optuna hyperparameter optimization...")
 
+    step = 0.01
+    max = 1.3
+    min = 0.7
+
     def objective(trial):
         try:
-            beta = trial.suggest_float("beta", 0.2, 1.9, step=0.05)
+            beta = trial.suggest_float("beta", min, max, step=step)
 
             pipeline_args = {
                 "config_path": str(Path(__file__).parent / "configs" / "optuna_beta.yaml"),
@@ -39,10 +43,10 @@ def main():
             return optuna.TrialPruned()
 
     param_grid = {
-        "beta": [round(0.5 + i * 0.05, 2) for i in range(30)]
+        "beta": [round(min + i * step, 2) for i in range(int((max - min) / step) + 1)]
     }
 
-    study = optuna.create_study(direction="minimize", sampler=GridSampler(seed=42, search_space=param_grid))
+    study = optuna.create_study(direction="minimize", sampler=GridSampler(search_space=param_grid))
     study.optimize(objective, callbacks=[save_checkpoint])
 
     save_best_result(study)

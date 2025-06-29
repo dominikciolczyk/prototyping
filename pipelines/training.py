@@ -57,7 +57,8 @@ def cloud_resource_prediction_training(
     epochs: int,
     early_stop_epochs: int,
 ):
-    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, _, scalers =\
+    # expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, _, scalers =\
+    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, _, scalers = \
         prepare_datasets_before_model_input(
           raw_dir=raw_dir,
           zip_path=zip_path,
@@ -140,7 +141,7 @@ def cloud_resource_prediction_training(
             scalers=scalers,
         )
         model_evaluator(model=model,
-                        test=expanded_test_teacher_dfs,
+                        test=expanded_test_dfs,
                         seq_len=model_input_seq_len,
                         horizon=model_forecast_horizon,
                         alpha=alpha,
@@ -172,7 +173,7 @@ def cloud_resource_prediction_training(
                                  early_stop_epochs=early_stop_epochs)
 
         model_evaluator(model=model,
-                        test=expanded_test_teacher_dfs,
+                        test=expanded_test_dfs,
                         seq_len=model_input_seq_len,
                         horizon=model_forecast_horizon,
                         alpha=alpha,

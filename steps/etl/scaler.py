@@ -10,12 +10,12 @@ def scaler(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
     test: Dict[str, pd.DataFrame],
-    test_teacher: Dict[str, pd.DataFrame],
+    #test_teacher: Dict[str, pd.DataFrame],
 ) -> Tuple[
     Dict[str, pd.DataFrame],  # train_scaled
     Dict[str, pd.DataFrame],  # val_scaled
     Dict[str, pd.DataFrame],  # test_scaled
-    Dict[str, pd.DataFrame],  # test_teacher_scaled
+    #Dict[str, pd.DataFrame],  # test_teacher_scaled
     Dict[str, preprocessing.StandardScaler],  # scalers per column
 ]:
     logger.info("Scaler step using river.StandardScaler")
@@ -41,12 +41,12 @@ def scaler(
     train_scaled = _apply(train)
     val_scaled = _apply(val)
     test_scaled = _apply(test)
-    test_teacher_scaled = _apply(test_teacher)
+    #test_teacher_scaled = _apply(test_teacher)
 
     return (
         train_scaled,
         val_scaled,
         test_scaled,
-        test_teacher_scaled,
+        #test_teacher_scaled,
         scalers,
     )

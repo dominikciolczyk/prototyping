@@ -1,7 +1,7 @@
 from typing import List
 import torch
 from torch import nn
-from cnn_lstm import init_weights
+from .cnn_lstm import init_weights
 
 class LSTM_Baseline(nn.Module):
     def __init__(

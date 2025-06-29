@@ -52,3 +52,25 @@ model: 0.3360  |  baseline: 0.5070
 
 
 Można odrzucić kolumnę DISC.
+
+
+Z kolumną MEMORY:
+alfa 10 beta 0.58
+
+0.19 > 0.20 lepsze od 0.21 - za duże loss
+
+beta    = 0.17
+
+beta    0.39
+
+0.75????
+0.83
+
+
+
+===================
+
+beta 1.29
+
+1.11
+

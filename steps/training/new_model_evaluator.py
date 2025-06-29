@@ -109,7 +109,7 @@ def model_evaluator(
         beta: float,
         hyper_params: Dict[str, Any],
         selected_columns: List[str],
-        scalers: Dict[str, Dict[str, Any]],
+        scalers: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
     Evaluate the trained CNN-LSTM against a naïve Last-Value baseline.
@@ -146,56 +146,58 @@ def model_evaluator(
     model_loss = criterion(to_tensor(y_pred_model), to_tensor(y_true_model)).item()
     baseline_loss = criterion(to_tensor(y_pred_max), to_tensor(y_true_max)).item()
 
+    # Use inverse-transformed values for plots
+    y_true_model_inv, y_pred_model_inv = inverse_transform_predictions(
+        y_true_model, y_pred_model, selected_columns, scalers
+    )
+    _, y_pred_max_inv = inverse_transform_predictions(
+        y_true_max, y_pred_max, selected_columns, scalers
+    )
+
     logger.info(
         "AsymmetricL1  |  model: %.4f  |  baseline: %.4f",
         model_loss, baseline_loss
     )
 
+    # 4) ---- log to MLflow ---------------------------------------
+    # mlflow.log_metric("AsymmetricL1_model",    model_loss)
+    # mlflow.log_metric("AsymmetricL1_baseline", baseline_loss)
 
+    # 5) ---- build and save interactive plots --------------------
+    merged_plots = {}
 
-    merged_plots: Dict[str, pd.DataFrame] = {}
-
-    for vm_id, (start_idx, end_idx) in vm_ranges.items():
-        if end_idx - start_idx <= 0:
-            logger.warning(f"[{vm_id}] has no windows — skipping.")
+    for vm_id, (start, end) in vm_ranges.items():
+        if end - start <= 0:
+            logger.warning(f"[{vm_id}] has no windows — skipping plot.")
             continue
 
-        # Extract the last window for this VM
-        global_idx = end_idx - 1
-        y_true_win = y_true_model[global_idx]  # shape: (horizon, features)
-        y_pred_win = y_pred_model[global_idx]
-        y_base_win = y_pred_max[global_idx]
+        idx = end - 1  # take the last window from this VM
 
-        # Inverse-transform using this VM's scalers
-        vm_scalers = scalers.get(vm_id)
-        if vm_scalers is None:
-            raise KeyError(f"No scalers found for VM '{vm_id}'")
+        # Extract inverse-transformed predictions for this window
+        true_df = pd.DataFrame(
+            y_true_model_inv[idx],
+            columns=selected_columns
+        )
+        pred_m_df = pd.DataFrame(
+            y_pred_model_inv[idx],
+            columns=[f"{c}_pred_model" for c in selected_columns]
+        )
+        pred_b_df = pd.DataFrame(
+            y_pred_max_inv[idx],
+            columns=[f"{c}_pred_baseline" for c in selected_columns]
+        )
 
-        # Prepare arrays for inverse
-        inv_true = np.zeros_like(y_true_win)
-        inv_pred = np.zeros_like(y_pred_win)
-        inv_base = np.zeros_like(y_base_win)
+        # Merge predictions and ground truth
+        merged = pd.concat([true_df, pred_m_df, pred_b_df], axis=1)
 
-        for i, col in enumerate(selected_columns):
-            scaler = vm_scalers[col]
-            mu = scaler.means[col]
-            var = scaler.vars[col]
-            std = np.sqrt(var) + 1e-8
+        # Add time index: use last `horizon` timestamps from original DataFrame
+        timestamps = test[vm_id].index[-horizon:]
+        merged.index = timestamps
 
-            inv_true[:, i] = y_true_win[:, i] * std + mu
-            inv_pred[:, i] = y_pred_win[:, i] * std + mu
-            inv_base[:, i] = y_base_win[:, i] * std + mu
-
-        # Build DataFrame for this VM
-        idx = test[vm_id].index[-horizon:]
-        df_true = pd.DataFrame(inv_true, columns=selected_columns, index=idx)
-        df_pred = pd.DataFrame(inv_pred, columns=[f"{c}_pred_model" for c in selected_columns], index=idx)
-        df_base = pd.DataFrame(inv_base, columns=[f"{c}_pred_baseline" for c in selected_columns], index=idx)
-
-        merged = pd.concat([df_true, df_pred, df_base], axis=1)
+        # Save merged DataFrame for plotting
         merged_plots[vm_id] = merged
 
-    plot_paths = plot_time_series(merged_plots, "eval")
+    plot_paths: List[str] = plot_time_series(merged_plots, "eval")
     track_experiment_metadata(model_loss=model_loss, hyper_params=hyper_params)
 
     return {

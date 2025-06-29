@@ -1,18 +1,19 @@
 from pathlib import Path
 from .data_loader import data_loader
 from .merger import merger
-from .train_data_splitter import train_data_splitter
+from .chronological_splitter import chronological_splitter
 from .column_preselector import column_preselector
 from .trimmer import trimmer
 from .aggregator import aggregator
 from .column_selector import column_selector
 from steps.anomaly_reduction import anomaly_reducer, Reduction as ReduceMethod, ThresholdStrategy
 from .feature_expander import feature_expander
-from .scaler import scaler
+from .per_vm_chronological_scaler import per_vm_chronological_scaler
 from typing import Dict, List, Literal, Tuple
 import pandas as pd
 from zenml import step
 from utils.plotter import plot_all, plot_time_series
+from .preprocessor_per_vm_split import aggregate_and_select_columns
 
 from zenml.logger import get_logger
 
@@ -54,7 +55,7 @@ def preprocessor(
     Dict[str, pd.DataFrame],  # train
     Dict[str, pd.DataFrame],  # val
     Dict[str, pd.DataFrame],  # test
-    Dict[str, pd.DataFrame],  # test_teacher
+    #Dict[str, pd.DataFrame],  # test_teacher
     Dict[str, pd.DataFrame],  # online
     Dict[str, object],
 ]:
@@ -74,120 +75,85 @@ def preprocessor(
 
     merged_dfs = merger(dfs_2020=loaded_2020_data, dfs_2022=loaded_2022_data)
 
-    train, val, test, test_teacher, online = train_data_splitter(
-            dfs=merged_dfs,
-            val_size=val_size,
-            test_size=test_size,
-            test_teacher_size=test_teacher_size,
-            online_size=online_size,
-            seed=seed,
-            only_train_val_test_sets=only_train_val_test_sets)
+    merged_preselected_columns_dfs = column_preselector(dfs=merged_dfs, selected_columns=selected_columns)
 
-    train_preselected_columns = column_preselector(dfs=train, selected_columns=selected_columns)
-    val_preselected_columns = column_preselector(dfs=val, selected_columns=selected_columns)
-    test_preselected_columns = column_preselector(dfs=test, selected_columns=selected_columns)
-    test_teacher_preselected_columns = column_preselector(dfs=test_teacher, selected_columns=selected_columns)
-    online_preselected_columns = column_preselector(dfs=online, selected_columns=selected_columns)
+    plot_time_series(merged_preselected_columns_dfs, f"merged_preselected_columns_dfs")
 
-    if make_plots:
-        plot_all([
-            train_preselected_columns,
-            val_preselected_columns,
-            test_preselected_columns,
-            test_teacher_preselected_columns,
-            online_preselected_columns
-        ], "preselected_columns")
+    trimmed_dfs = trimmer(dfs=merged_preselected_columns_dfs, remove_nans=remove_nans, dropna_how=dropna_how)
 
-    train_trimmed = trimmer(dfs=train_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
-    val_trimmed = trimmer(dfs=val_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
-    test_trimmed = trimmer(dfs=test_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
-    test_teacher_trimmed = trimmer(dfs=test_teacher_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
-    online_trimmed = trimmer(dfs=online_preselected_columns, remove_nans=remove_nans, dropna_how=dropna_how)
+    plot_time_series(trimmed_dfs, f"trimmed_dfs")
+
+    train_dfs, val_dfs, test_dfs, online_dfs = chronological_splitter(
+        dfs=trimmed_dfs,
+        val_size=val_size,
+        test_size=test_size,
+        online_size=online_size,
+        only_train_val_test_sets=only_train_val_test_sets
+    )
 
     if make_plots:
         plot_all([
-            train_trimmed,
-            val_trimmed,
-            test_trimmed,
-            test_teacher_trimmed,
-            online_trimmed
-        ], "trimmed")
+            train_dfs,
+            val_dfs,
+            test_dfs,
+            online_dfs
+        ], "splitted")
 
-    val_selected_columns = aggregate_and_select_columns(dfs=val_trimmed, selected_columns=selected_columns)
-    test_selected_columns = aggregate_and_select_columns(dfs=test_trimmed, selected_columns=selected_columns)
-    test_teacher_selected_columns = aggregate_and_select_columns(dfs=test_teacher_trimmed,
-                                                               selected_columns=selected_columns)
-    online_selected_columns = aggregate_and_select_columns(dfs=online_trimmed, selected_columns=selected_columns)
-
-    if anomaly_reduction_before_aggregation:
-        train_reduced = anomaly_reducer(train=train_trimmed,
-                                        data_granularity=data_granularity,
-                                        min_strength=min_strength,
-                                        correlation_threshold=correlation_threshold,
-                                        threshold_strategy=threshold_strategy,
-                                        threshold=threshold,
-                                        q=q,
-                                        reduction_method=reduction_method,
-                                        interpolation_order=interpolation_order,
-                                        )
-
-        if make_plots:
-            plot_all([
-                train_reduced,
-                val_selected_columns,
-                test_selected_columns,
-                test_teacher_selected_columns,
-                online_selected_columns
-            ], "select_reduced")
-
-
-        train_select_columns_reduced = aggregate_and_select_columns(dfs=train_reduced, selected_columns=selected_columns)
-    else:
-        train_select_columns = aggregate_and_select_columns(dfs=train_trimmed, selected_columns=selected_columns)
-
-        if make_plots:
-            plot_all([
-                train_select_columns,
-                val_selected_columns,
-                test_selected_columns,
-                test_teacher_selected_columns,
-                online_selected_columns
-            ], "aggregate_and_select_columns")
-
-
-        train_select_columns_reduced = anomaly_reducer(train=train_select_columns,
-                                        data_granularity=data_granularity,
-                                        min_strength=min_strength,
-                                        correlation_threshold=correlation_threshold,
-                                        threshold_strategy=threshold_strategy,
-                                        threshold=threshold,
-                                        q=q,
-                                        reduction_method=reduction_method,
-                                        interpolation_order=interpolation_order,
-                                        )
+    train_reduced = anomaly_reducer(train=train_dfs,
+                                    data_granularity=data_granularity,
+                                    min_strength=min_strength,
+                                    correlation_threshold=correlation_threshold,
+                                    threshold_strategy=threshold_strategy,
+                                    threshold=threshold,
+                                    q=q,
+                                    reduction_method=reduction_method,
+                                    interpolation_order=interpolation_order)
 
     if make_plots:
         plot_all([
-            train_select_columns_reduced,
+            train_reduced,
+            val_dfs,
+            test_dfs,
+            online_dfs
+        ], "reduced")\
+
+    train_selected_dfs = aggregate_and_select_columns(
+        dfs=train_reduced,
+        selected_columns=selected_columns)
+
+    val_selected_columns = aggregate_and_select_columns(
+        dfs=val_dfs,
+        selected_columns=selected_columns)
+
+    test_selected_columns = aggregate_and_select_columns(
+        dfs=test_dfs,
+        selected_columns=selected_columns)
+
+    online_selected_columns = aggregate_and_select_columns(
+        dfs=online_dfs,
+        selected_columns=selected_columns)
+
+    if make_plots:
+        plot_all([
+            train_selected_dfs,
             val_selected_columns,
             test_selected_columns,
-            test_teacher_selected_columns,
             online_selected_columns
-        ], "aggregate_and_select_columns_reduced")
+        ], "selected_columns")
 
-    train_scaled, val_scaled, test_scaled, test_teacher_scaled, scalers = scaler(
-        train=train_select_columns_reduced,
+    train_scaled, val_scaled, test_scaled, online_scaled, scalers = per_vm_chronological_scaler(
+        train=train_selected_dfs,
         val=val_selected_columns,
         test=test_selected_columns,
-        test_teacher=test_teacher_selected_columns)
+        online=online_selected_columns
+    )
 
     if make_plots:
         plot_all([
             train_scaled,
             val_scaled,
             test_scaled,
-            test_teacher_scaled,
-            online_selected_columns
+            online_scaled
         ], "scaled")
 
     train_feature_expanded = feature_expander(
@@ -214,14 +180,6 @@ def preprocessor(
         is_weekend_mode=is_weekend_mode
     )
 
-    test_teacher_feature_expanded = feature_expander(
-        dfs=test_teacher_scaled,
-        use_hour_features=use_hour_features,
-        use_weekend_features=use_weekend_features,
-        use_day_of_week_features=use_day_of_week_features,
-        is_weekend_mode=is_weekend_mode
-    )
-
     online_feature_expanded = feature_expander(
         dfs=online_selected_columns,
         use_hour_features=use_hour_features,
@@ -235,7 +193,6 @@ def preprocessor(
             train_feature_expanded,
             val_feature_expanded,
             test_feature_expanded,
-            test_teacher_feature_expanded,
             online_feature_expanded,
         ], "feature_expanded")
 
@@ -243,7 +200,6 @@ def preprocessor(
         train_feature_expanded,
         val_feature_expanded,
         test_feature_expanded,
-        test_teacher_feature_expanded,
         online_feature_expanded,
         scalers,
     )
