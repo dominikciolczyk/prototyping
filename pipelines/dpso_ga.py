@@ -92,28 +92,28 @@ def cloud_resource_prediction_dpso_ga(
     # ❷ PSO-GA constants: population size, iterations, inertia,
     #    cognitive & social weights, mutation probability
     # -----------------------------------------------------------
-    pso_const = {
-        "pop": 10,  # number of particles
-        "iter": 5,  # optimization iterations
-        "w": 0.5,  # inertia weight
+    pso_ga_const = {
+        "pop_size": 20,  # number of particles
+        "ga_generations": 5,  # optimization iterations
+        "crossover_rate": 0.8,  # crossover rate
+        "mutation_rate": 0.06,  # mutation rate
+        "pso_iterations": 7,  # PSO iterations
+        "w_max": 0.5,  # initial inertia weight
+        "w_min": 0.2, # final inertia weight
         "c1": 1.0,  # cognitive coefficient
         "c2": 1.2,  # social coefficient
-        "pm": 0.06,  # mutation probability
-        "vmax_fraction": 0.6 # max velocity fraction
+        "vmax_fraction": 0.5 # max velocity fraction
     }
 
     MAX_CONV_LAYERS = 2
     search_space: Dict[str, Tuple[float, float]] = {
-        "batch": (32.0, 64.0),
-
+        "batch": (32.0, 128.0),
         "n_conv": (1.0, float(MAX_CONV_LAYERS)),
-
         **{f"c{i}": (8.0, 64.0) for i in range(MAX_CONV_LAYERS)},
-        **{f"k{i}": (3.0, 12.0) for i in range(MAX_CONV_LAYERS)},
-
-        "hidden_lstm": (32.0, 1024.0),
+        **{f"k{i}": (3.0, 25.0) for i in range(MAX_CONV_LAYERS)},
+        "hidden_lstm": (32.0, 512.0),
         "lstm_layers": (1.0, 2.0),
-        "dropout": (0.0, 0.4),
+        "dropout": (0.0, 0.5),
         "lr": (1e-4, 1e-2),
     }
 
@@ -126,7 +126,7 @@ def cloud_resource_prediction_dpso_ga(
         alpha=alpha,
         beta=beta,
         search_space=search_space,
-        pso_const=pso_const,
+        pso_const=pso_ga_const,
         selected_target_columns=selected_columns,
         epochs=epochs,
         early_stop_epochs=early_stop_epochs,

@@ -101,7 +101,7 @@ def dpso_ga_searcher(
             early_stop_epochs=early_stop_epochs
         )
 
-        _, model_loss, _, _, _, _ = calculate_loss(
+        model_loss, _, _, _, _, _ = calculate_loss(
             model=model,
             test=test,
             seq_len=seq_len,
@@ -118,14 +118,17 @@ def dpso_ga_searcher(
     best_cfg, trajectory = dpso_ga(
         fitness_fn=_fitness,
         space=search_space,
-        pop_size=int(pso_const["pop"]),
-        max_iter=int(pso_const["iter"]),
-        w=pso_const["w"],
-        c1=pso_const["c1"],
-        c2=pso_const["c2"],
-        mutation_rate=pso_const["pm"],
-        vmax_fraction=pso_const["vmax_fraction"],
-        early_stop_iters=3,
+        pop_size=int(pso_const["pop_size"]),
+        ga_generations=int(pso_const["ga_generations"]),
+        crossover_rate=float(pso_const["crossover_rate"]),
+        mutation_rate=float(pso_const["mutation_rate"]),
+        pso_iterations=int(pso_const["pso_iterations"]),
+        w_max=float(pso_const["w_max"]),
+        w_min=float(pso_const["w_min"]),
+        c1=float(pso_const["c1"]),
+        c2=float(pso_const["c2"]),
+        vmax_fraction=float(pso_const["vmax_fraction"]),
+        early_stop_iters=5,
         on_iteration_end=save_checkpoint,
     )
 

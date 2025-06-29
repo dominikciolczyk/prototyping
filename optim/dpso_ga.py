@@ -2,105 +2,146 @@ import random
 import numpy as np
 import copy
 from typing import Callable, Tuple, Dict, List, Optional
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
 
 Particle = Dict[str, float]
-
-def _clip(cfg: Particle, space: Dict[str, Tuple[float, float]]) -> None:
-    """Keep every dim inside its (min,max) box."""
-    for k, (lo, hi) in space.items():
-        cfg[k] = max(lo, min(cfg[k], hi))
-
-def _initial_particle(space: Dict[str, Tuple[float, float]]) -> Particle:
-    return {k: random.uniform(lo, hi) for k, (lo, hi) in space.items()}
 
 def dpso_ga(
     fitness_fn: Callable[[Particle], float],
     space: Dict[str, Tuple[float, float]],
     pop_size: int,
-    max_iter: int,
-    w: float,
+    ga_generations: int,
+    crossover_rate: float,
+    mutation_rate: float,
+    pso_iterations: int,
+    w_max: float,
+    w_min: float,
     c1: float,
     c2: float,
-    mutation_rate: float,
-    vmax_fraction:  float,
+    vmax_fraction: float,
     early_stop_iters: int,
     on_iteration_end: Optional[Callable[[int, Particle, float, List[float]], None]] = None,
 ) -> Tuple[Particle, List[float]]:
-    """
-    Returns best hyper-param *dict* and the fitness trajectory.
-    """
 
-    # --- helpers: encode(real) <--> unit ∈ [0,1] --------------------------
     lo = {k: lo for k, (lo, hi) in space.items()}
     rng = {k: hi - lo for k, (lo, hi) in space.items()}
+    def encode(cfg): return {k: (cfg[k] - lo[k]) / rng[k] for k in space}
+    def decode(u):   return {k: u[k] * rng[k] + lo[k] for k in space}
 
-    def encode(cfg: Particle) -> Particle:
-        return {k: (cfg[k] - lo[k]) / rng[k] for k in space}
+    def _ga_step(pop_u, fitness_fn, space, crossover_rate, mutation_rate, elite_count=1):
+        # 1) score all individuals
+        decoded = [decode(u) for u in pop_u]
+        scores = [fitness_fn(cfg) for cfg in decoded]
 
-    def decode(unit: Particle) -> Particle:
-        return {k: unit[k] * rng[k] + lo[k] for k in space}
+        # 2) sort by fitness (lower = better)
+        sorted_pop = [u for _, u in sorted(zip(scores, pop_u), key=lambda x: x[0])]
+        elites = sorted_pop[:elite_count]  # elite individuals to keep
 
-    V_MAX = vmax_fraction  # same for every dim
+        # 3) tournament selection
+        def tourney():
+            i, j = random.sample(range(len(pop_u)), 2)
+            return pop_u[i] if scores[i] < scores[j] else pop_u[j]
 
-    # --- initial swarm ----------------------------------------------------
+        # 4) crossover & mutation
+        keys = list(space)
+        children = []
+        while len(children) < len(pop_u) - elite_count:
+            p1, p2 = tourney(), tourney()
+            if random.random() < crossover_rate:
+                pt1, pt2 = sorted(random.sample(range(len(keys)), 2))
+                c1 = {
+                    k: (
+                        p2[k] if pt1 <= i < pt2 else p1[k]
+                    ) for i, k in enumerate(keys)
+                }
+                c2 = {
+                    k: (
+                        p1[k] if pt1 <= i < pt2 else p2[k]
+                    ) for i, k in enumerate(keys)
+                }
+            else:
+                c1, c2 = p1.copy(), p2.copy()
+
+            for child in (c1, c2):
+                for k in keys:
+                    if random.random() < mutation_rate:
+                        child[k] = random.random()
+                children.append(child)
+
+        # 5) return elites + children
+        return elites + children[:len(pop_u) - elite_count]
+
+    # ——— 1) initialize GA population in unit‐space ———
     particles_u = [encode({k: random.uniform(*space[k]) for k in space})
                    for _ in range(pop_size)]
-    vel_u = [{k: 0.0 for k in space} for _ in range(pop_size)]
 
-    p_best_u = copy.deepcopy(particles_u)
-    p_best_s = [fitness_fn(decode(u)) for u in particles_u]
+    logger.info(f"Initial particles: {particles_u}")
 
-    g_idx = int(np.argmin(p_best_s))
-    g_best_u = copy.deepcopy(p_best_u[g_idx])
-    g_best_s = p_best_s[g_idx]
+    # ——— 2) GA warm‐up ———
+    for _ in range(ga_generations):
+        particles_u = _ga_step(
+            pop_u=particles_u,
+            fitness_fn=fitness_fn,
+            space=space,
+            crossover_rate=crossover_rate,
+            mutation_rate=mutation_rate,
+            elite_count=1 # keep the best individual
+        )
 
-    trajectory = [g_best_s]
+        logger.info(f"Particles after GA step: {particles_u}")
 
+    # ——— 3) initialize PSO from GA‐warmed population ———
+    velocities_u = [{k: 0.0 for k in space} for _ in range(pop_size)]
+    personal_best_u    = copy.deepcopy(particles_u)
+    personal_best_score = [fitness_fn(decode(u)) for u in personal_best_u]
+    g_idx = int(np.argmin(personal_best_score))
+    global_best_u   = copy.deepcopy(personal_best_u[g_idx])
+    global_best_score = personal_best_score[g_idx]
+
+    trajectory = [global_best_score]
     no_improve = 0
-    best_so_far = g_best_s
 
-    # --- main loop --------------------------------------------------------
-    for it in range(max_iter):
-        for i, u_i in enumerate(particles_u):
-            # 1️⃣  PSO update in unit-space
+    # ——— 4) pure PSO loop ———
+    for it in range(pso_iterations):
+        w = w_max - (w_max - w_min) * it / pso_iterations
+        for i,u in enumerate(particles_u):
             for k in space:
                 r1, r2 = random.random(), random.random()
-                vel_u[i][k] = (
-                        w * vel_u[i][k]
-                        + c1 * r1 * (p_best_u[i][k] - u_i[k])
-                        + c2 * r2 * (g_best_u[k] - u_i[k])
+                # velocity update
+                velocities_u[i][k] = (
+                    w*velocities_u[i][k]
+                    + c1*r1*(personal_best_u[i][k] - u[k])
+                    + c2*r2*(global_best_u[k]        - u[k])
                 )
-                # velocity clamp
-                vel_u[i][k] = max(-V_MAX, min(vel_u[i][k], V_MAX))
                 # position update
-                u_i[k] = max(0.0, min(u_i[k] + vel_u[i][k], 1.0))
+                u[k] = max(0.0, min(1.0, u[k] + velocities_u[i][k]))
 
-                # 2️⃣  GA mutation (also in unit-space)
-                if random.random() < mutation_rate:
-                    u_i[k] = random.random()
+            v_vec = np.array([velocities_u[i][k] for k in space])
+            norm = np.linalg.norm(v_vec)
 
-            # 3️⃣  Evaluate decoded particle
-            score = fitness_fn(decode(u_i))
-            if score < p_best_s[i]:
-                p_best_u[i], p_best_s[i] = copy.deepcopy(u_i), score
-                if score < g_best_s:
-                    g_best_u, g_best_s = copy.deepcopy(u_i), score
+            if norm > vmax_fraction:
+                for k in space:
+                    velocities_u[i][k] *= vmax_fraction / norm
 
-        trajectory.append(g_best_s)
-        if on_iteration_end is not None:
-            best_cfg = decode(g_best_u)
-            on_iteration_end(it, best_cfg, g_best_s, trajectory)
+            score = fitness_fn(decode(u))
+            if score < personal_best_score[i]:
+                personal_best_u[i], personal_best_score[i] = copy.deepcopy(u), score
+                if score < global_best_score:
+                    global_best_u, global_best_score = copy.deepcopy(u), score
 
-        # EARLY STOPPING LOGIC
-        if g_best_s < best_so_far - 1e-8:
-            best_so_far = g_best_s
+        trajectory.append(global_best_score)
+        if on_iteration_end:
+            on_iteration_end(it, decode(global_best_u), global_best_score, trajectory)
+
+        # early stopping
+        if trajectory[-1] < trajectory[-2] - 1e-8:
             no_improve = 0
         else:
             no_improve += 1
-
         if early_stop_iters is not None and no_improve >= early_stop_iters:
-            print(
-                f"[early stopping] No improvement in {early_stop_iters} iterations. Stopping early at iteration {it}.")
+            print(f"[early stopping] stopped at iter {it}")
             break
 
-    return decode(g_best_u), trajectory
+    return decode(global_best_u), trajectory
