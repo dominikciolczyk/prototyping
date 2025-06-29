@@ -12,7 +12,7 @@ e.g. [n_cnn_layers, ch_1, k_1, ..., lstm_hidden, lr, dropout]
 import random
 import numpy as np
 import copy
-from typing import Callable, Tuple, Dict, List
+from typing import Callable, Tuple, Dict, List, Optional
 
 Particle = Dict[str, float]  # hyperparameter dictionary
 
@@ -30,13 +30,15 @@ def _initial_particle(space: Dict[str, Tuple[float, float]]) -> Particle:
 def dpso_ga(
     fitness_fn: Callable[[Particle], float],
     space: Dict[str, Tuple[float, float]],
-    pop_size: int = 20,
-    max_iter: int = 30,
-    w: float = 0.5,
-    c1: float = 1.5,
-    c2: float = 1.5,
-    mutation_rate: float = 0.1,
-    vmax_fraction:  float = 0.20,
+    pop_size: int,
+    max_iter: int,
+    w: float,
+    c1: float,
+    c2: float,
+    mutation_rate: float,
+    vmax_fraction:  float,
+    early_stop_iters: int,
+    on_iteration_end: Optional[Callable[[int, Particle, float, List[float]], None]] = None,
 ) -> Tuple[Particle, List[float]]:
     """
     Returns best hyper-param *dict* and the fitness trajectory.
@@ -68,8 +70,11 @@ def dpso_ga(
 
     trajectory = [g_best_s]
 
+    no_improve = 0
+    best_so_far = g_best_s
+
     # --- main loop --------------------------------------------------------
-    for _ in range(max_iter):
+    for it in range(max_iter):
         for i, u_i in enumerate(particles_u):
             # 1️⃣  PSO update in unit-space
             for k in space:
@@ -96,5 +101,20 @@ def dpso_ga(
                     g_best_u, g_best_s = copy.deepcopy(u_i), score
 
         trajectory.append(g_best_s)
+        if on_iteration_end is not None:
+            best_cfg = decode(g_best_u)
+            on_iteration_end(it, best_cfg, g_best_s, trajectory)
+
+        # EARLY STOPPING LOGIC
+        if g_best_s < best_so_far - 1e-8:
+            best_so_far = g_best_s
+            no_improve = 0
+        else:
+            no_improve += 1
+
+        if early_stop_iters is not None and no_improve >= early_stop_iters:
+            print(
+                f"[early stopping] No improvement in {early_stop_iters} iterations. Stopping early at iteration {it}.")
+            break
 
     return decode(g_best_u), trajectory

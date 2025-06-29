@@ -1,14 +1,16 @@
 import click
 from datetime import datetime as dt
 from zenml.logger import get_logger
-from pipelines import cloud_resource_prediction_knowledge_distillation
+from pipelines import cloud_resource_prediction_dpso_ga
 import os
-from run import set_seed
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
 
+import os
+from run import set_seed
 
-@click.command()
+
+@click.command
 @click.option(
     "--only-inference",
     is_flag=True,
@@ -33,9 +35,9 @@ def main(
         )
         pipeline_args[
             "run_name"
-        ] = f"cloud_resource_prediction_knowledge_distillation_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
-        cloud_resource_prediction_knowledge_distillation.with_options(**pipeline_args)(**run_args_train)
-        logger.info("knowledge distillation pipeline finished successfully!")
+        ] = f"cloud-resource-prediction_training_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+        cloud_resource_prediction_dpso_ga.with_options(**pipeline_args)(**run_args_train)
+        logger.info("Training pipeline finished successfully!")
 
 if __name__ == "__main__":
     main()

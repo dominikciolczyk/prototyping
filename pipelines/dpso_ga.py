@@ -11,7 +11,7 @@ from zenml.logger import get_logger
 logger = get_logger(__name__)
 
 @pipeline
-def cloud_resource_prediction_training(
+def cloud_resource_prediction_dpso_ga(
     raw_dir: str,
     zip_path: str,
     raw_polcom_2022_dir: str,
@@ -56,7 +56,6 @@ def cloud_resource_prediction_training(
     epochs: int,
     early_stop_epochs: int,
 ):
-    # expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, _, scalers =\
     expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_final_dfs, scalers = \
         prepare_datasets_before_model_input(
           raw_dir=raw_dir,
@@ -89,15 +88,49 @@ def cloud_resource_prediction_training(
           is_weekend_mode=is_weekend_mode,
           make_plots=make_plots)
 
-    best_model_hp = {
-        "batch": batch,
-        "cnn_channels": cnn_channels,
-        "kernels": kernels,
-        "hidden_lstm": hidden_lstm,
-        "lstm_layers": lstm_layers,
-        "dropout_rate": dropout_rate,
-        "lr": lr,
+    # -----------------------------------------------------------
+    # ❷ PSO-GA constants: population size, iterations, inertia,
+    #    cognitive & social weights, mutation probability
+    # -----------------------------------------------------------
+    pso_const = {
+        "pop": 10,  # number of particles
+        "iter": 5,  # optimization iterations
+        "w": 0.5,  # inertia weight
+        "c1": 1.5,  # cognitive coefficient
+        "c2": 1.5,  # social coefficient
+        "pm": 0.1,  # mutation probability
+        "vmax_fraction": 0.6 # max velocity fraction
     }
+
+    MAX_CONV_LAYERS = 2
+    search_space: Dict[str, Tuple[float, float]] = {
+        "batch": (32.0, 64.0),
+
+        "n_conv": (1.0, float(MAX_CONV_LAYERS)),
+
+        **{f"c{i}": (8.0, 64.0) for i in range(MAX_CONV_LAYERS)},
+        **{f"k{i}": (3.0, 12.0) for i in range(MAX_CONV_LAYERS)},
+
+        "hidden_lstm": (32.0, 1024.0),
+        "lstm_layers": (1.0, 2.0),
+        "dropout": (0.0, 0.4),
+        "lr": (1e-4, 1e-2),
+    }
+
+    best_model_hp, _ = dpso_ga_searcher(
+        train=expanded_train_dfs,
+        val=expanded_val_dfs,
+        test=expanded_test_dfs,
+        seq_len=model_input_seq_len,
+        horizon=model_forecast_horizon,
+        alpha=alpha,
+        beta=beta,
+        search_space=search_space,
+        pso_const=pso_const,
+        selected_target_columns=selected_columns,
+        epochs=epochs,
+        early_stop_epochs=early_stop_epochs,
+    )
 
     model = cnn_lstm_trainer(train=expanded_train_dfs,
                              val=expanded_val_dfs,

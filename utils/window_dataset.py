@@ -85,10 +85,10 @@ def make_loader(
         T, F_all = X_arr.shape
         _, Tgt = y_arr.shape
 
-        logger.info(
-            f"[{vm_id}] raw shapes: X_arr=(T={T}, F_all={F_all}), "
-            f"y_arr=(T={T}, Tgt={Tgt})"
-        )
+        #logger.info(
+        #    f"[{vm_id}] raw shapes: X_arr=(T={T}, F_all={F_all}), "
+        #    f"y_arr=(T={T}, Tgt={Tgt})"
+        #)
 
         ds = TimeSeriesDataset(
             X_arr=X_arr,

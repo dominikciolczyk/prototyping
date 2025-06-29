@@ -88,25 +88,21 @@ def build_student(student_kind: StudentType,
     return model
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 3.  ZenML step – distillation
-# ──────────────────────────────────────────────────────────────────────────────
-
 @step(enable_cache=False)
-def student_distiller(                       # noqa: C901 (complexity – ok in step)
+def student_distiller(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
     seq_len: int,
     horizon: int,
-    selected_columns: List[str],
-    teacher: nn.Module,                   # Teacher already trained
+    selected_target_columns: List[str],
+    teacher: nn.Module,
     teacher_hparams: Dict[str, Any],
-    student_kind: StudentType = "lstm",
-    kd_kind: KDKind = "soft",
-    epochs: int = 30,
-    early_stop_epochs: int = 5,
-    batch: int = 32,
-    lr: float = 1e-3,
+    student_kind: StudentType,
+    kd_kind: KDKind,
+    epochs: int,
+    early_stop_epochs,
+    batch,
+    lr,
 ) -> nn.Module:
     """
     Distils `teacher` into a smaller `student_kind` model using `kd_kind` loss.
@@ -130,7 +126,7 @@ def student_distiller(                       # noqa: C901 (complexity – ok in 
         horizon=horizon,
         batch_size=batch,
         shuffle=True,
-        target_cols=selected_columns,
+        target_cols=selected_target_columns,
     )
     val_loader, _ = make_loader(
         dfs=val,
@@ -138,7 +134,7 @@ def student_distiller(                       # noqa: C901 (complexity – ok in 
         horizon=horizon,
         batch_size=batch,
         shuffle=False,
-        target_cols=selected_columns,
+        target_cols=selected_target_columns,
     )
 
     # sample shapes

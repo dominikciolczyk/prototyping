@@ -29,10 +29,9 @@ def cloud_resource_prediction_knowledge_distillation(
     load_2022_data: bool,
     load_2020_data: bool,
     recreate_dataset: bool,
-    val_size: int,
-    test_size: int,
-    test_teacher_size: float,
-    online_size: float,
+    val_size: float,
+    test_size: float,
+    test_final_size: float,
     seed: int,
     only_train_val_test_sets: int,
     selected_columns: List[str],
@@ -63,7 +62,7 @@ def cloud_resource_prediction_knowledge_distillation(
     epochs: int,
     early_stop_epochs: int,
 ):
-    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, _, scalers = \
+    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_final_dfs, scalers = \
         prepare_datasets_before_model_input(
             raw_dir=raw_dir,
             zip_path=zip_path,
@@ -77,8 +76,7 @@ def cloud_resource_prediction_knowledge_distillation(
             load_2020_data=load_2020_data,
             recreate_dataset=recreate_dataset,
             val_size=val_size, test_size=test_size,
-            test_teacher_size=test_teacher_size,
-            online_size=online_size,
+            test_final_size=test_final_size,
             seed=seed,
             only_train_val_test_sets=only_train_val_test_sets,
             selected_columns=selected_columns,
@@ -107,28 +105,28 @@ def cloud_resource_prediction_knowledge_distillation(
     }
 
     teacher_model = cnn_lstm_trainer(train=expanded_train_dfs,
-                             val=expanded_val_dfs,
-                             seq_len=model_input_seq_len,
-                             horizon=model_forecast_horizon,
-                             alpha=alpha,
-                             beta=beta,
-                             hyper_params=best_model_hp,
-                             selected_columns=selected_columns,
-                             epochs=epochs,
-                             early_stop_epochs=early_stop_epochs)
+                                 val=expanded_val_dfs,
+                                 seq_len=model_input_seq_len,
+                                 horizon=model_forecast_horizon,
+                                 alpha=alpha,
+                                 beta=beta,
+                                 hyper_params=best_model_hp,
+                                 selected_target_columns=selected_columns,
+                                 epochs=epochs,
+                                 early_stop_epochs=early_stop_epochs)
 
     model_evaluator(model=teacher_model,
-                    test=expanded_test_dfs,
+                    test=expanded_test_final_dfs,
                     seq_len=model_input_seq_len,
                     horizon=model_forecast_horizon,
                     alpha=alpha,
                     beta=beta,
                     hyper_params=best_model_hp,
-                    selected_columns=selected_columns,
+                    selected_target_columns=selected_columns,
                     scalers=scalers)
 
-    student_kind = "lstm"
-    kd_kind = "soft"
+    student_kind = "cnn_lstm"
+    kd_kind = "logits"
     student_epochs = 30
     student_early_stop_epochs = 5
     student_batch = 32
@@ -139,7 +137,7 @@ def cloud_resource_prediction_knowledge_distillation(
         val= expanded_val_dfs,
         seq_len=model_input_seq_len,
         horizon=model_forecast_horizon,
-        selected_columns=selected_columns,
+        selected_target_columns=selected_columns,
         teacher=teacher_model,
         teacher_hparams=best_model_hp,
         student_kind=student_kind,
@@ -149,3 +147,13 @@ def cloud_resource_prediction_knowledge_distillation(
         batch= student_batch,
         lr= student_lr
     )
+
+    model_evaluator(model=student,
+                    test=expanded_test_final_dfs,
+                    seq_len=model_input_seq_len,
+                    horizon=model_forecast_horizon,
+                    alpha=alpha,
+                    beta=beta,
+                    hyper_params=best_model_hp,
+                    selected_target_columns=selected_columns,
+                    scalers=scalers)
