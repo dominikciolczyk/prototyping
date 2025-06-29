@@ -96,9 +96,9 @@ def cloud_resource_prediction_dpso_ga(
         "pop": 10,  # number of particles
         "iter": 5,  # optimization iterations
         "w": 0.5,  # inertia weight
-        "c1": 1.5,  # cognitive coefficient
-        "c2": 1.5,  # social coefficient
-        "pm": 0.1,  # mutation probability
+        "c1": 1.0,  # cognitive coefficient
+        "c2": 1.2,  # social coefficient
+        "pm": 0.06,  # mutation probability
         "vmax_fraction": 0.6 # max velocity fraction
     }
 

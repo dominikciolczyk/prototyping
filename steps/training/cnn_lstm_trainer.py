@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 import pandas as pd
 import numpy as np
 import torch
@@ -16,6 +16,45 @@ from zenml.logger import get_logger
 experiment_tracker = Client().active_stack.experiment_tracker
 
 logger = get_logger(__name__)
+
+def train_model_for_epoch(model, train_loader, criterion, optim, device):
+    model.train()
+    running_loss = 0.0
+    for X, y in train_loader:
+        X, y = X.to(device), y.to(device)  # (B, L, F) / (B, H, T)
+        optim.zero_grad()
+        y_hat = model(X)  # (B, H, T)
+        loss = criterion(y_hat, y)
+        loss.backward()
+        optim.step()
+        running_loss += loss.item() * len(X)
+    train_loss = running_loss / len(train_loader.dataset)
+    return train_loss
+
+def _predict_model(
+        model: nn.Module,
+        loader: torch.utils.data.DataLoader,
+        device: torch.device,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Return stacked (y_true, y_pred) for the whole loader."""
+    model.eval()
+    y_true, y_pred = [], []
+    with torch.no_grad():
+        for X, y in loader:
+            X, y = X.to(device), y.to(device)
+            y_true.append(y.cpu().numpy())
+            y_pred.append(model(X).cpu().numpy())
+    return np.concatenate(y_true), np.concatenate(y_pred)
+
+def calculate_model_loss_for_loader(model, loader, alpha, beta, device):
+    y_true_model, y_pred_model = _predict_model(model, loader, device)
+    criterion = AsymmetricSmoothL1(
+        alpha=float(alpha),
+        beta=float(beta)
+    )
+    to_tensor = lambda arr: torch.tensor(arr, dtype=torch.float32)
+    model_loss = criterion(to_tensor(y_pred_model), to_tensor(y_true_model)).item()
+    return model_loss, y_pred_model, y_true_model, criterion, to_tensor
 
 @step(enable_cache=False)
 def cnn_lstm_trainer(
@@ -60,14 +99,21 @@ def cnn_lstm_trainer(
     # ------------------------------------------------------------------ #
     batch   = int(hyper_params["batch"])
     logger.info(f"Hyper-parameters:\n"
-                f"  seq_len = {seq_len}\n"
-                f"  horizon = {horizon}\n"
-                f"  alpha   = {alpha}\n"
-                f"  beta    = {beta}\n"
-                f"  batch   = {batch}\n"
-                f"  epochs  = {epochs}\n"
-                f"  early_stop_epochs = {early_stop_epochs}\n"
-                f"  selected_columns = {selected_target_columns}")
+        f"  seq_len = {seq_len}\n"
+        f"  horizon = {horizon}\n"
+        f"  alpha   = {alpha}\n"
+        f"  beta    = {beta}\n"
+        f"  batch   = {batch}\n"
+        f"  cnn_channels = {hyper_params['cnn_channels']}\n"
+        f"  kernels = {hyper_params['kernels']}\n"
+        f"  hidden_lstm = {hyper_params['hidden_lstm']}\n"
+        f"  lstm_layers = {hyper_params['lstm_layers']}\n"
+        f"  dropout_rate = {hyper_params['dropout_rate']}\n"
+        f"  lr = {hyper_params['lr']}\n"
+        f"  selected_target_columns = {selected_target_columns}\n"
+        f"  epochs  = {epochs}\n"
+        f"  early_stop_epochs = {early_stop_epochs}\n"
+    )
 
     # ------------------------------------------------------------------ #
     # 2. Data loaders
@@ -122,7 +168,7 @@ def cnn_lstm_trainer(
         alpha=float(alpha),
         beta=float(beta)
     )
-    optim     = Adam(model.parameters(), lr=float(hyper_params["lr"]))
+    optim = Adam(model.parameters(), lr=float(hyper_params["lr"]))
 
     # ------------------------------------------------------------------ #
     # 4. Training loop – early stopping
@@ -132,27 +178,14 @@ def cnn_lstm_trainer(
     best_epoch = -1
     for epoch in range(epochs):
         # 4.1 —— Training ------------------------------------------------
-        model.train()
-        running_loss = 0.0
-        for X, y in train_loader:
-            X, y = X.to(device), y.to(device)               # (B, L, F) / (B, H, T)
-            optim.zero_grad()
-            y_hat = model(X)                                # (B, H, T)
-            loss = criterion(y_hat, y)
-            loss.backward()
-            optim.step()
-            running_loss += loss.item() * len(X)
+        train_loss = train_model_for_epoch(model, train_loader, criterion, optim, device)
 
-        train_loss = running_loss / len(train_loader.dataset)
-
-        # 4.2 —— Validation ---------------------------------------------
-        model.eval()
-        val_running = 0.0
-        with torch.no_grad():
-            for X, y in val_loader:
-                X, y = X.to(device), y.to(device)
-                val_running += criterion(model(X), y).item() * len(X)
-        val_loss = val_running / len(val_loader.dataset)
+        val_loss, _, _, _, _ =  calculate_model_loss_for_loader(
+            model=model,
+            loader=val_loader,
+            alpha=alpha,
+            beta=beta,
+            device=device)
 
         logger.info(
             f"[{epoch:02d}] "

@@ -3,13 +3,12 @@ from zenml import step
 from zenml.logger import get_logger
 from optim.dpso_ga import dpso_ga
 from steps.training.cnn_lstm_trainer import cnn_lstm_trainer
-from utils.window_dataset import make_loader
-from losses.qos import AsymmetricL1, AsymmetricSmoothL1
 import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 import json
 import os
+from steps.training.model_evaluator import calculate_loss, _predict_max_baseline_sliding
 
 logger = get_logger(__name__)
 
@@ -74,16 +73,12 @@ def dpso_ga_searcher(
             kernels.append(k)
 
         return {
-            "seq_len": seq_len,
-            "horizon": horizon,
             "batch": int(round(cfg["batch"])),
             "cnn_channels": cnn_channels,
             "kernels": kernels,
             "hidden_lstm": int(round(cfg["hidden_lstm"])),
             "lstm_layers": int(round(cfg["lstm_layers"])),
             "dropout_rate": cfg["dropout"],
-            "alpha": alpha,
-            "beta": beta,
             "lr": cfg["lr"],
         }
 
@@ -91,15 +86,8 @@ def dpso_ga_searcher(
 
     # -----------------------------
     def _fitness(cfg: Dict[str, float]) -> float:
-        # -------- Test evaluation ---------------
         batch = int(round(cfg["batch"]))
-        test_loader, _ = make_loader(
-            dfs=test, seq_len=seq_len, horizon=horizon, batch_size=batch, shuffle=False, target_cols=selected_target_columns
-        )
 
-        hp = _build_hp(cfg=cfg)
-
-        # --- 3. train/validate/test as before ---------------------------------
         model = cnn_lstm_trainer(
             train=train,
             val=val,
@@ -107,23 +95,24 @@ def dpso_ga_searcher(
             horizon=horizon,
             alpha=alpha,
             beta=beta,
-            hyper_params=hp,
+            hyper_params=_build_hp(cfg=cfg),
             selected_target_columns=selected_target_columns,
             epochs=epochs,
             early_stop_epochs=early_stop_epochs
         )
 
-        criterion = AsymmetricSmoothL1(alpha=alpha, beta=beta)
-        test_loss = 0.0
-        model.eval()
-        for X, y in test_loader:
-            with torch.no_grad():
-                model.to(device)
-                X, y = X.to(device), y.to(device)
-                test_loss += criterion(model(X), y).item() * len(X)
-        test_loss /= len(test_loader.dataset)
-        #mlflow.log_metric("test_loss", test_loss)
-        return test_loss
+        _, model_loss, _, _, _, _ = calculate_loss(
+            model=model,
+            test=test,
+            seq_len=seq_len,
+            horizon=horizon,
+            alpha=alpha,
+            beta=beta,
+            batch=batch,
+            device=device,
+            selected_target_columns=selected_target_columns)
+
+        return model_loss
 
     # ----------------------------------------------
     best_cfg, trajectory = dpso_ga(
@@ -136,8 +125,8 @@ def dpso_ga_searcher(
         c2=pso_const["c2"],
         mutation_rate=pso_const["pm"],
         vmax_fraction=pso_const["vmax_fraction"],
+        early_stop_iters=3,
         on_iteration_end=save_checkpoint,
-        early_stop_iters=1,
     )
 
     logger.info("DPSO-GA finished, best cfg=%s  best_score=%.4f",

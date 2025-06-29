@@ -1,9 +1,7 @@
 from typing import Dict, Any, List, Tuple
-
 import numpy as np
 import pandas as pd
 import torch
-from losses.qos import AsymmetricSmoothL1
 from steps.logging.track_params import track_experiment_metadata
 from torch import nn
 from utils.plotter import plot_time_series
@@ -11,27 +9,11 @@ from utils.window_dataset import make_loader
 from zenml import step
 from zenml.client import Client
 from zenml.logger import get_logger
+from .cnn_lstm_trainer import calculate_model_loss_for_loader
 
 experiment_tracker = Client().active_stack.experiment_tracker
 
 logger = get_logger(__name__)
-
-
-def _predict_model(
-        model: nn.Module,
-        loader: torch.utils.data.DataLoader,
-        device: torch.device,
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Return stacked (y_true, y_pred) for the whole loader."""
-    model.eval()
-    y_true, y_pred = [], []
-    with torch.no_grad():
-        for X, y in loader:
-            X, y = X.to(device), y.to(device)
-            y_true.append(y.cpu().numpy())
-            y_pred.append(model(X).cpu().numpy())
-    return np.concatenate(y_true), np.concatenate(y_pred)
-
 
 def _predict_max_baseline_sliding(
         loader: torch.utils.data.DataLoader,
@@ -57,7 +39,6 @@ def _predict_max_baseline_sliding(
             y_pred.append(preds.cpu().numpy())
 
     return np.concatenate(y_true), np.concatenate(y_pred)
-
 
 def _predict_last_value_baseline_sliding(
         loader: torch.utils.data.DataLoader,
@@ -99,6 +80,24 @@ def inverse_transform_predictions(
 
     return y_true_inv, y_pred_inv
 
+def calculate_loss(model, test, seq_len, horizon, alpha, beta, batch, device, selected_target_columns):
+    test_loader, vm_ranges = make_loader(
+        dfs=test,
+        seq_len=seq_len,
+        horizon=horizon,
+        batch_size=batch,
+        shuffle=False,
+        target_cols=selected_target_columns,
+    )
+    model_loss, y_pred_model, y_true_model, criterion, to_tensor = calculate_model_loss_for_loader(model, test_loader, alpha, beta, device)
+    y_true_max, y_pred_max = _predict_max_baseline_sliding(test_loader, device)
+    baseline_loss = criterion(to_tensor(y_pred_max), to_tensor(y_true_max)).item()
+    logger.info(
+        "AsymmetricSmoothL1  |  model: %.4f  |  max baseline: %.4f",
+        model_loss, baseline_loss
+    )
+    return model_loss, baseline_loss, y_pred_model, y_pred_max, y_true_model, vm_ranges
+
 @step(enable_cache=False)
 def model_evaluator(
         model: nn.Module,
@@ -111,54 +110,20 @@ def model_evaluator(
         selected_target_columns: List[str],
         scalers: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """
-    Evaluate the trained CNN-LSTM against a naïve Last-Value baseline.
-
-    Now restricted to forecasting only `selected_columns`.
-    """
-
     batch = int(hyper_params["batch"])
 
     # 1) ---- torch prediction for only selected_columns ------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    test_loader, vm_ranges = make_loader(
-        dfs=test,
-        seq_len=seq_len,
-        horizon=horizon,
-        batch_size=batch,
-        shuffle=False,
-        target_cols=selected_target_columns,
-    )
-
-    y_true_model, y_pred_model = _predict_model(model, test_loader, device)
-    # Shapes: (n_vms * batch_per_vm, horizon, n_targets)
-
-    y_true_max, y_pred_max = _predict_max_baseline_sliding(test_loader, device)
-
-    # 3) ---- compute AsymmetricL1 on model vs baseline ----------
-    criterion = AsymmetricSmoothL1(
-        alpha=float(alpha),
-        beta=float(beta)
-    )
-    to_tensor = lambda arr: torch.tensor(arr, dtype=torch.float32)
-
-    # Use scaled values for loss
-    model_loss = criterion(to_tensor(y_pred_model), to_tensor(y_true_model)).item()
-    baseline_loss = criterion(to_tensor(y_pred_max), to_tensor(y_true_max)).item()
-
-    logger.info(
-        "AsymmetricL1  |  model: %.4f  |  baseline: %.4f",
-        model_loss, baseline_loss
-    )
-
-
+    model_loss, baseline_loss, y_pred_model, y_pred_max, y_true_model, vm_ranges = calculate_loss(model, test, seq_len,
+                                                                                                  horizon, alpha, beta,
+                                                                                                  batch, device,
+                                                                                                  selected_target_columns)
 
     merged_plots: Dict[str, pd.DataFrame] = {}
 
     for vm_id, (start_idx, end_idx) in vm_ranges.items():
         if end_idx - start_idx <= 0:
-            logger.warning(f"[{vm_id}] has no windows — skipping.")
-            continue
+            raise ValueError(f"VM '{vm_id}' has no data in the specified range ({start_idx}, {end_idx})")
 
         # Extract the last window for this VM
         global_idx = end_idx - 1
@@ -200,8 +165,8 @@ def model_evaluator(
 
     return {
         "metrics": {
-            "AsymmetricL1_model": model_loss,
-            "AsymmetricL1_baseline": baseline_loss,
+            "AsymmetricSmoothL1_model": model_loss,
+            "AsymmetricSmoothL1_baseline": baseline_loss,
         },
         "plot_paths": plot_paths,
     }

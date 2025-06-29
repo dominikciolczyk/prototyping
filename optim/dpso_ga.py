@@ -1,31 +1,17 @@
-"""
-DPSO-GA :
-
-    • Particle position  -> x_i
-    • Velocity           -> v_i
-    • Best local position-> p_best_i
-    • Best global        -> g_best
-
-Particles encode hyper-parameters of CNN-LSTM,
-e.g. [n_cnn_layers, ch_1, k_1, ..., lstm_hidden, lr, dropout]
-"""
 import random
 import numpy as np
 import copy
 from typing import Callable, Tuple, Dict, List, Optional
 
-Particle = Dict[str, float]  # hyperparameter dictionary
-
+Particle = Dict[str, float]
 
 def _clip(cfg: Particle, space: Dict[str, Tuple[float, float]]) -> None:
     """Keep every dim inside its (min,max) box."""
     for k, (lo, hi) in space.items():
         cfg[k] = max(lo, min(cfg[k], hi))
 
-
 def _initial_particle(space: Dict[str, Tuple[float, float]]) -> Particle:
     return {k: random.uniform(lo, hi) for k, (lo, hi) in space.items()}
-
 
 def dpso_ga(
     fitness_fn: Callable[[Particle], float],
