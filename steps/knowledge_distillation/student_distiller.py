@@ -1,54 +1,40 @@
 from typing import Dict, Any, List, Literal, Tuple
 import copy
 import pandas as pd
-import torch
 from torch import nn
 from torch.optim import Adam
-import torch.nn.functional as F
 from zenml import step
-from zenml.logger import get_logger
 from utils.window_dataset import make_loader
 from models.cnn_lstm import CNNLSTMWithAttention
 from models.lstm_baseline import LSTM_Baseline
+import torch
+import torch.nn.functional as F
+from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
 StudentType   = Literal["cnn_lstm", "lstm"]
 KDKind        = Literal["logits", "soft"]
 
-def kd_loss_logit(student_out: torch.Tensor,
-                  teacher_out: torch.Tensor,
-                  hard_target: torch.Tensor,
-                  hard_ratio: float = 0.3) -> torch.Tensor:
-    """
-    Logit-matching  + optional hard loss (MSE) on true labels.
-    """
-    mse_soft = F.mse_loss(student_out, teacher_out.detach())
-    mse_hard = F.mse_loss(student_out, hard_target)
-    return (1-hard_ratio) * mse_soft + hard_ratio * mse_hard
+def kd_loss_regression(
+        student_out: torch.Tensor,
+        teacher_out: torch.Tensor,
+        hard_target: torch.Tensor,
+        kd_ratio: float,
+        T: float,
+        use_temperature: bool,
+) -> torch.Tensor:
 
+    if use_temperature and T != 1.0:
+        student_out = student_out / T
+        teacher_out = teacher_out.detach() / T
 
-def kd_loss_soft(student_out: torch.Tensor,
-                 teacher_out: torch.Tensor,
-                 hard_target: torch.Tensor,
-                 T: float = 3.0,
-                 alpha: float = 0.7) -> torch.Tensor:
-    """
-    Soft-target KD (Hinton): KLDiv(student_T ‖ teacher_T) + hard loss.
-    """
-    # soften logits
-    s_logp = F.log_softmax(student_out / T, dim=-1)
-    t_prob = F.softmax(teacher_out.detach() / T, dim=-1)
-    loss_soft = F.kl_div(s_logp, t_prob, reduction="batchmean") * T * T
-    loss_hard = F.mse_loss(student_out, hard_target)
-    return alpha * loss_soft + (1-alpha) * loss_hard
+    soft_loss = F.mse_loss(student_out, teacher_out.detach())
+    hard_loss = F.mse_loss(student_out * (T if use_temperature else 1.0), hard_target)
 
-# Map for quick choice
-KD_LOSSES = {"logits": kd_loss_logit, "soft": kd_loss_soft}
+    return kd_ratio * soft_loss + (1 - kd_ratio) * hard_loss
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 2.  Helper: build student model with reduced capacity
-# ──────────────────────────────────────────────────────────────────────────────
+KD_LOSSES = {"logits": kd_loss_regression}
 
 def build_student(student_kind: StudentType,
                   n_features: int,
@@ -99,6 +85,9 @@ def student_distiller(
     teacher_hparams: Dict[str, Any],
     student_kind: StudentType,
     kd_kind: KDKind,
+    alpha: float,
+    T: float,
+    use_temperature: bool,
     epochs: int,
     early_stop_epochs,
     batch,
@@ -155,7 +144,6 @@ def student_distiller(
     best_state: Tuple[int, dict] | None = None
 
     for epoch in range(epochs):
-        # —— train ——
         student.train()
         run_loss = 0.0
         for X, y in train_loader:
@@ -167,7 +155,13 @@ def student_distiller(
                 t_out = teacher(X)                # (B, H, T)
             s_out = student(X)                    # (B, H, T)
 
-            loss = kd_fn(s_out, t_out, y)         # KD loss
+            loss = kd_fn(student_out=s_out,
+                         teacher_out=t_out,
+                         hard_target=y,
+                         alpha=alpha,
+                         T=T,
+                         use_temperature=use_temperature)
+
             loss.backward()
             optimizer.step()
             run_loss += loss.item() * len(X)

@@ -122,6 +122,7 @@ def dpso_ga_searcher(
         ga_generations=int(pso_const["ga_generations"]),
         crossover_rate=float(pso_const["crossover_rate"]),
         mutation_rate=float(pso_const["mutation_rate"]),
+        mutation_std=float(pso_const["mutation_std"]),
         pso_iterations=int(pso_const["pso_iterations"]),
         w_max=float(pso_const["w_max"]),
         w_min=float(pso_const["w_min"]),

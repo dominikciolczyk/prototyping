@@ -15,6 +15,7 @@ def dpso_ga(
     ga_generations: int,
     crossover_rate: float,
     mutation_rate: float,
+    mutation_std: float,
     pso_iterations: int,
     w_max: float,
     w_min: float,
@@ -25,6 +26,7 @@ def dpso_ga(
     on_iteration_end: Optional[Callable[[int, Particle, float, List[float]], None]] = None,
 ) -> Tuple[Particle, List[float]]:
 
+    vmax = vmax_fraction * np.sqrt(len(space))
     lo = {k: lo for k, (lo, hi) in space.items()}
     rng = {k: hi - lo for k, (lo, hi) in space.items()}
     def encode(cfg): return {k: (cfg[k] - lo[k]) / rng[k] for k in space}
@@ -51,23 +53,23 @@ def dpso_ga(
             p1, p2 = tourney(), tourney()
             if random.random() < crossover_rate:
                 pt1, pt2 = sorted(random.sample(range(len(keys)), 2))
-                c1 = {
+                child1 = {
                     k: (
                         p2[k] if pt1 <= i < pt2 else p1[k]
                     ) for i, k in enumerate(keys)
                 }
-                c2 = {
+                child2 = {
                     k: (
                         p1[k] if pt1 <= i < pt2 else p2[k]
                     ) for i, k in enumerate(keys)
                 }
             else:
-                c1, c2 = p1.copy(), p2.copy()
+                child1, child2 = p1.copy(), p2.copy()
 
-            for child in (c1, c2):
+            for child in (child1, child2):
                 for k in keys:
                     if random.random() < mutation_rate:
-                        child[k] = random.random()
+                        child[k] = max(0.0, min(1.0, child[k] + np.random.normal(0, mutation_std)))
                 children.append(child)
 
         # 5) return elites + children
@@ -115,15 +117,12 @@ def dpso_ga(
                     + c1*r1*(personal_best_u[i][k] - u[k])
                     + c2*r2*(global_best_u[k]        - u[k])
                 )
-                # position update
-                u[k] = max(0.0, min(1.0, u[k] + velocities_u[i][k]))
 
-            v_vec = np.array([velocities_u[i][k] for k in space])
-            norm = np.linalg.norm(v_vec)
-
-            if norm > vmax_fraction:
+            norm = np.linalg.norm(list(velocities_u[i].values()))
+            if norm > vmax:
                 for k in space:
-                    velocities_u[i][k] *= vmax_fraction / norm
+                    velocities_u[i][k] *= vmax / norm
+                    u[k] = max(0.0, min(1.0, u[k] + velocities_u[i][k]))
 
             score = fitness_fn(decode(u))
             if score < personal_best_score[i]:
@@ -135,8 +134,8 @@ def dpso_ga(
         if on_iteration_end:
             on_iteration_end(it, decode(global_best_u), global_best_score, trajectory)
 
-        # early stopping
-        if trajectory[-1] < trajectory[-2] - 1e-8:
+        tol = 1e-5
+        if trajectory[-2] - trajectory[-1] > tol:
             no_improve = 0
         else:
             no_improve += 1

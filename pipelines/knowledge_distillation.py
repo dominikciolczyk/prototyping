@@ -1,5 +1,4 @@
-from typing import List, Tuple
-import joblib
+from typing import List
 from steps import (
     model_evaluator,
     cnn_lstm_trainer,
@@ -7,11 +6,6 @@ from steps import (
 )
 from utils.pipeline_utils import prepare_datasets_before_model_input
 from zenml import pipeline
-import torch
-import json
-from pathlib import Path
-from models.cnn_lstm import CNNLSTMWithAttention
-from zenml import step
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
@@ -127,9 +121,9 @@ def cloud_resource_prediction_knowledge_distillation(
 
     student_kind = "cnn_lstm"
     kd_kind = "logits"
-    student_epochs = 30
-    student_early_stop_epochs = 5
-    student_batch = 32
+    student_epochs = 50
+    student_early_stop_epochs = 10
+    student_batch = 64
     student_lr = 1e-3
 
     student = student_distiller(
