@@ -9,12 +9,12 @@ def per_vm_chronological_scaler(
     train: Dict[str, pd.DataFrame],
     val:   Dict[str, pd.DataFrame],
     test:  Dict[str, pd.DataFrame],
-    online: Dict[str, pd.DataFrame],
+    test_final: Dict[str, pd.DataFrame],
 ) -> Tuple[
     Dict[str, pd.DataFrame],                     # train_scaled
     Dict[str, pd.DataFrame],                     # val_scaled
     Dict[str, pd.DataFrame],                     # test_scaled
-    Dict[str, pd.DataFrame],                     # online_scaled
+    Dict[str, pd.DataFrame],                     # test_final_scaled
     Dict[str, Dict[str, preprocessing.StandardScaler]],  # scalers per VM per column
 ]:
     logger.info("Per-VM chronological scaler step using river.StandardScaler")
@@ -44,6 +44,6 @@ def per_vm_chronological_scaler(
     train_scaled  = _apply_split(train)
     val_scaled    = _apply_split(val)
     test_scaled   = _apply_split(test)
-    online_scaled = _apply_split(online)
+    test_final_scaled = _apply_split(test_final)
 
-    return train_scaled, val_scaled, test_scaled, online_scaled, scalers
+    return train_scaled, val_scaled, test_scaled, test_final_scaled, scalers

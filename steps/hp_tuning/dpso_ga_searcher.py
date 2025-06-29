@@ -74,7 +74,7 @@ def dpso_ga_searcher(
     beta: float,
     search_space: Dict[str, Tuple[float, float]],
     pso_const: Dict[str, float],
-    selected_columns: List[str],
+    selected_target_columns: List[str],
     epochs: int,
     early_stop_epochs: int,
     scalers: Dict[str, Any] = None
@@ -115,7 +115,7 @@ def dpso_ga_searcher(
         # -------- Test evaluation ---------------
         batch = int(round(cfg["batch"]))
         test_loader, _ = make_loader(
-            dfs=test, seq_len=seq_len, horizon=horizon, batch_size=batch, shuffle=False, target_cols=selected_columns
+            dfs=test, seq_len=seq_len, horizon=horizon, batch_size=batch, shuffle=False, target_cols=selected_target_columns
         )
 
         n_conv = int(round(cfg["n_conv"]))
@@ -138,7 +138,7 @@ def dpso_ga_searcher(
             alpha=alpha,
             beta=1,
             hyper_params=hp,
-            selected_columns=selected_columns,
+            selected_columns=selected_target_columns,
             epochs=epochs,
             early_stop_epochs=early_stop_epochs
         )
@@ -177,7 +177,7 @@ def dpso_ga_searcher(
 
     save_best_model(
         model_config=_build_hp(best_cfg),
-        selected_columns=selected_columns,
+        selected_columns=selected_target_columns,
         seq_len=seq_len,
         horizon=horizon,
         actual_n_features = next(iter(train.values())).shape[1],

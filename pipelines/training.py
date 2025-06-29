@@ -25,8 +25,7 @@ def cloud_resource_prediction_training(
     recreate_dataset: bool,
     val_size: float,
     test_size: float,
-    test_teacher_size: float,
-    online_size: float,
+    test_final_size: float,
     seed: int,
     only_train_val_test_sets: int,
     selected_columns: List[str],
@@ -58,7 +57,7 @@ def cloud_resource_prediction_training(
     early_stop_epochs: int,
 ):
     # expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, _, scalers =\
-    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, _, scalers = \
+    expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_final_dfs, scalers = \
         prepare_datasets_before_model_input(
           raw_dir=raw_dir,
           zip_path=zip_path,
@@ -72,8 +71,7 @@ def cloud_resource_prediction_training(
           load_2020_data=load_2020_data,
           recreate_dataset=recreate_dataset,
           val_size=val_size, test_size=test_size,
-          test_teacher_size=test_teacher_size,
-          online_size=online_size,
+          test_final_size=test_final_size,
           seed=seed,
           only_train_val_test_sets=only_train_val_test_sets,
           selected_columns=selected_columns,
@@ -135,7 +133,7 @@ def cloud_resource_prediction_training(
             beta=beta,
             search_space=search_space,
             pso_const=pso_const,
-            selected_columns=selected_columns,
+            selected_target_columns=selected_columns,
             epochs=epochs,
             early_stop_epochs=early_stop_epochs,
             scalers=scalers,
@@ -168,16 +166,16 @@ def cloud_resource_prediction_training(
                                  alpha=alpha,
                                  beta=beta,
                                  hyper_params=best_model_hp,
-                                 selected_columns=selected_columns,
+                                 selected_target_columns=selected_columns,
                                  epochs=epochs,
                                  early_stop_epochs=early_stop_epochs)
 
         model_evaluator(model=model,
-                        test=expanded_test_dfs,
+                        test=expanded_test_final_dfs,
                         seq_len=model_input_seq_len,
                         horizon=model_forecast_horizon,
                         alpha=alpha,
                         beta=beta,
                         hyper_params=best_model_hp,
-                        selected_columns=selected_columns,
+                        selected_target_columns=selected_columns,
                         scalers=scalers)

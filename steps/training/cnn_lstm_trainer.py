@@ -26,7 +26,7 @@ def cnn_lstm_trainer(
     alpha: float,
     beta: float,
     hyper_params: Dict[str, Any],
-    selected_columns: List[str],
+    selected_target_columns: List[str],
     epochs: int,
     early_stop_epochs: int
 ) -> nn.Module:
@@ -47,7 +47,7 @@ def cnn_lstm_trainer(
             logger.info(f"[{vm_id}] min/max:\n{stats}\n")
 
             # Target-column presence
-            missing = set(selected_columns) - set(df.columns)
+            missing = set(selected_target_columns) - set(df.columns)
             if missing:
                 raise KeyError(
                     f"[{vm_id}] is missing target column(s): {missing}"
@@ -67,7 +67,7 @@ def cnn_lstm_trainer(
                 f"  batch   = {batch}\n"
                 f"  epochs  = {epochs}\n"
                 f"  early_stop_epochs = {early_stop_epochs}\n"
-                f"  selected_columns = {selected_columns}")
+                f"  selected_columns = {selected_target_columns}")
 
     # ------------------------------------------------------------------ #
     # 2. Data loaders
@@ -81,7 +81,7 @@ def cnn_lstm_trainer(
         horizon=horizon,
         batch_size=batch,
         shuffle=True,
-        target_cols=selected_columns,
+        target_cols=selected_target_columns,
     )
     val_loader, _ = make_loader(
         dfs=val,
@@ -89,7 +89,7 @@ def cnn_lstm_trainer(
         horizon=horizon,
         batch_size=batch,
         shuffle=False,
-        target_cols=selected_columns,
+        target_cols=selected_target_columns,
     )
 
     # infer sizes

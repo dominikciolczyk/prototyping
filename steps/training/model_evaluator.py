@@ -108,7 +108,7 @@ def model_evaluator(
         alpha: float,
         beta: float,
         hyper_params: Dict[str, Any],
-        selected_columns: List[str],
+        selected_target_columns: List[str],
         scalers: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
@@ -127,7 +127,7 @@ def model_evaluator(
         horizon=horizon,
         batch_size=batch,
         shuffle=False,
-        target_cols=selected_columns,
+        target_cols=selected_target_columns,
     )
 
     y_true_model, y_pred_model = _predict_model(model, test_loader, device)
@@ -176,7 +176,7 @@ def model_evaluator(
         inv_pred = np.zeros_like(y_pred_win)
         inv_base = np.zeros_like(y_base_win)
 
-        for i, col in enumerate(selected_columns):
+        for i, col in enumerate(selected_target_columns):
             scaler = vm_scalers[col]
             mu = scaler.means[col]
             var = scaler.vars[col]
@@ -188,9 +188,9 @@ def model_evaluator(
 
         # Build DataFrame for this VM
         idx = test[vm_id].index[-horizon:]
-        df_true = pd.DataFrame(inv_true, columns=selected_columns, index=idx)
-        df_pred = pd.DataFrame(inv_pred, columns=[f"{c}_pred_model" for c in selected_columns], index=idx)
-        df_base = pd.DataFrame(inv_base, columns=[f"{c}_pred_baseline" for c in selected_columns], index=idx)
+        df_true = pd.DataFrame(inv_true, columns=selected_target_columns, index=idx)
+        df_pred = pd.DataFrame(inv_pred, columns=[f"{c}_pred_model" for c in selected_target_columns], index=idx)
+        df_base = pd.DataFrame(inv_base, columns=[f"{c}_pred_baseline" for c in selected_target_columns], index=idx)
 
         merged = pd.concat([df_true, df_pred, df_base], axis=1)
         merged_plots[vm_id] = merged

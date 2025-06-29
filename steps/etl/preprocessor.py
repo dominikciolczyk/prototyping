@@ -19,10 +19,6 @@ from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-def aggregate_and_select_columns(dfs: Dict[str, pd.DataFrame], selected_columns: List[str]):
-    return column_selector(
-        dfs=aggregator(dfs=dfs),
-        selected_columns=selected_columns)
 
 @step
 def preprocessor(
@@ -33,8 +29,7 @@ def preprocessor(
     load_2020_data: bool,
     val_size: float,
     test_size: float,
-    test_teacher_size: float,
-    online_size: float,
+    test_final_size: float,
     seed: int,
     only_train_val_test_sets: bool,
     selected_columns: List[str],
@@ -55,8 +50,7 @@ def preprocessor(
     Dict[str, pd.DataFrame],  # train
     Dict[str, pd.DataFrame],  # val
     Dict[str, pd.DataFrame],  # test
-    #Dict[str, pd.DataFrame],  # test_teacher
-    Dict[str, pd.DataFrame],  # online
+    Dict[str, pd.DataFrame],  # test_teacher
     Dict[str, object],
 ]:
     dropna_how = "any"
@@ -83,11 +77,11 @@ def preprocessor(
 
     plot_time_series(trimmed_dfs, f"trimmed_dfs")
 
-    train_dfs, val_dfs, test_dfs, online_dfs = chronological_splitter(
+    train_dfs, val_dfs, test_dfs, test_final_dfs = chronological_splitter(
         dfs=trimmed_dfs,
         val_size=val_size,
         test_size=test_size,
-        online_size=online_size,
+        test_final_size=test_final_size,
         only_train_val_test_sets=only_train_val_test_sets
     )
 
@@ -96,7 +90,7 @@ def preprocessor(
             train_dfs,
             val_dfs,
             test_dfs,
-            online_dfs
+            test_final_dfs
         ], "splitted")
 
     train_reduced = anomaly_reducer(train=train_dfs,
@@ -114,7 +108,7 @@ def preprocessor(
             train_reduced,
             val_dfs,
             test_dfs,
-            online_dfs
+            test_final_dfs
         ], "reduced")\
 
     train_selected_dfs = aggregate_and_select_columns(
@@ -129,8 +123,8 @@ def preprocessor(
         dfs=test_dfs,
         selected_columns=selected_columns)
 
-    online_selected_columns = aggregate_and_select_columns(
-        dfs=online_dfs,
+    test_final_selected_columns = aggregate_and_select_columns(
+        dfs=test_final_dfs,
         selected_columns=selected_columns)
 
     if make_plots:
@@ -138,14 +132,14 @@ def preprocessor(
             train_selected_dfs,
             val_selected_columns,
             test_selected_columns,
-            online_selected_columns
+            test_final_selected_columns
         ], "selected_columns")
 
-    train_scaled, val_scaled, test_scaled, online_scaled, scalers = per_vm_chronological_scaler(
+    train_scaled, val_scaled, test_scaled, test_final_scaled, scalers = per_vm_chronological_scaler(
         train=train_selected_dfs,
         val=val_selected_columns,
         test=test_selected_columns,
-        online=online_selected_columns
+        test_final=test_final_selected_columns
     )
 
     if make_plots:
@@ -153,7 +147,7 @@ def preprocessor(
             train_scaled,
             val_scaled,
             test_scaled,
-            online_scaled
+            test_final_scaled
         ], "scaled")
 
     train_feature_expanded = feature_expander(
@@ -180,8 +174,8 @@ def preprocessor(
         is_weekend_mode=is_weekend_mode
     )
 
-    online_feature_expanded = feature_expander(
-        dfs=online_selected_columns,
+    test_final_feature_expanded = feature_expander(
+        dfs=test_final_scaled,
         use_hour_features=use_hour_features,
         use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
@@ -193,13 +187,13 @@ def preprocessor(
             train_feature_expanded,
             val_feature_expanded,
             test_feature_expanded,
-            online_feature_expanded,
+            test_final_feature_expanded,
         ], "feature_expanded")
 
     return (
         train_feature_expanded,
         val_feature_expanded,
         test_feature_expanded,
-        online_feature_expanded,
+        test_final_feature_expanded,
         scalers,
     )

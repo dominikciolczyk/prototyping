@@ -78,13 +78,11 @@ parameters:
   recreate_dataset: False
   val_size: 0.15
   test_size: 0.15
-  test_teacher_size: 0.15
-  online_size: 0.01
+  test_final_size: 0.15
   seed: 42
   only_train_val_test_sets: False
   selected_columns:
     - CPU_USAGE_MHZ
-    - MEMORY_USAGE_KB
     - NODE_1_DISK_IO_RATE_KBPS
     - NODE_1_NETWORK_TR_KBPS
   anomaly_reduction_before_aggregation: True
@@ -109,7 +107,7 @@ parameters:
   lstm_layers: 1
   dropout_rate: 0.1
   alpha: 10
-  beta: 1.11
+  beta: 3.0
   lr: 3e-4
   epochs: 50
   early_stop_epochs: 10
