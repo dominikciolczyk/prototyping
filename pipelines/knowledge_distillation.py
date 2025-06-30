@@ -112,7 +112,7 @@ def cloud_resource_prediction_knowledge_distillation(
 
     if True:
         model_evaluator(model=teacher_model,
-                        test=expanded_test_dfs,
+                        test=expanded_test_final_dfs,
                         seq_len=model_input_seq_len,
                         horizon=model_forecast_horizon,
                         alpha=alpha,
@@ -125,8 +125,8 @@ def cloud_resource_prediction_knowledge_distillation(
     student_epochs = 50
     student_early_stop_epochs = 10
     student_batch = batch
-    student_lr = 3e-4
-    n_trials = 20
+    student_lr = lr
+    n_trials = 70
     alpha_range = [1, 2, 5, 10]
     beta_range = [1, 2, 3]
     distill_alpha_range = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]

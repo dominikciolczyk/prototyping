@@ -74,3 +74,12 @@ beta 1.29
 
 1.11
 
+
+
+
+========== General model =================
+Saved best result: {'best_params': {'n_cnn_layers': 3, 'ch1': 8, 'k1': 11, 'ch2': 72, 'k2': 17, 'ch3': 8, 'k3': 9, 'hidden_lstm': 256, 'lstm_layers': 1}, 'best_value': 0.7900648713111877, 'best_trial_number': 56, 'timestamp': '2025-06-30T04:30:18.681781'}
+
+
+==================== KD model ===================
+Best trial: #66 → value=0.7668, params={'kd_kind': 'AsymmetricSmoothL1', 'distill_alpha': 0.2, 'alpha': 10, 'beta': 1}

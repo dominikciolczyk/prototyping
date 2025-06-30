@@ -101,13 +101,13 @@ parameters:
   model_forecast_horizon: 24
   make_plots: True
   batch: 64
-  cnn_channels: [8, 72, 8]
-  kernels: [11, 17, 9]
-  hidden_lstm: 256
+  cnn_channels: [64]
+  kernels: [13]
+  hidden_lstm: 64
   lstm_layers: 1
-  dropout_rate: 0.1
+  dropout_rate: 0.18569472294817546
   alpha: 10
   beta: 3.0
-  lr: 0.001
+  lr: 0.0014098873023777477
   epochs: 50
-  early_stop_epochs: 15
+  early_stop_epochs: 10

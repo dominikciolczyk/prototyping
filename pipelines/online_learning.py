@@ -11,7 +11,7 @@ from zenml.logger import get_logger
 logger = get_logger(__name__)
 
 @pipeline
-def cloud_resource_prediction_dpso_ga(
+def cloud_resource_prediction_online_learning(
     raw_dir: str,
     zip_path: str,
     raw_polcom_2022_dir: str,

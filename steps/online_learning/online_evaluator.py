@@ -1,21 +1,4 @@
-"""
-ZenML step for **online evaluation / (optional) online fine‑tuning** of a pre‑trained
-CNN‑LSTM model.  The step simulates a real‑time scenario in which the model is first
-boot‑strapped with an initial history (``expanded_test_dfs``) and then receives new
-observations **one timestamp at a time** from ``expanded_test_final_dfs``.
-
-For every newly‑arrived row the step
-    1. builds the input window of length ``seq_len``
-    2. makes a forward pass → *ŷ* ∈ ℝ[1, horizon, n_targets]
-    3. computes a simple **max‑value baseline** on the same window
-    4. (optionally) stores the (X, y) pair in a replay buffer and performs a single
-       gradient step – giving the model the chance to adapt online
-    5. logs per‑step asymmetric Smooth‑L1 loss of the model vs. the baseline
-
-At the end, time‑series plots (true vs. predicted vs. baseline) are created for every
-VM and returned together with aggregated metrics.
-"""
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 import numpy as np
 import pandas as pd
 import torch
@@ -31,37 +14,20 @@ from steps.logging.track_params import track_experiment_metadata
 logger = get_logger(__name__)
 experiment_tracker = Client().active_stack.experiment_tracker
 
-# ----------------------------------------------------------------------------
-# Helper functions – kept outside the step so they can be unit‑tested easily.
-# ----------------------------------------------------------------------------
-
 def _make_window(
     history: pd.DataFrame,
     seq_len: int,
 ) -> torch.Tensor:
     """Return the last ``seq_len`` rows as a tensor – shape (1, seq_len, n_features)."""
     window = history.iloc[-seq_len:].values  # → (seq_len, n_features)
-    return torch.tensor(window, dtype=torch.float32).unsqueeze(0)  # add batch‑dim
-
+    return torch.tensor(window, dtype=torch.float32).unsqueeze(0)  # add batch-dim
 
 def _max_baseline_prediction(x_window: torch.Tensor, horizon: int) -> torch.Tensor:
-    """Replicates the *max‑target‑value* baseline used in the offline evaluator.
-
-    Parameters
-    ----------
-    x_window : (1, seq_len, n_features) – *already on CPU*
-    horizon   : forecast horizon
-
-    Returns
-    -------
-    ŷ_baseline : (1, horizon, n_targets)
-    """
     # Slice only the *target* features (they are always the last n_targets ones)
     # so we are 100 % consistent with the evaluator.
     max_vals, _ = x_window.squeeze(0).max(dim=0)  # → (n_features,)
     max_vals = max_vals[-x_window.size(2) :]      # keep last n_targets columns
     return max_vals.unsqueeze(0).unsqueeze(0).repeat(1, horizon, 1)
-
 
 def _inverse_transform(
     arr: np.ndarray,
@@ -72,13 +38,9 @@ def _inverse_transform(
     out = np.zeros_like(arr)
     for i, col in enumerate(selected_cols):
         mu = vm_scalers[col].means[col]
-        std = (vm_scalers[col].vars[col] ** 0.5) + 1e‑8
+        std = (vm_scalers[col].vars[col] ** 0.5) + 1e-8
         out[..., i] = arr[..., i] * std + mu
     return out
-
-# ----------------------------------------------------------------------------
-# Online evaluator / online learner step – *entry point*.
-# ----------------------------------------------------------------------------
 
 @step(enable_cache=False)
 def cnn_lstm_online_evaluator(
@@ -92,20 +54,17 @@ def cnn_lstm_online_evaluator(
     hyper_params: Dict[str, Any],
     selected_target_columns: List[str],
     scalers: Dict[str, Dict[str, Any]],
-    # Optional online‑learning knobs – set ``replay_buffer_size`` to 0 to *disable*
+    # Optional online-learning knobs – set ``replay_buffer_size`` to 0 to *disable*
     replay_buffer_size: int,
     online_lr: float,
     train_every: int,
 ) -> Dict[str, Any]:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
-    model.eval()  # we keep eval‑mode by default; it will be toggled if we train
+    model.eval()  # we keep eval-mode by default; it will be toggled if we train
 
     criterion = AsymmetricSmoothL1(alpha=float(alpha), beta=float(beta))
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # Optimiser + replay buffer for online updates (if enabled) -------------
-    # ─────────────────────────────────────────────────────────────────────────
     if replay_buffer_size > 0:
         optim = Adam(model.parameters(), lr=online_lr)
         replay_X: List[torch.Tensor] = []  # elements have shape (1, seq_len, n_feat)
@@ -114,15 +73,9 @@ def cnn_lstm_online_evaluator(
         optim = None
         replay_X = replay_y = None
 
-    # ---------------------------------------------------------------------
-    # Containers for aggregated results
-    # ---------------------------------------------------------------------
     all_losses_model, all_losses_baseline = [], []
     merged_plots: Dict[str, pd.DataFrame] = {}
 
-    # ---------------------------------------------------------------------
-    # Main loop over *VMs* (completely independent streams)
-    # ---------------------------------------------------------------------
     for vm_id, init_df in expanded_test_dfs.items():
         logger.info("Streaming evaluation for VM '%s'", vm_id)
 
@@ -131,39 +84,24 @@ def cnn_lstm_online_evaluator(
             raise KeyError(f"No streaming data for VM '{vm_id}' in expanded_test_final_dfs")
         stream_df = expanded_test_final_dfs[vm_id]
 
-        # The full (already‑scaled) timeline available for *evaluation*; we never
-        # leak it into the model – it is used only to fetch the ground‑truth
-        # targets after a prediction has been produced.
         full_df = pd.concat([init_df, stream_df])
 
-        # Warm‑up history with *only* the initial part that the model is allowed
-        # to 'see' at t=0.
         history = init_df.copy()
 
-        # We will accumulate one‑step‑ahead predictions so we can create a flat
-        # DataFrame with a monotonically increasing DateTimeIndex (exact same
-        # structure that the offline ``model_evaluator`` creates).
         vm_records = []  # list[Tuple[pd.Timestamp, Dict[str, float]]]
 
-        # -----------------------------------------------------------------
-        # Iterate over the streaming split *row‑by‑row*
-        # -----------------------------------------------------------------
         for i, (ts, new_obs) in enumerate(stream_df.iterrows(), start=1):
             # 1️⃣  Append the new observation to the history (= model input)
             history = pd.concat([history, new_obs.to_frame().T])
 
-            # Not enough context yet → continue
             if len(history) < seq_len:
                 continue
 
-            # 2️⃣  Build model input X – shape (1, seq_len, n_features)
             X_window = _make_window(history, seq_len).to(device)
 
-            # 3️⃣  Forward pass – y_pred : (1, horizon, n_targets)
             with torch.no_grad():
                 y_pred = model(X_window).cpu()  # stay on CPU for numpy ops later
 
-            # 3.1️⃣  Baseline on the *same* window, also on CPU
             y_pred_base = _max_baseline_prediction(X_window.cpu(), horizon)
 
             # 4️⃣  Obtain ground truth for the next ``horizon`` steps.  We already
@@ -209,14 +147,14 @@ def cnn_lstm_online_evaluator(
                     optim.step()
                     model.eval()
 
-            # 7️⃣  Store a **one‑step‑ahead** view for plotting.  This keeps the
+            # 7️⃣  Store a **one-step-ahead** view for plotting.  This keeps the
             #     DataFrame 100 % compatible with the original ``plot_time_series``
             #     helper (true + model + baseline columns).
             y_true_next = y_true_arr[0]              # (n_targets,)
             y_pred_next = y_pred[0, 0].numpy()      # (n_targets,)
             y_base_next = y_pred_base[0, 0].numpy() # (n_targets,)
 
-            # Inverse‑transform so the plots are in the *physical* units (e.g. %CPU)
+            # Inverse-transform so the plots are in the *physical* units (e.g. %CPU)
             vm_scalers = scalers[vm_id]
             y_true_inv = _inverse_transform(y_true_next, selected_target_columns, vm_scalers)
             y_pred_inv = _inverse_transform(y_pred_next, selected_target_columns, vm_scalers)
@@ -238,7 +176,7 @@ def cnn_lstm_online_evaluator(
     avg_loss_model = float(np.mean(all_losses_model)) if all_losses_model else float("nan")
     avg_loss_baseline = float(np.mean(all_losses_baseline)) if all_losses_baseline else float("nan")
 
-    # Create the time‑series PNG files (one per VM) and track metrics.
+    # Create the time-series PNG files (one per VM) and track metrics.
     plot_paths = plot_time_series(merged_plots, "online_eval")
     track_experiment_metadata(online_AsymSmoothL1_model=avg_loss_model, online_AsymSmoothL1_baseline=avg_loss_baseline)
 

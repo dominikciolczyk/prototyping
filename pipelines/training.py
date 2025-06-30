@@ -4,6 +4,7 @@ from steps import (
     dpso_ga_searcher,
     cnn_lstm_trainer,
 )
+from torch import nn
 from utils.pipeline_utils import prepare_datasets_before_model_input
 from zenml import pipeline
 from zenml.logger import get_logger
@@ -55,7 +56,8 @@ def cloud_resource_prediction_training(
     lr: float,
     epochs: int,
     early_stop_epochs: int,
-):
+) -> tuple[nn.Module, dict]:
+
     # expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, _, scalers =\
     expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_final_dfs, scalers = \
         prepare_datasets_before_model_input(
@@ -111,7 +113,7 @@ def cloud_resource_prediction_training(
                              early_stop_epochs=early_stop_epochs)
 
     model_evaluator(model=model,
-                    test=expanded_test_final_dfs,
+                    test=expanded_test_dfs,
                     seq_len=model_input_seq_len,
                     horizon=model_forecast_horizon,
                     alpha=alpha,
