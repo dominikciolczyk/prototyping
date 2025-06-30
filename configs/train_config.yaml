@@ -102,8 +102,8 @@ parameters:
   make_plots: True
   batch: 64
   cnn_channels: [8, 72, 8]
-  kernels: [11, 17, 9]
-  hidden_lstm: 256
+  kernels: [13, 13, 13]
+  hidden_lstm: 126
   lstm_layers: 1
   dropout_rate: 0.1
   alpha: 10

@@ -76,7 +76,8 @@ def prepare_datasets_before_model_input(
     use_day_of_week_features: bool,
     use_weekend_features: bool,
     is_weekend_mode: str,
-    make_plots: bool):
+    make_plots: bool,
+    leave_online_unscaled: bool = False):
     cleaned_polcom_2022_dir = clean_dataset(raw_dir=raw_dir,
                                                        zip_path=zip_path,
                                                        raw_polcom_2022_dir=raw_polcom_2022_dir,
@@ -111,4 +112,5 @@ def prepare_datasets_before_model_input(
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode,
         make_plots=make_plots,
+        leave_online_unscaled=leave_online_unscaled,
  )

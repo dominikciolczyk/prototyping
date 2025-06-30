@@ -69,3 +69,78 @@ def plot_all(dfs_list: List[Dict[str, pd.DataFrame]], prefix: str):
     names = ["train", "val", "test", "test_final"]
     for name, dfs in zip(names, dfs_list):
         plot_time_series(dfs, f"{prefix}_{name}_dfs")
+import matplotlib.pyplot as plt
+from pathlib import Path
+import imageio.v2 as imageio
+import numpy as np
+
+def _plot_step_line(
+    history_df: pd.DataFrame,
+    vm_id: str,
+    step_idx: int,
+    out_dir: str = "history_frames",
+) -> Path:
+    """
+    Zapisuje wykres liniowy z historią aż do step_idx dla jednej VM.
+    """
+    out_path = Path(out_dir) / vm_id
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(8, 4), dpi=120)
+
+    # wykrywamy kolumny 'true' (te, które nie mają _pred_model ani _pred_baseline)
+    base_cols = [
+        c for c in history_df.columns
+        if not c.endswith("_pred_model") and not c.endswith("_pred_baseline")
+    ]
+
+    for col in base_cols:
+        ax.plot(
+            history_df.index,
+            history_df[col],
+            label=f"{col} true",
+            linewidth=2
+        )
+        ax.plot(
+            history_df.index,
+            history_df[f"{col}_pred_model"],
+            linestyle="--",
+            label=f"{col} model",
+            linewidth=1.5
+        )
+        ax.plot(
+            history_df.index,
+            history_df[f"{col}_pred_baseline"],
+            linestyle=":",
+            label=f"{col} baseline",
+            linewidth=1.5
+        )
+
+    ax.set_title(f"{vm_id} – history up to step {step_idx}")
+    ax.legend(fontsize=7, ncol=2)
+    fig.autofmt_xdate()
+
+    frame_file = out_path / f"frame_{step_idx:05d}.png"
+    fig.savefig(frame_file)
+    plt.close(fig)
+    return frame_file
+
+def _frames_to_gif(
+    frames_dir: str,
+    gif_path: str,
+    fps: int = 2,
+) -> None:
+    """
+    Łączy wszystkie PNG w katalogu frames_dir/VM_ID --> GIF.
+    """
+    base = Path(frames_dir)
+    for vm_folder in base.iterdir():
+        frames = sorted(vm_folder.glob("frame_*.png"))
+        if not frames:
+            continue
+        imgs = [imageio.imread(str(f)) for f in frames]
+        out = Path(f"{gif_path}/{vm_folder.name}_history.gif")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        imageio.mimsave(str(out), imgs, fps=fps)
+        print(f"✅ GIF saved to {out}")
+

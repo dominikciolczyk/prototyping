@@ -18,7 +18,7 @@ conda activate zenml-env
 pip install "zenml[server]"
 zenml integration install pandas sklearn pytorch mlflow evidently s3 -y
 #pip install statsmodels sktime boto3 s3fs
-pip install statsmodels sktime openpyxl optuna psycopg2-binary datetime river
+pip install statsmodels sktime openpyxl optuna psycopg2-binary datetime river imageio
 
 
 Alfa 9:

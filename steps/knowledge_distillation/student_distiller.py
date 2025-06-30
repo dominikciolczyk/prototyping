@@ -88,7 +88,7 @@ def build_student(student_kind: StudentType,
     return model
 
 
-@step(enable_cache=False)
+@step(enable_cache=True)
 def student_distiller(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],

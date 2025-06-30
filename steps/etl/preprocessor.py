@@ -45,7 +45,8 @@ def preprocessor(
     use_weekend_features: bool,
     use_day_of_week_features: bool,
     is_weekend_mode: Literal["numeric", "categorical", "both"],
-    make_plots: bool
+    make_plots: bool,
+    leave_online_unscaled: bool = False
 ) -> Tuple[
     Dict[str, pd.DataFrame],  # train
     Dict[str, pd.DataFrame],  # val
@@ -139,7 +140,8 @@ def preprocessor(
         train=train_selected_dfs,
         val=val_selected_columns,
         test=test_selected_columns,
-        test_final=test_final_selected_columns
+        test_final=test_final_selected_columns,
+        leave_online_unscaled=leave_online_unscaled
     )
 
     if make_plots:

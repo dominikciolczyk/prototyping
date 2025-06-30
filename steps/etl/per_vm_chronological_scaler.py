@@ -10,6 +10,7 @@ def per_vm_chronological_scaler(
     val:   Dict[str, pd.DataFrame],
     test:  Dict[str, pd.DataFrame],
     test_final: Dict[str, pd.DataFrame],
+    leave_online_unscaled: bool = False
 ) -> Tuple[
     Dict[str, pd.DataFrame],                     # train_scaled
     Dict[str, pd.DataFrame],                     # val_scaled
@@ -44,6 +45,9 @@ def per_vm_chronological_scaler(
     train_scaled  = _apply_split(train)
     val_scaled    = _apply_split(val)
     test_scaled   = _apply_split(test)
-    test_final_scaled = _apply_split(test_final)
+    if leave_online_unscaled:
+        test_final_scaled = test_final
+    else:
+        test_final_scaled = _apply_split(test_final)
 
     return train_scaled, val_scaled, test_scaled, test_final_scaled, scalers
