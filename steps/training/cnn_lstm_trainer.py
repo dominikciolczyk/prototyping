@@ -56,7 +56,7 @@ def calculate_model_loss_for_loader(model, loader, alpha, beta, device):
     model_loss = criterion(to_tensor(y_pred_model), to_tensor(y_true_model)).item()
     return model_loss, y_pred_model, y_true_model, criterion, to_tensor
 
-@step(enable_cache=False)
+@step(enable_cache=True)
 def cnn_lstm_trainer(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],

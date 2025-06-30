@@ -124,7 +124,7 @@ def main():
     logger.info("Starting Optuna hyperparameter optimization...")
     def objective(trial):
         try:
-            #batch = trial.suggest_categorical("batch", [16, 32, 64])
+            #batch = trial.suggest_categorical("batch", [16, 32, 64, 128])
             batch = 32
 
             CNN_TEMPLATES = {
@@ -209,7 +209,7 @@ def main():
                     "kernels": [84],
                 },
             }
-            use_template = True
+            use_template = False
 
             if use_template:
                 template_name = trial.suggest_categorical("cnn_template", list(CNN_TEMPLATES.keys()))
@@ -221,22 +221,20 @@ def main():
                 cnn_channels = []
                 kernels = []
                 for i in range(n_layers):
-                    cnn_channels.append(trial.suggest_int(f"ch{i + 1}", 16, 128, step=32))
-                    kernels.append(trial.suggest_categorical(f"k{i + 1}", [3, 6, 12, 24, 84]))
+                    cnn_channels.append(trial.suggest_int(f"ch{i + 1}", 8, 128, step=32))
+                    kernels.append(trial.suggest_int(f"k{i + 1}", 3, 23, step=2))
 
             # LSTM
-            hidden_lstm = trial.suggest_categorical("hidden_lstm", [128, 256, 512])
+            hidden_lstm = trial.suggest_categorical("hidden_lstm", [64, 128, 256, 512, 1024])
             lstm_layers = trial.suggest_categorical("lstm_layers", [1, 2])
 
             # Regularization & optimizer
-            #dropout_rate = trial.suggest_float("dropout_rate", 0.1, 0.3, step=0.2)
+            #dropout_rate = trial.suggest_float("dropout_rate", 0.2, 0.3, step=0.2)
             dropout_rate = 0.2
-
-            #alpha = trial.suggest_float("alpha", 1.0, 20.0, log=True)
 
             #lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
             #lr = trial.suggest_categorical("lr", [3e-4, 1e-3, 1e-2])
-            lr = 1e-2
+            lr = 1e-3
 
             # Final params dict for trainer step
             best_model_hp = {
@@ -246,7 +244,6 @@ def main():
                 "hidden_lstm": hidden_lstm,
                 "lstm_layers": lstm_layers,
                 "dropout_rate": dropout_rate,
-                #"alpha": alpha,
                 "lr": lr,
             }
 

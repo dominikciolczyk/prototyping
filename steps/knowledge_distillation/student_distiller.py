@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Literal, Tuple
+from typing import Dict, Any, List, Literal, Tuple, Callable
 import copy
 import pandas as pd
 from torch import nn
@@ -9,12 +9,28 @@ from models.cnn_lstm import CNNLSTMWithAttention
 from models.lstm_baseline import LSTM_Baseline
 import torch
 import torch.nn.functional as F
+from losses.qos import AsymmetricSmoothL1, AsymmetricL1
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
 StudentType   = Literal["cnn_lstm", "lstm"]
-KDKind        = Literal["logits", "soft"]
+KDKind = Literal["mse", "AsymmetricSmoothL1", "AsymmetricL1"]
+
+def make_distill_loss(
+    base_loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
+    distill_alpha: float
+) -> Callable[[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor]:
+    """
+    Creates a KD loss: alpha * loss(student, teacher) + (1 - alpha) * loss(student, ground_truth)
+    """
+    def fn(student_out: torch.Tensor,
+           teacher_out: torch.Tensor,
+           ground_truth: torch.Tensor) -> torch.Tensor:
+        loss_soft = base_loss_fn(student_out, teacher_out.detach())
+        loss_hard = base_loss_fn(student_out, ground_truth)
+        return distill_alpha * loss_soft + (1 - distill_alpha) * loss_hard
+    return fn
 
 def kd_loss_regression(
         student_out: torch.Tensor,
@@ -30,11 +46,9 @@ def kd_loss_regression(
         teacher_out = teacher_out.detach() / T
 
     soft_loss = F.mse_loss(student_out, teacher_out.detach())
-    hard_loss = F.mse_loss(student_out * (T if use_temperature else 1.0), hard_target)
+    hard_loss = F.mse_loss(student_out, hard_target)
 
     return kd_ratio * soft_loss + (1 - kd_ratio) * hard_loss
-
-KD_LOSSES = {"logits": kd_loss_regression}
 
 def build_student(student_kind: StudentType,
                   n_features: int,
@@ -85,30 +99,18 @@ def student_distiller(
     teacher_hparams: Dict[str, Any],
     student_kind: StudentType,
     kd_kind: KDKind,
-    alpha: float,
-    T: float,
-    use_temperature: bool,
+    kd_params: Dict[str, float],
     epochs: int,
     early_stop_epochs,
     batch,
     lr,
 ) -> nn.Module:
-    """
-    Distils `teacher` into a smaller `student_kind` model using `kd_kind` loss.
 
-    Returns
-    -------
-    student : nn.Module
-        Trained/distilled student model.
-    """
-
-    # ── 0. Device ───────────────────────────────────────────────────────────
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     teacher.to(device).eval()                         # freeze teacher
     for p in teacher.parameters():
         p.requires_grad = False
 
-    # ── 1. Data loaders (reuse existing utility) ───────────────────────────
     train_loader, _ = make_loader(
         dfs=train,
         seq_len=seq_len,
@@ -130,14 +132,31 @@ def student_distiller(
     sample_X, sample_y = next(iter(train_loader))
     _, _, n_features = sample_X.shape
     _, _, n_targets  = sample_y.shape
-    logger.info(f"Distillation | X {sample_X.shape}, y {sample_y.shape}")
+    logger.info(f"Student_distiller | X {sample_X.shape}, y {sample_y.shape}")
 
     # ── 2. Build student ───────────────────────────────────────────────────
     student = build_student(student_kind,
                             n_features, n_targets, horizon,
                             teacher_hparams).to(device)
     optimizer = Adam(student.parameters(), lr=lr)
-    kd_fn     = KD_LOSSES[kd_kind]
+
+    if kd_kind == "mse":
+        kd_fn = make_distill_loss(F.mse_loss, distill_alpha=kd_params["distill_alpha"])
+        logger.info(f"Using MSE distillation with alpha={kd_params['distill_alpha']}")
+    elif kd_kind == "AsymmetricSmoothL1":
+        base_loss = AsymmetricSmoothL1(alpha=kd_params["alpha"], beta=kd_params["beta"])
+        kd_fn = make_distill_loss(base_loss, distill_alpha=kd_params["distill_alpha"])
+        logger.info(f"Using AsymmetricSmoothL1 distillation with "
+                    f"distill_alpha={kd_params['distill_alpha']}, "
+                    f"alpha={kd_params['alpha']}, beta={kd_params['beta']}")
+    elif kd_kind == "AsymmetricL1":
+        base_loss = AsymmetricL1(alpha=kd_params["alpha"])
+        kd_fn = make_distill_loss(base_loss, distill_alpha=kd_params["distill_alpha"])
+        logger.info(f"Using AsymmetricL1 distillation with "
+                    f"distill_alpha={kd_params['distill_alpha']}, "
+                    f"alpha={kd_params['alpha']}")
+    else:
+        raise ValueError(kd_kind)
 
     # ── 3. Training loop w/ early stopping ────────────────────────────────
     best_val, patience = float("inf"), 0
@@ -155,12 +174,7 @@ def student_distiller(
                 t_out = teacher(X)                # (B, H, T)
             s_out = student(X)                    # (B, H, T)
 
-            loss = kd_fn(student_out=s_out,
-                         teacher_out=t_out,
-                         hard_target=y,
-                         alpha=alpha,
-                         T=T,
-                         use_temperature=use_temperature)
+            loss = kd_fn(s_out, t_out, y)
 
             loss.backward()
             optimizer.step()
@@ -178,10 +192,7 @@ def student_distiller(
                 val_loss += v_loss.item() * len(X)
         val_loss /= len(val_loader.dataset)
 
-        logger.info(f"[{epoch:02d}] distill "
-                    f"train={train_loss:.4f}  val={val_loss:.4f}")
-
-        # early-stopping
+        # early-stopping logic
         if val_loss < best_val:
             best_val = val_loss
             best_state = copy.deepcopy(student.state_dict())
@@ -189,8 +200,12 @@ def student_distiller(
         else:
             patience += 1
             if patience >= early_stop_epochs:
-                logger.info("Early-stopping.")
+                logger.info("Early-stopping triggered.")
                 break
+
+        logger.info(f"[{epoch:02d}] distill "
+                    f"train={train_loss:.4f}  val={val_loss:.4f}  "
+                    f"(patience {patience}/{early_stop_epochs})")
 
     # ── 4. Restore best weights ───────────────────────────────────────────
     if best_state:

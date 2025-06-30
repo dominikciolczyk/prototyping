@@ -63,6 +63,8 @@ def dpso_ga_searcher(
     """
 
     def _build_hp(cfg: Dict[str, float]) -> Dict[str, Any]:
+        logger.info(f"Original config: {cfg}\n")
+
         n_conv = int(round(cfg["n_conv"]))
         cnn_channels = [int(round(cfg[f"c{i}"])) for i in range(n_conv)]
         kernels = []
@@ -72,7 +74,7 @@ def dpso_ga_searcher(
                 k += 1  # force odd kernel
             kernels.append(k)
 
-        return {
+        result = {
             "batch": int(round(cfg["batch"])),
             "cnn_channels": cnn_channels,
             "kernels": kernels,
@@ -81,6 +83,9 @@ def dpso_ga_searcher(
             "dropout_rate": cfg["dropout"],
             "lr": cfg["lr"],
         }
+
+        logger.info(f"Built hyperparameters: {result}\n")
+        return result
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -140,5 +145,6 @@ def dpso_ga_searcher(
         json.dump(trajectory, f)
 
     plot_trajectory(trajectory)
-
-    return _build_hp(best_cfg), trajectory
+    best_model_hp = _build_hp(cfg=best_cfg)
+    logger.info("Best model hyperparameters: %s", best_model_hp)
+    return best_model_hp, trajectory

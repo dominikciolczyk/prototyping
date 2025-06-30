@@ -119,3 +119,5 @@ def cloud_resource_prediction_training(
                     hyper_params=best_model_hp,
                     selected_target_columns=selected_columns,
                     scalers=scalers)
+
+    return model, best_model_hp

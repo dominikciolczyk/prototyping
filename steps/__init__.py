@@ -49,4 +49,4 @@ from .training import model_evaluator, register_model, cnn_lstm_trainer
 
 from .logging import track_experiment_metadata
 from .anomaly_reduction import anomaly_reducer
-from .knowledge_distillation import student_distiller
+from .knowledge_distillation import student_distiller, student_kd_experiments

@@ -21,3 +21,4 @@
 # SOFTWARE.
 # 
 from .student_distiller import student_distiller
+from .student_kd_experiments import student_kd_experiments

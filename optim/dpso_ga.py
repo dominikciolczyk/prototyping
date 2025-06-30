@@ -122,7 +122,9 @@ def dpso_ga(
             if norm > vmax:
                 for k in space:
                     velocities_u[i][k] *= vmax / norm
-                    u[k] = max(0.0, min(1.0, u[k] + velocities_u[i][k]))
+
+            for k in space:
+                u[k] = max(0.0, min(1.0, u[k] + velocities_u[i][k]))
 
             score = fitness_fn(decode(u))
             if score < personal_best_score[i]:

@@ -100,7 +100,14 @@ parameters:
   model_input_seq_len: 24
   model_forecast_horizon: 24
   make_plots: True
+  batch: 32
+  cnn_channels: [64]
+  kernels: [13]
+  hidden_lstm: 1024
+  lstm_layers: 1
+  dropout_rate: 0.1
   alpha: 10
   beta: 3.0
+  lr: 3e-4
   epochs: 50
   early_stop_epochs: 10
