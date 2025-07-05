@@ -4,6 +4,7 @@ from typing import Dict, Any, List, Tuple
 import numpy as np
 import pandas as pd
 import torch
+from matplotlib import pyplot as plt
 from torch import nn
 from torch.optim import Adam
 from zenml import step
@@ -86,8 +87,9 @@ def online_evaluator(
         optim = None
         replay_X = replay_y = None
 
-    all_losses_model: List[float] = []
-    all_losses_baseline: List[float] = []
+
+    per_vm_losses_model: Dict[str, List[float]] = {}
+    per_vm_losses_baseline: Dict[str, List[float]] = {}
     merged_plots: Dict[str, pd.DataFrame] = {}
 
     for vm_id, init_df in expanded_test_dfs.items():
@@ -148,8 +150,8 @@ def online_evaluator(
             # 4️⃣  Metrics
             loss_model = criterion(y_pred.squeeze(0), y_true).item()
             loss_base = criterion(y_pred_base.squeeze(0), y_true).item()
-            all_losses_model.append(loss_model)
-            all_losses_baseline.append(loss_base)
+            per_vm_losses_model.setdefault(vm_id, []).append(loss_model)
+            per_vm_losses_baseline.setdefault(vm_id, []).append(loss_base)
 
             # 5️⃣  Optional online fine-tuning of the NN
             if replay_buffer_size > 0:
@@ -160,6 +162,10 @@ def online_evaluator(
                     replay_y.pop(0)
 
                 if (i % train_every) == 0:
+                    logger.info(
+                        "Online training step %d for VM '%s' with %d samples in replay buffer",
+                        i, vm_id, len(replay_X)
+                    )
                     model.train()
                     optim.zero_grad()
                     batch_X = torch.cat(replay_X).to(device)
@@ -205,13 +211,39 @@ def online_evaluator(
     # ----------------------------------------------------------------------
     # Final aggregation – metrics & visualisations
     # ----------------------------------------------------------------------
+    all_losses_model = [loss for vm_losses in per_vm_losses_model.values() for loss in vm_losses]
+    all_losses_baseline = [loss for vm_losses in per_vm_losses_baseline.values() for loss in vm_losses]
+
     avg_loss_model = float(np.mean(all_losses_model)) if all_losses_model else float("nan")
     avg_loss_baseline = float(np.mean(all_losses_baseline)) if all_losses_baseline else float("nan")
-
     plot_paths = plot_time_series(merged_plots, "online_eval")
 
     logger.info("Average loss for model: %.4f", avg_loss_model)
     logger.info("Average loss for baseline: %.4f", avg_loss_baseline)
+
+    loss_plot_paths = {}
+
+    for vm_id in per_vm_losses_model:
+        loss_df = pd.DataFrame({
+            "model_loss": per_vm_losses_model[vm_id],
+            "baseline_loss": per_vm_losses_baseline[vm_id],
+        })
+        loss_df.index.name = "step"
+
+        plt.figure(figsize=(8, 4))
+        plt.plot(loss_df.index, loss_df["model_loss"], label="Model", linewidth=2)
+        plt.plot(loss_df.index, loss_df["baseline_loss"], label="Baseline", linestyle="--", linewidth=2)
+        plt.xlabel("Step")
+        plt.ylabel("AsymmetricSmoothL1 loss")
+        plt.title(f"Loss Evolution – {vm_id}")
+        plt.legend()
+        plt.tight_layout()
+
+        out_path = f"loss_plots/{vm_id}_loss.png"
+        Path("loss_plots").mkdir(exist_ok=True)
+        plt.savefig(out_path, dpi=150)
+        plt.close()
+        loss_plot_paths[vm_id] = out_path
 
     return {
         "metrics": {

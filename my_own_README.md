@@ -83,3 +83,15 @@ Saved best result: {'best_params': {'n_cnn_layers': 3, 'ch1': 8, 'k1': 11, 'ch2'
 
 ==================== KD model ===================
 Best trial: #66 → value=0.7668, params={'kd_kind': 'AsymmetricSmoothL1', 'distill_alpha': 0.2, 'alpha': 10, 'beta': 1}
+
+
+
+Teacher:
+AsymmetricSmoothL1  |  model: 2.0404  |  max baseline: 2.2802
+
+Student:
+ AsymmetricSmoothL1  |  model: 2.1258  |  max baseline: 2.2802
+
+
+[online_evaluator] Average loss for model: 1.3855
+[online_evaluator] Average loss for baseline: 2.0800

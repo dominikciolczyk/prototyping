@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import List
 from steps import (
     model_evaluator,
     dpso_ga_searcher,
@@ -26,11 +26,9 @@ def cloud_resource_prediction_training(
     recreate_dataset: bool,
     val_size: float,
     test_size: float,
-    test_final_size: float,
+    online_size: float,
     seed: int,
-    only_train_val_test_sets: int,
     selected_columns: List[str],
-    anomaly_reduction_before_aggregation: bool,
     min_strength: float,
     correlation_threshold: float,
     threshold_strategy: str,
@@ -58,7 +56,6 @@ def cloud_resource_prediction_training(
     early_stop_epochs: int,
 ) -> tuple[nn.Module, dict]:
 
-    # expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_teacher_dfs, _, scalers =\
     expanded_train_dfs, expanded_val_dfs, expanded_test_dfs, expanded_test_final_dfs, scalers = \
         prepare_datasets_before_model_input(
           raw_dir=raw_dir,
@@ -72,12 +69,10 @@ def cloud_resource_prediction_training(
           load_2022_data=load_2022_data,
           load_2020_data=load_2020_data,
           recreate_dataset=recreate_dataset,
-          val_size=val_size, test_size=test_size,
-          test_final_size=test_final_size,
-          seed=seed,
-          only_train_val_test_sets=only_train_val_test_sets,
+          val_size=val_size,
+          test_size=test_size,
+          online_size=online_size,
           selected_columns=selected_columns,
-          anomaly_reduction_before_aggregation=anomaly_reduction_before_aggregation,
           min_strength=min_strength,
           correlation_threshold=correlation_threshold,
           threshold_strategy=threshold_strategy,
@@ -89,7 +84,8 @@ def cloud_resource_prediction_training(
           use_day_of_week_features=use_day_of_week_features,
           use_weekend_features=use_weekend_features,
           is_weekend_mode=is_weekend_mode,
-          make_plots=make_plots)
+          make_plots=make_plots,
+          leave_online_unscaled=False)
 
     best_model_hp = {
         "batch": batch,

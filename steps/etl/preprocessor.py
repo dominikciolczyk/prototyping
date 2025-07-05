@@ -2,10 +2,8 @@ from pathlib import Path
 from .data_loader import data_loader
 from .merger import merger
 from .chronological_splitter import chronological_splitter
-from .column_preselector import column_preselector
+from steps.etl.column_selector import column_selector
 from .trimmer import trimmer
-from .aggregator import aggregator
-from .column_selector import column_selector
 from steps.anomaly_reduction import anomaly_reducer, Reduction as ReduceMethod, ThresholdStrategy
 from .feature_expander import feature_expander
 from .per_vm_chronological_scaler import per_vm_chronological_scaler
@@ -29,11 +27,8 @@ def preprocessor(
     load_2020_data: bool,
     val_size: float,
     test_size: float,
-    test_final_size: float,
-    seed: int,
-    only_train_val_test_sets: bool,
+    online_size: float,
     selected_columns: List[str],
-    anomaly_reduction_before_aggregation: bool,
     min_strength: float,
     correlation_threshold: float,
     threshold_strategy: ThresholdStrategy,
@@ -46,12 +41,12 @@ def preprocessor(
     use_day_of_week_features: bool,
     is_weekend_mode: Literal["numeric", "categorical", "both"],
     make_plots: bool,
-    leave_online_unscaled: bool = False
+    leave_online_unscaled: bool
 ) -> Tuple[
     Dict[str, pd.DataFrame],  # train
     Dict[str, pd.DataFrame],  # val
     Dict[str, pd.DataFrame],  # test
-    Dict[str, pd.DataFrame],  # test_teacher
+    Dict[str, pd.DataFrame],  # online
     Dict[str, object],
 ]:
     dropna_how = "any"
@@ -61,40 +56,55 @@ def preprocessor(
     if load_2022_data:
         loaded_2022_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir,
                                        data_granularity=data_granularity, year=2022, load_2022_R04=load_2022_R04)
-        plot_time_series(loaded_2022_data, "loaded_2022_data")
+        if make_plots:
+            plot_time_series(loaded_2022_data, "loaded_2022_data")
+            verifier(dfs=loaded_2022_data, split_name="loaded_2022_data")
+
 
     if load_2020_data:
         loaded_2020_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir,
                                        data_granularity=data_granularity, year=2020, load_2022_R04=load_2022_R04)
-        plot_time_series(loaded_2020_data, "loaded_2020_data")
+        if make_plots:
+            plot_time_series(loaded_2020_data, "loaded_2020_data")
+            verifier(dfs=loaded_2020_data, split_name="loaded_2020_data")
 
-    merged_dfs = merger(dfs_2020=loaded_2020_data, dfs_2022=loaded_2022_data)
+    merged_dfs = merger(dfs_2022=loaded_2022_data, dfs_2020=loaded_2020_data)
 
-    merged_preselected_columns_dfs = column_preselector(dfs=merged_dfs, selected_columns=selected_columns)
+    verifier(dfs=merged_dfs, split_name="merged")
 
-    plot_time_series(merged_preselected_columns_dfs, f"merged_preselected_columns_dfs")
+    selected_columns_merged_dfs = column_selector(dfs=merged_dfs, selected_columns=selected_columns)
 
-    trimmed_dfs = trimmer(dfs=merged_preselected_columns_dfs, remove_nans=remove_nans, dropna_how=dropna_how)
+    if make_plots:
+        plot_time_series(selected_columns_merged_dfs, f"selected_columns_merged")
+        verifier(dfs=selected_columns_merged_dfs, split_name="selected_columns_merged")
 
-    plot_time_series(trimmed_dfs, f"trimmed_dfs")
+    trimmed_dfs = trimmer(dfs=selected_columns_merged_dfs, remove_nans=remove_nans, dropna_how=dropna_how)
 
-    train_dfs, val_dfs, test_dfs, test_final_dfs = chronological_splitter(
+    if make_plots:
+        plot_time_series(trimmed_dfs, f"trimmed")
+        verifier(dfs=trimmed_dfs, split_name="trimmed")
+
+    train_dfs, val_dfs, test_dfs, online_dfs = chronological_splitter(
         dfs=trimmed_dfs,
         val_size=val_size,
         test_size=test_size,
-        test_final_size=test_final_size,
-        only_train_val_test_sets=only_train_val_test_sets
+        online_size=online_size,
     )
 
     if make_plots:
+        verifier(dfs=train_dfs, split_name="train")
+        verifier(dfs=val_dfs, split_name="val")
+        verifier(dfs=test_dfs, split_name="test")
+        verifier(dfs=online_dfs, split_name="online")
+
         plot_all([
             train_dfs,
             val_dfs,
             test_dfs,
-            test_final_dfs
+            online_dfs
         ], "splitted")
 
-    train_reduced = anomaly_reducer(train=train_dfs,
+    train_reduced_dfs = anomaly_reducer(train=train_dfs,
                                     data_granularity=data_granularity,
                                     min_strength=min_strength,
                                     correlation_threshold=correlation_threshold,
@@ -106,78 +116,88 @@ def preprocessor(
 
     if make_plots:
         plot_all([
-            train_reduced,
+            train_reduced_dfs,
             val_dfs,
             test_dfs,
-            test_final_dfs
-        ], "reduced")\
+            online_dfs
+        ], "reduced")
+        verifier(dfs=train_reduced_dfs, split_name="train_reduced")
 
-    train_selected_dfs = aggregate_and_select_columns(
-        dfs=train_reduced,
-        selected_columns=selected_columns)
-
-    val_selected_columns = aggregate_and_select_columns(
+    train_reduced_selected_columns_dfs = column_selector(
+        dfs=train_reduced_dfs,
+        selected_columns=selected_columns
+    )
+    val_reduced_selected_columns_dfs = column_selector(
         dfs=val_dfs,
-        selected_columns=selected_columns)
-
-    test_selected_columns = aggregate_and_select_columns(
+        selected_columns=selected_columns
+    )
+    test_reduced_selected_columns_dfs = column_selector(
         dfs=test_dfs,
-        selected_columns=selected_columns)
-
-    test_final_selected_columns = aggregate_and_select_columns(
-        dfs=test_final_dfs,
-        selected_columns=selected_columns)
-
+        selected_columns=selected_columns
+    )
+    online_reduced_selected_columns_dfs = column_selector(
+        dfs=online_dfs,
+        selected_columns=selected_columns
+    )
     if make_plots:
         plot_all([
-            train_selected_dfs,
-            val_selected_columns,
-            test_selected_columns,
-            test_final_selected_columns
-        ], "selected_columns")
+            train_reduced_selected_columns_dfs,
+            val_reduced_selected_columns_dfs,
+            test_reduced_selected_columns_dfs,
+            online_reduced_selected_columns_dfs
+        ], "reduced_selected_columns")
+        verifier(dfs=train_reduced_dfs, split_name="train_reduced_selected_columns")
+        verifier(dfs=val_dfs, split_name="val_dfs_selected_columns")
+        verifier(dfs=test_dfs, split_name="test_dfs_selected_columns")
+        verifier(dfs=online_dfs, split_name="online_dfs_selected_columns")
 
-    train_scaled, val_scaled, test_scaled, test_final_scaled, scalers = per_vm_chronological_scaler(
-        train=train_selected_dfs,
-        val=val_selected_columns,
-        test=test_selected_columns,
-        test_final=test_final_selected_columns,
+    train_scaled_dfs, val_scaled_dfs, test_scaled_dfs, online_scaled_dfs, scalers = per_vm_chronological_scaler(
+        train=train_reduced_selected_columns_dfs,
+        val=val_reduced_selected_columns_dfs,
+        test=test_reduced_selected_columns_dfs,
+        online=online_reduced_selected_columns_dfs,
         leave_online_unscaled=leave_online_unscaled
     )
 
     if make_plots:
         plot_all([
-            train_scaled,
-            val_scaled,
-            test_scaled,
-            test_final_scaled
+            train_scaled_dfs,
+            val_scaled_dfs,
+            test_scaled_dfs,
+            online_scaled_dfs
         ], "scaled")
 
-    train_feature_expanded = feature_expander(
-        dfs=train_scaled,
+        verifier(dfs=train_scaled_dfs, split_name="train_scaled")
+        verifier(dfs=val_scaled_dfs, split_name="val_scaled")
+        verifier(dfs=test_scaled_dfs, split_name="test_scaled")
+        verifier(dfs=online_scaled_dfs, split_name="online_scaled")
+
+    train_feature_expanded_dfs = feature_expander(
+        dfs=train_scaled_dfs,
         use_hour_features=use_hour_features,
         use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode
     )
 
-    val_feature_expanded = feature_expander(
-        dfs=val_scaled,
+    val_feature_expanded_dfs = feature_expander(
+        dfs=val_scaled_dfs,
         use_hour_features=use_hour_features,
         use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode
     )
 
-    test_feature_expanded = feature_expander(
-        dfs=test_scaled,
+    test_feature_expanded_dfs = feature_expander(
+        dfs=test_scaled_dfs,
         use_hour_features=use_hour_features,
         use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode
     )
 
-    test_final_feature_expanded = feature_expander(
-        dfs=test_final_scaled,
+    online_feature_expanded_dfs = feature_expander(
+        dfs=online_scaled_dfs,
         use_hour_features=use_hour_features,
         use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
@@ -186,16 +206,21 @@ def preprocessor(
 
     if make_plots:
         plot_all([
-            train_feature_expanded,
-            val_feature_expanded,
-            test_feature_expanded,
-            test_final_feature_expanded,
+            train_feature_expanded_dfs,
+            val_feature_expanded_dfs,
+            test_feature_expanded_dfs,
+            online_feature_expanded_dfs,
         ], "feature_expanded")
 
+        verifier(dfs=train_feature_expanded_dfs, split_name="train_feature_expanded")
+        verifier(dfs=val_feature_expanded_dfs, split_name="val_feature_expanded")
+        verifier(dfs=test_feature_expanded_dfs, split_name="test_feature_expanded")
+        verifier(dfs=online_feature_expanded_dfs, split_name="online_feature_expanded")
+
     return (
-        train_feature_expanded,
-        val_feature_expanded,
-        test_feature_expanded,
-        test_final_feature_expanded,
+        train_feature_expanded_dfs,
+        val_feature_expanded_dfs,
+        test_feature_expanded_dfs,
+        online_feature_expanded_dfs,
         scalers,
     )

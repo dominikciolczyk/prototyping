@@ -8,8 +8,7 @@ def trimmer(dfs: dict[str, pd.DataFrame], remove_nans: bool, dropna_how: Literal
     logger.info(f"Trimming datasets with remove_nans={remove_nans}, dropna_how={dropna_how}")
 
     if dropna_how == "all":
-        logger.warning("⚠️ Using 'all' for dropna_how. This will drop rows only if all values are NaN.")
-        remove_nans = False  # If we drop rows only if all values are NaN, we can't remove datasets with NaNs
+        raise ValueError("The 'all' option for dropna_how is not supported. Use 'any' instead.")
     trimmed = {}
 
     for name, df in dfs.items():

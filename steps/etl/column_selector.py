@@ -5,8 +5,8 @@ from zenml.logger import get_logger
 logger = get_logger(__name__)
 
 def column_selector(
-        dfs: dict[str, pd.DataFrame],
-        selected_columns: List[str],
+    dfs: dict[str, pd.DataFrame],
+    selected_columns: List[str],
 ) -> dict[str, pd.DataFrame]:
     """
     Selects specific columns from each VM's DataFrame for modeling.

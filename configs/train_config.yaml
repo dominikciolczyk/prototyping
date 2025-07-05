@@ -78,14 +78,12 @@ parameters:
   recreate_dataset: False
   val_size: 0.15
   test_size: 0.15
-  test_final_size: 0.15
+  online_size: 0.15
   seed: 42
-  only_train_val_test_sets: False
   selected_columns:
     - CPU_USAGE_MHZ
     - NODE_1_DISK_IO_RATE_KBPS
     - NODE_1_NETWORK_TR_KBPS
-  anomaly_reduction_before_aggregation: True
   min_strength: 0.45
   correlation_threshold: 0.98
   threshold_strategy: quantile

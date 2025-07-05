@@ -1,14 +1,12 @@
 from pathlib import Path
-from .data_loader import data_loader
-from .merger import merger
-from .train_data_splitter import train_data_splitter
-from .column_preselector import column_preselector
-from .trimmer import trimmer
-from .aggregator import aggregator
-from .column_selector import column_selector
+from prototyping.steps.etl.data_loader import data_loader
+from prototyping.steps.etl.merger import merger
+from prototyping.steps.etl.old.train_data_splitter import train_data_splitter
+from prototyping.steps.etl.trimmer import trimmer
+from prototyping.steps.etl.column_selector import column_selector
 from steps.anomaly_reduction import anomaly_reducer, Reduction as ReduceMethod, ThresholdStrategy
-from .feature_expander import feature_expander
-from .scaler import scaler
+from prototyping.steps.etl.feature_expander import feature_expander
+from prototyping.steps.etl.old.scaler import scaler
 from typing import Dict, List, Literal, Tuple
 import pandas as pd
 from zenml import step
@@ -17,11 +15,6 @@ from utils.plotter import plot_all, plot_time_series
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
-
-def aggregate_and_select_columns(dfs: Dict[str, pd.DataFrame], selected_columns: List[str]):
-    return column_selector(
-        dfs=aggregator(dfs=dfs),
-        selected_columns=selected_columns)
 
 @step
 def preprocessor(
@@ -75,7 +68,6 @@ def preprocessor(
     merged_dfs = merger(dfs_2020=loaded_2020_data, dfs_2022=loaded_2022_data)
 
     train, val, test, online = train_data_splitter(
-    #train, val, test, test_teacher, online = train_data_splitter(
             dfs=merged_dfs,
             val_size=val_size,
             test_size=test_size,
@@ -84,18 +76,16 @@ def preprocessor(
             seed=seed,
             only_train_val_test_sets=only_train_val_test_sets)
 
-    train_preselected_columns = column_preselector(dfs=train, selected_columns=selected_columns)
-    val_preselected_columns = column_preselector(dfs=val, selected_columns=selected_columns)
-    test_preselected_columns = column_preselector(dfs=test, selected_columns=selected_columns)
-    #test_teacher_preselected_columns = column_preselector(dfs=test_teacher, selected_columns=selected_columns)
-    online_preselected_columns = column_preselector(dfs=online, selected_columns=selected_columns)
+    train_preselected_columns = column_selector(dfs=train, selected_columns=selected_columns)
+    val_preselected_columns = column_selector(dfs=val, selected_columns=selected_columns)
+    test_preselected_columns = column_selector(dfs=test, selected_columns=selected_columns)
+    online_preselected_columns = column_selector(dfs=online, selected_columns=selected_columns)
 
     if make_plots:
         plot_all([
             train_preselected_columns,
             val_preselected_columns,
             test_preselected_columns,
-            #test_teacher_preselected_columns,
             online_preselected_columns
         ], "preselected_columns")
 
@@ -110,15 +100,8 @@ def preprocessor(
             train_trimmed,
             val_trimmed,
             test_trimmed,
-            #test_teacher_trimmed,
             online_trimmed
         ], "trimmed")
-
-    val_selected_columns = aggregate_and_select_columns(dfs=val_trimmed, selected_columns=selected_columns)
-    test_selected_columns = aggregate_and_select_columns(dfs=test_trimmed, selected_columns=selected_columns)
-    #test_teacher_selected_columns = aggregate_and_select_columns(dfs=test_teacher_trimmed,
-    #                                                           selected_columns=selected_columns)
-    online_selected_columns = aggregate_and_select_columns(dfs=online_trimmed, selected_columns=selected_columns)
 
     if anomaly_reduction_before_aggregation:
         train_reduced = anomaly_reducer(train=train_trimmed,
@@ -135,10 +118,9 @@ def preprocessor(
         if make_plots:
             plot_all([
                 train_reduced,
-                val_selected_columns,
-                test_selected_columns,
-                #test_teacher_selected_columns,
-                online_selected_columns
+                val_trimmed,
+                test_trimmed,
+                online_trimmed
             ], "select_reduced")
 
 

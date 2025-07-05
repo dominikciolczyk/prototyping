@@ -111,7 +111,7 @@ def cloud_resource_prediction_online_learning(
                                      epochs=epochs,
                                      early_stop_epochs=early_stop_epochs)
 
-    if False:
+    if True:
         model_evaluator(
             model=teacher_model,
             test=expanded_test_final_dfs,
@@ -143,7 +143,7 @@ def cloud_resource_prediction_online_learning(
         lr=lr,
     )
 
-    if False:
+    if True:
         model_evaluator(
             model=student,
             test=expanded_test_final_dfs,
@@ -201,6 +201,6 @@ def cloud_resource_prediction_online_learning(
         selected_target_columns=selected_columns,
         scalers=scalers,
         replay_buffer_size=1000,  # Set to 0 to disable online learning
-        online_lr=lr,
+        online_lr=1e-2,
         train_every=1
     )

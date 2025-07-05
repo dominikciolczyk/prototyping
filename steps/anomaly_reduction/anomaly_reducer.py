@@ -29,7 +29,10 @@ def anomaly_reducer(
 
         for col in df.columns:
             logger.info(f"\nReducing for VM: {vm}, col {col} ======================")
-            col_df = df[[col]].dropna()
+            col_df = df[[col]]
+
+            if col_df.isna().any().any():
+                raise ValueError(f"NaNs found in column {col} for vm {vm}. Cannot proceed with anomaly detection.")
 
             if col_df.empty:
                 raise ValueError(f"Empty column {col} for vm {vm}.")
