@@ -88,7 +88,7 @@ parameters:
   correlation_threshold: 0.9569165272783219
   threshold_strategy: std
   threshold: 4.797380848863149
-  q: 0.954166045314732
+  q: 1
   reduction_method: interpolate_spline
   interpolation_order: 2
   use_hour_features: False
