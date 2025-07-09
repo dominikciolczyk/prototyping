@@ -18,7 +18,7 @@ conda activate zenml-env
 pip install "zenml[server]"
 zenml integration install pandas sklearn pytorch mlflow evidently s3 -y
 #pip install statsmodels sktime boto3 s3fs
-pip install statsmodels sktime openpyxl optuna psycopg2-binary datetime river imageio
+pip install statsmodels sktime openpyxl optuna psycopg2-binary datetime river imageio seaborn
 
 
 Alfa 9:
@@ -95,3 +95,89 @@ Student:
 
 [online_evaluator] Average loss for model: 1.3855
 [online_evaluator] Average loss for baseline: 2.0800
+
+
+Po powrocie punkt wyjcia teachera:
+AsymmetricSmoothL1  |  model: 0.9416  |  max baseline: 1.2622
+
+
+New best:
+AsymmetricSmoothL1  |  model: 0.8874  |  max baseline: 1.2622
+  batch: 64
+  cnn_channels: [64]
+  kernels: [13]
+  hidden_lstm: 126
+  lstm_layers: 1
+  dropout_rate: 0.1
+  alpha: 10
+  beta: 3.0
+  lr: 0.001
+
+
+AsymmetricSmoothL1  |  model: 0.8605  |  max baseline: 1.2622
+  batch: 64
+  cnn_channels: [ 64 ]
+  kernels: [ 13 ]
+  hidden_lstm: 512
+  lstm_layers: 1
+  dropout_rate: 0.1
+  alpha: 10
+  beta: 3.0
+  lr: 0.001
+
+
+
+AsymmetricSmoothL1  |  model: 0.8495  |  max baseline: 1.2622
+  batch: 64
+  cnn_channels: [ 64 ]
+  kernels: [ 12 ]
+  hidden_lstm: 512
+  lstm_layers: 1
+  dropout_rate: 0.1
+  alpha: 10
+  beta: 3.0
+  lr: 0.001
+
+
+AsymmetricSmoothL1  |  model: 0.8407  |  max baseline: 1.2622
+  batch: 64
+  cnn_channels: [ 32, 64, 128 ]
+  kernels: [ 3, 5, 7 ]
+  hidden_lstm: 512
+  lstm_layers: 1
+  dropout_rate: 0.1
+  alpha: 10
+  beta: 3.0
+  lr: 0.001
+
+
+AsymmetricSmoothL1  |  model: 0.8258  |  max baseline: 1.2622
+  batch: 64
+  cnn_channels: [ 64, 128, 256 ]
+  kernels: [ 3, 5, 7 ]
+  hidden_lstm: 512
+  lstm_layers: 1
+  dropout_rate: 0.1
+  alpha: 10
+  beta: 3.0
+  lr: 0.001
+
+AsymmetricSmoothL1  |  model: 0.7855  |  max baseline: 1.2622
+  batch: 64
+  cnn_channels: [ 64, 128, 256, 512 ]
+  kernels: [ 3, 5, 7, 9 ]
+  hidden_lstm: 256
+  lstm_layers: 1
+  dropout_rate: 0.1
+  alpha: 10
+  beta: 3.0
+  lr: 0.001
+
+
+
+Saved best result: {'best_params': {'min_strength': 0.8896879145148959, 'correlation_threshold': 0.946155123922659, 'threshold_strategy': 'std', 'threshold': 3.30948408750141, 'q':
+ 0.954166045314732, 'reduction_method': 'ffill_bfill', 'use_hour_features': False, 'use_day_of_week_features': False, 'is_weekend_mode': 'none'}, 'best_value': 0.6897233128547668, 'best_trial_number': 78, 'timestamp': '2025-07-07T04:49:04.700292'}
+
+
+Saved best result: {'best_params': {'min_strength': 0.8418052233367769, 'correlation_threshold': 0.9569165272783219, 'threshold': 4.797380848863149, 'reduction_method': 'interpolat
+e_spline', 'interpolation_order': 2, 'use_hour_features': False, 'use_day_of_week_features': False, 'is_weekend_mode': 'none'}, 'best_value': 0.6887093186378479, 'best_trial_number': 147, 'timestamp': '2025-07-07T11:53:37.181835'}

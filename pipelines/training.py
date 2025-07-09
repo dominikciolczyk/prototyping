@@ -38,7 +38,6 @@ def cloud_resource_prediction_training(
     interpolation_order: int,
     use_hour_features: bool,
     use_day_of_week_features: bool,
-    use_weekend_features: bool,
     is_weekend_mode: str,
     model_input_seq_len: int,
     model_forecast_horizon: int,
@@ -82,7 +81,6 @@ def cloud_resource_prediction_training(
           interpolation_order=interpolation_order,
           use_hour_features=use_hour_features,
           use_day_of_week_features=use_day_of_week_features,
-          use_weekend_features=use_weekend_features,
           is_weekend_mode=is_weekend_mode,
           make_plots=make_plots,
           leave_online_unscaled=False)

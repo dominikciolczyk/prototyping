@@ -6,17 +6,18 @@ from typing import Literal
 
 logger = get_logger(__name__)
 
+is_weekend_mode_type = Literal["numeric", "categorical", "both", "none"]
+
 def add_time_features(
         df: pd.DataFrame,
         use_hour_features: bool,
-        use_weekend_features: bool,
         use_day_of_week_features: bool,
-        is_weekend_mode: Literal["numeric", "categorical", "both"]
+        is_weekend_mode: is_weekend_mode_type,
 ) -> pd.DataFrame:
     df = df.copy()
     df.index = pd.to_datetime(df.index)
 
-    if use_weekend_features:
+    if is_weekend_mode != "none":
         is_weekend = df.index.dayofweek >= 5
 
         if is_weekend_mode in ("numeric", "both"):
@@ -38,14 +39,12 @@ def add_time_features(
 def feature_expander(
     dfs: Dict[str, pd.DataFrame],
     use_hour_features: bool,
-    use_weekend_features: bool,
     use_day_of_week_features: bool,
-    is_weekend_mode: Literal["numeric", "categorical", "both"],
+    is_weekend_mode: is_weekend_mode_type,
 ) -> Dict[str, pd.DataFrame]:
 
     logger.info(f"Expanding features with parameters:\n"
                  f"  use_hour_features: {use_hour_features}\n"
-                 f"  use_weekend_features: {use_weekend_features}\n"
                  f"  use_day_of_week_features: {use_day_of_week_features}\n"
                  f"  is_weekend_mode: {is_weekend_mode}")
 
@@ -53,7 +52,6 @@ def feature_expander(
     for vm_name, df in dfs.items():
         expanded[vm_name] = add_time_features(df,
                                               use_hour_features=use_hour_features,
-                                              use_weekend_features=use_weekend_features,
                                               use_day_of_week_features=use_day_of_week_features,
                                               is_weekend_mode=is_weekend_mode)
     return expanded

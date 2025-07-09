@@ -35,7 +35,6 @@ class CNNLSTM(nn.Module):
         assert n_targets > 0, "Number of targets must be greater than 0"
         assert n_features > 0, "Number of features must be greater than 0"
         assert 0.0 <= dropout < 1.0, "Dropout must be in range [0.0, 1.0)"
-        assert all(k % 2 == 1 for k in kernels), "All kernel sizes must be odd"
         assert all(k > 0 for k in kernels), "All kernel sizes must be greater than 0"
         assert all(c > 0 for c in cnn_channels), "All CNN channels must be greater than 0"
 
@@ -119,7 +118,6 @@ class CNNLSTMWithAttention(nn.Module):
         assert n_targets > 0, "Number of targets must be greater than 0"
         assert n_features > 0, "Number of features must be greater than 0"
         assert 0.0 <= dropout < 1.0, "Dropout must be in range [0.0, 1.0)"
-        assert all(k % 2 == 1 for k in kernels), "All kernel sizes must be odd"
         assert all(k > 0 for k in kernels), "All kernel sizes must be greater than 0"
         assert all(c > 0 for c in cnn_channels), "All CNN channels must be greater than 0"
 

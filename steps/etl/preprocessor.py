@@ -1,5 +1,6 @@
 from pathlib import Path
 from .data_loader import data_loader
+from .data_summarizer import data_summarizer
 from .merger import merger
 from .chronological_splitter import chronological_splitter
 from steps.etl.column_selector import column_selector
@@ -11,14 +12,12 @@ from typing import Dict, List, Literal, Tuple
 import pandas as pd
 from zenml import step
 from utils.plotter import plot_all, plot_time_series
-from .preprocessor_per_vm_split import aggregate_and_select_columns
-
+from steps.etl.verifier import verifier
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-
-@step
+@step(enable_cache=False)
 def preprocessor(
     cleaned_polcom_2022_dir: Path,
     cleaned_polcom_2020_dir: Path,
@@ -37,9 +36,8 @@ def preprocessor(
     reduction_method: ReduceMethod,
     interpolation_order: int,
     use_hour_features: bool,
-    use_weekend_features: bool,
     use_day_of_week_features: bool,
-    is_weekend_mode: Literal["numeric", "categorical", "both"],
+    is_weekend_mode: Literal["numeric", "categorical", "both", "none"],
     make_plots: bool,
     leave_online_unscaled: bool
 ) -> Tuple[
@@ -83,6 +81,8 @@ def preprocessor(
     if make_plots:
         plot_time_series(trimmed_dfs, f"trimmed")
         verifier(dfs=trimmed_dfs, split_name="trimmed")
+
+        data_summarizer(dfs=merged_dfs)
 
     train_dfs, val_dfs, test_dfs, online_dfs = chronological_splitter(
         dfs=trimmed_dfs,
@@ -175,7 +175,6 @@ def preprocessor(
     train_feature_expanded_dfs = feature_expander(
         dfs=train_scaled_dfs,
         use_hour_features=use_hour_features,
-        use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode
     )
@@ -183,7 +182,6 @@ def preprocessor(
     val_feature_expanded_dfs = feature_expander(
         dfs=val_scaled_dfs,
         use_hour_features=use_hour_features,
-        use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode
     )
@@ -191,7 +189,6 @@ def preprocessor(
     test_feature_expanded_dfs = feature_expander(
         dfs=test_scaled_dfs,
         use_hour_features=use_hour_features,
-        use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode
     )
@@ -199,7 +196,6 @@ def preprocessor(
     online_feature_expanded_dfs = feature_expander(
         dfs=online_scaled_dfs,
         use_hour_features=use_hour_features,
-        use_weekend_features=use_weekend_features,
         use_day_of_week_features=use_day_of_week_features,
         is_weekend_mode=is_weekend_mode
     )

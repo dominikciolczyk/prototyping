@@ -78,29 +78,23 @@ parameters:
   recreate_dataset: False
   val_size: 0.15
   test_size: 0.15
-  test_final_size: 0.15
+  online_size: 0.15
   seed: 42
-  only_train_val_test_sets: False
   selected_columns:
     - CPU_USAGE_MHZ
     - NODE_1_DISK_IO_RATE_KBPS
     - NODE_1_NETWORK_TR_KBPS
-  anomaly_reduction_before_aggregation: True
-  min_strength: 0.45
-  correlation_threshold: 0.98
-  threshold_strategy: quantile
-  threshold: 9
-  q: 0.98
-  reduction_method: interpolate_linear
-  interpolation_order: 2
-  use_hour_features: True
-  use_day_of_week_features: True
-  use_weekend_features: True
-  is_weekend_mode: categorical
   model_input_seq_len: 24
   model_forecast_horizon: 24
-  make_plots: True
+  make_plots: False
+  batch: 64
+  cnn_channels: [ 64, 128, 256, 512 ]
+  kernels: [ 3, 5, 7, 9 ]
+  hidden_lstm: 256
+  lstm_layers: 1
+  dropout_rate: 0.1
   alpha: 10
   beta: 3.0
+  lr: 0.001
   epochs: 50
-  early_stop_epochs: 10
+  early_stop_epochs: 15

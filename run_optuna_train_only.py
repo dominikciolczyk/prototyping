@@ -3,12 +3,14 @@ import optuna
 from datetime import datetime as dt
 from typing import Set
 import json
+
 from zenml.logger import get_logger
 from pathlib import Path
 from optuna.samplers import TPESampler
 import time
 from pipelines import cloud_resource_prediction_training
 import os
+from run import set_seed
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
 
@@ -120,161 +122,78 @@ def get_loss(retries: int = 5, delay: float = 2.0) -> float:
 
 @click.command()
 def main():
+    logger.info("Starting Optuna hyperparameter optimization (preprocessing only)...")
 
-    logger.info("Starting Optuna hyperparameter optimization...")
-    def objective(trial):
+    def objective(trial: optuna.Trial):
         try:
-            #batch = trial.suggest_categorical("batch", [16, 32, 64, 128])
-            batch = 32
+            # --- Anomaly detection params ---
+            min_strength = trial.suggest_float("min_strength", 0.84, 0.9)
+            correlation_threshold = trial.suggest_float("correlation_threshold", 0.93, 0.98)
+            threshold_strategy = "std"
+            threshold = trial.suggest_float("threshold", 3.3, 6.0)  # for std: multiplier, for quantile: percentile range
+            q = 1
 
-            CNN_TEMPLATES = {
-                """
-                "halfdaily_kernel_16_channels": {
-                    "cnn_channels": [16],
-                    "kernels": [6],
-                },
-                
-                "halfdaily_kernel_32_channels": {
-                    "cnn_channels": [32],
-                    "kernels": [6],
-                },
-                """
-                "halfdaily_kernel_64_channels": {
-                    "cnn_channels": [64],
-                    "kernels": [6],
-                },
-                """
-                "daily_kernel_16_channels": {
-                    "cnn_channels": [16],
-                    "kernels": [12],
-                },
-                """
-                "daily_kernel_32_channels": {
-                    "cnn_channels": [32],
-                    "kernels": [12],
-                },
-                "daily_kernel_32_channels2": {
-                    "cnn_channels": [32],
-                    "kernels": [24],
-                },
-                """
-                "short_long_less_channels": {
-                    "cnn_channels": [16, 32],
-                    "kernels": [12, 24],
-                },
-                """
-                "short_long": {
-                    "cnn_channels": [32, 64],
-                    "kernels": [12, 24],
-                },
-                """
-                "short_seasonal": {
-                    "cnn_channels": [16, 32],
-                    "kernels": [12, 84],
-                },
-                """
-                "short_seasonal_even_more_filters2": {
-                    "cnn_channels": [64, 64],
-                    "kernels": [12, 24],
-                },
-                "short_seasonal_even_more_filters": {
-                    "cnn_channels": [64, 64],
-                    "kernels": [12, 84],
-                },
-                "deep_seasonal_64_channels": {
-                    "cnn_channels": [64, 64],
-                    "kernels": [24, 84],
-                },
-                """
-                "triple_seasonal_32_channels": {
-                    "cnn_channels": [16, 32, 32],
-                    "kernels": [12, 24, 84],
-                },
-                
-                "triple_seasonal_64_channels": {
-                    "cnn_channels": [32, 64, 64],
-                    "kernels": [12, 24, 84],
-                },
-                """
-                "bottleneck_64_32": {
-                    "cnn_channels": [64, 32],
-                    "kernels": [12, 24],
-                },
-                "flat_daily_weekly2": {
-                    "cnn_channels": [64],
-                    "kernels": [12],
-                },
-                "flat_daily_weekly": {
-                    "cnn_channels": [64],
-                    "kernels": [84],
-                },
-            }
-            use_template = False
-
-            if use_template:
-                template_name = trial.suggest_categorical("cnn_template", list(CNN_TEMPLATES.keys()))
-                template = CNN_TEMPLATES[template_name]
-                cnn_channels = template["cnn_channels"]
-                kernels = template["kernels"]
-            else:
-                n_layers = trial.suggest_int("n_cnn_layers", 1, 3)
-                cnn_channels = []
-                kernels = []
-                for i in range(n_layers):
-                    cnn_channels.append(trial.suggest_int(f"ch{i + 1}", 8, 128, step=32))
-                    kernels.append(trial.suggest_int(f"k{i + 1}", 3, 23, step=2))
-
-            # LSTM
-            hidden_lstm = trial.suggest_categorical("hidden_lstm", [64, 128, 256, 512, 1024])
-            lstm_layers = trial.suggest_categorical("lstm_layers", [1, 2])
-
-            # Regularization & optimizer
-            #dropout_rate = trial.suggest_float("dropout_rate", 0.2, 0.3, step=0.2)
-            dropout_rate = 0.2
-
-            #lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
-            #lr = trial.suggest_categorical("lr", [3e-4, 1e-3, 1e-2])
-            lr = 1e-3
-
-            # Final params dict for trainer step
-            best_model_hp = {
-                "batch": batch,
-                "cnn_channels": cnn_channels,
-                "kernels": kernels,
-                "hidden_lstm": hidden_lstm,
-                "lstm_layers": lstm_layers,
-                "dropout_rate": dropout_rate,
-                "lr": lr,
-            }
-
-            # Static ZenML run metadata
-            pipeline_args = {
-                "config_path": os.path.join(
-                    os.path.dirname(__file__),
-                    "configs",
-                    "optuna_train_only.yaml",
-                ),
-                "run_name": f"optuna_trial_{trial.number}_{dt.now():%Y_%m_%d_%H_%M_%S}",
-            }
-
-            logger.info(f"Trial {trial.number}: {best_model_hp}")
-            cloud_resource_prediction_training.with_options(**pipeline_args)(
-                **best_model_hp
+            # --- Anomaly reduction ---
+            reduction_method = trial.suggest_categorical(
+                "reduction_method",
+                ["interpolate_linear", "interpolate_polynomial", "interpolate_spline", "ffill_bfill"]
             )
+            interpolation_order = 1
+            if reduction_method in ["interpolate_polynomial", "interpolate_spline"]:
+                interpolation_order = trial.suggest_int("interpolation_order", 1, 2)
 
-            return get_loss()
+            # --- Feature engineering ---
+            use_hour_features = trial.suggest_categorical("use_hour_features", [True, False])
+            use_day_of_week_features = trial.suggest_categorical("use_day_of_week_features", [True, False])
+            is_weekend_mode = trial.suggest_categorical("is_weekend_mode", ["numeric", "categorical", "both", "none"])
 
+            # Construct preprocessing config
+            preprocessing_hp = {
+                "min_strength": min_strength,
+                "correlation_threshold": correlation_threshold,
+                "threshold_strategy": threshold_strategy,
+                "threshold": threshold,
+                "q": q,
+                "reduction_method": reduction_method,
+                "interpolation_order": interpolation_order,
+                "use_hour_features": use_hour_features,
+                "use_day_of_week_features": use_day_of_week_features,
+                "is_weekend_mode": is_weekend_mode,
+            }
+
+            run_name = f"optuna_trial_{trial.number}_{dt.now():%Y_%m_%d_%H_%M_%S}"
+            pipeline_args = {
+                "config_path": os.path.join(os.path.dirname(__file__), "configs", "optuna_train_only.yaml"),
+                "run_name": run_name,
+            }
+
+            set_seed(42)
+
+            logger.info(f"[Trial {trial.number}] Preprocessing params: {preprocessing_hp}")
+            cloud_resource_prediction_training.with_options(**pipeline_args)(**preprocessing_hp)
+
+            loss = get_loss()
+
+            logger.info(f"[Trial {trial.number}] Loss: {loss:.4f}")
+
+            return loss
+
+        except optuna.exceptions.TrialPruned:
+            logger.warning(f"Trial {trial.number} pruned")
+            raise
         except Exception as e:
             logger.warning(f"Trial {trial.number} failed: {e}")
-            return float("inf")  # Or some large number so Optuna skips it
+            return float("inf")
 
-    study = optuna.create_study(direction="minimize", sampler=TPESampler(seed=42))
-    study.optimize(objective, n_trials=75, callbacks=[save_checkpoint])
+    study = optuna.create_study(
+        direction="minimize",
+        sampler=TPESampler(seed=42, n_startup_trials=30, multivariate=True, group=True),
+    )
+    study.optimize(objective, n_trials=150, callbacks=[save_checkpoint])
 
     save_best_result(study)
-    save_full_report(study, top_k=30)
-    logger.info("All Optuna trials finished successfully!")
-
+    save_full_report(study, top_k=50)
+    logger.info("All Optuna trials finished!")
 
 if __name__ == "__main__":
     main()

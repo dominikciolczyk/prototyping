@@ -84,24 +84,23 @@ parameters:
     - CPU_USAGE_MHZ
     - NODE_1_DISK_IO_RATE_KBPS
     - NODE_1_NETWORK_TR_KBPS
-  min_strength: 0.45
-  correlation_threshold: 0.98
-  threshold_strategy: quantile
-  threshold: 9
-  q: 0.98
-  reduction_method: interpolate_linear
+  min_strength: 0.8418052233367769
+  correlation_threshold: 0.9569165272783219
+  threshold_strategy: std
+  threshold: 4.797380848863149
+  q: 0.954166045314732
+  reduction_method: interpolate_spline
   interpolation_order: 2
-  use_hour_features: True
-  use_day_of_week_features: True
-  use_weekend_features: True
-  is_weekend_mode: categorical
+  use_hour_features: False
+  use_day_of_week_features: False
+  is_weekend_mode: none
   model_input_seq_len: 24
   model_forecast_horizon: 24
   make_plots: True
   batch: 64
-  cnn_channels: [8, 72, 8]
-  kernels: [13, 13, 13]
-  hidden_lstm: 126
+  cnn_channels: [ 64, 128, 256, 512 ]
+  kernels: [ 3, 5, 7, 9 ]
+  hidden_lstm: 256
   lstm_layers: 1
   dropout_rate: 0.1
   alpha: 10
