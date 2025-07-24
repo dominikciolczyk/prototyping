@@ -1,6 +1,6 @@
 from pathlib import Path
 from .data_loader import data_loader
-from .data_summarizer import data_summarizer
+from .data_summarizer import data_summarizer, data_visualizer, split_visualizer, anomaly_comparison_visualizer
 from .merger import merger
 from .chronological_splitter import chronological_splitter
 from steps.etl.column_selector import column_selector
@@ -49,6 +49,7 @@ def preprocessor(
 ]:
     dropna_how = "any"
     remove_nans = True
+    vm_names = ["2020_VM02", "2020_VM03", "2020_VM04", "2020_VM05", "2020_VM06"]
 
     load_2022_R04 = data_granularity != "M"  # R04 is only available for yearly data, not monthly since it has duplicated yearly data for monthly granularity
     if load_2022_data:
@@ -57,7 +58,6 @@ def preprocessor(
         if make_plots:
             plot_time_series(loaded_2022_data, "loaded_2022_data")
             verifier(dfs=loaded_2022_data, split_name="loaded_2022_data")
-
 
     if load_2020_data:
         loaded_2020_data = data_loader(polcom_2022_dir=cleaned_polcom_2022_dir, polcom_2020_dir=cleaned_polcom_2020_dir,
@@ -68,7 +68,10 @@ def preprocessor(
 
     merged_dfs = merger(dfs_2022=loaded_2022_data, dfs_2020=loaded_2020_data)
 
-    verifier(dfs=merged_dfs, split_name="merged")
+    if make_plots:
+        data_summarizer(dfs=merged_dfs, output_dir="report_output/visuals_raw")
+        data_visualizer(dfs=merged_dfs, vm_names=vm_names, output_dir="report_output/visuals_raw")
+        verifier(dfs=merged_dfs, split_name="merged")
 
     selected_columns_merged_dfs = column_selector(dfs=merged_dfs, selected_columns=selected_columns)
 
@@ -80,9 +83,11 @@ def preprocessor(
 
     if make_plots:
         plot_time_series(trimmed_dfs, f"trimmed")
-        verifier(dfs=trimmed_dfs, split_name="trimmed")
 
-        data_summarizer(dfs=merged_dfs)
+        data_summarizer(dfs=trimmed_dfs, output_dir="report_output/visuals_trimmed")
+        data_visualizer(dfs=trimmed_dfs, vm_names=vm_names, output_dir="report_output/visuals_trimmed")
+
+        verifier(dfs=trimmed_dfs, split_name="trimmed")
 
     train_dfs, val_dfs, test_dfs, online_dfs = chronological_splitter(
         dfs=trimmed_dfs,
@@ -92,17 +97,24 @@ def preprocessor(
     )
 
     if make_plots:
-        verifier(dfs=train_dfs, split_name="train")
-        verifier(dfs=val_dfs, split_name="val")
-        verifier(dfs=test_dfs, split_name="test")
-        verifier(dfs=online_dfs, split_name="online")
-
         plot_all([
             train_dfs,
             val_dfs,
             test_dfs,
             online_dfs
         ], "splitted")
+
+        split_visualizer(
+            train_dfs=train_dfs,
+            val_dfs=val_dfs,
+            test_dfs=test_dfs,
+            online_dfs=online_dfs,
+            vm_names=vm_names)
+
+        verifier(dfs=train_dfs, split_name="train")
+        verifier(dfs=val_dfs, split_name="val")
+        verifier(dfs=test_dfs, split_name="test")
+        verifier(dfs=online_dfs, split_name="online")
 
     train_reduced_dfs = anomaly_reducer(train=train_dfs,
                                     data_granularity=data_granularity,
@@ -121,6 +133,12 @@ def preprocessor(
             test_dfs,
             online_dfs
         ], "reduced")
+
+        anomaly_comparison_visualizer(
+            original_dfs=train_dfs,
+            reduced_dfs=train_reduced_dfs,
+            vm_names=vm_names)
+
         verifier(dfs=train_reduced_dfs, split_name="train_reduced")
 
     train_reduced_selected_columns_dfs = column_selector(
