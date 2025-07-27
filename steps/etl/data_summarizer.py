@@ -5,10 +5,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.dates as mdates
 from torch.fx.experimental.proxy_tensor import decompose
-from zenml.logger import get_logger
-
+from statsmodels.tsa.stattools import adfuller
+from river import preprocessing
+from typing import Dict, Tuple
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
+
+from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -80,30 +83,31 @@ def _save_fig(fig: plt.Figure, out_path: Path) -> None:
     fig.savefig(out_path.with_suffix(".pdf"), format="pdf")
     plt.close(fig)
 
+def plot_metric(ax: plt.Axes, df: pd.DataFrame, col: str, label: str = None) -> None:
+    sns.lineplot(
+        x=df.index,
+        y=df[col],
+        ax=ax,
+        label=label,
+        linewidth=1,
+        marker='o',
+        markersize=3,
+        linestyle='--',
+    )
+
 def _plot_time_series(df: pd.DataFrame, out_path: Path) -> None:
     for col in COLUMNS_TO_YLABEL:
         fig, ax = plt.subplots(figsize=(9, 3))
 
-        sns.lineplot(x=df.index, y=df[col], ax=ax, linewidth=1)
+        plot_metric(ax, df, col)
 
         ax.set_xlabel("czas pomiaru (interwał dwugodzinny)")
         ax.set_ylabel(get_column_fullname(col))
 
         set_common_date_axis(ax, interval=4)
-        format_date_axis(fig, rotation=30)
+        format_date_axis(fig, rotation=0)
 
         _save_fig(fig, out_path.with_name(f"{out_path.stem}_{col}"))
-
-def _plot_histograms(df: pd.DataFrame, out_dir: Path) -> None:
-    for col in COLUMNS_TO_YLABEL:
-        fig, ax = plt.subplots(figsize=(4, 3))
-        sns.histplot(df[col].dropna(), ax=ax, bins=100, kde=False)
-
-        ax.set_xscale("log")
-
-        ax.set_xlabel(f"{col} (skala logarytmiczna)")
-        ax.set_xlabel(get_column_fullname(col))
-        _save_fig(fig, out_dir / f"hist_{col}")
 
 def _plot_distributions(df: pd.DataFrame, out_dir: Path) -> None:
     for col in COLUMNS_TO_YLABEL:
@@ -119,28 +123,6 @@ def _plot_distributions(df: pd.DataFrame, out_dir: Path) -> None:
         ax.set_ylabel("gęstość")
 
         _save_fig(fig, out_dir / f"density_{col}")
-
-def _plot_correlation(df: pd.DataFrame, out_path: Path) -> None:
-    fig, ax = plt.subplots(figsize=(6, 5))
-    df = df.copy()
-    df = df[COLUMNS_TO_YLABEL.keys()]
-    df.columns = [COLUMNS_TO_YLABEL[col] for col in df.columns]
-    corr = df.corr()
-    sns.heatmap(
-        corr,
-        annot=True,
-        cmap="viridis",
-        ax=ax,
-        cbar_kws={'shrink': 0.6},
-        square=True,
-        xticklabels=True,
-        yticklabels=True,
-        fmt=".2f"
-    )
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
-    fig.tight_layout()
-    _save_fig(fig, out_path)
 
 def _plot_acf_pacf(df: pd.DataFrame, column: str, output_path: Path, lags: int = 72):
     fig, axes = plt.subplots(2, 1, figsize=(10, 6))
@@ -164,6 +146,116 @@ def _plot_seasonal_decompositions(df: pd.DataFrame, column: str, output_path: Pa
         fig.tight_layout()
         fig.savefig(output_path / f"{column}_decomposition_period_{period}.pdf")
         plt.close(fig)
+
+def scale_dfs_per_vm(
+    dfs: Dict[str, pd.DataFrame]
+) -> Tuple[Dict[str, pd.DataFrame], Dict[str, Dict[str, preprocessing.StandardScaler]]]:
+    scaled_dfs: Dict[str, pd.DataFrame] = {}
+    scalers: Dict[str, Dict[str, preprocessing.StandardScaler]] = {}
+
+    for vm, df in dfs.items():
+        vm_scalers: Dict[str, preprocessing.StandardScaler] = {}
+        scaled_df = pd.DataFrame(index=df.index)
+
+        for col in df.columns:
+            scaler = preprocessing.StandardScaler()
+            scaler.learn_many(df[[col]])
+            scaled_col = scaler.transform_many(df[[col]]).iloc[:, 0]
+
+            scaled_df[col] = scaled_col
+            vm_scalers[col] = scaler
+
+        scaled_dfs[vm] = scaled_df
+        scalers[vm] = vm_scalers
+
+    return scaled_dfs, scalers
+
+
+def plot_correlation_heatmap(dfs: Dict[str, pd.DataFrame], out_path: Path) -> None:
+    combined = pd.concat([
+        df[COLUMNS_TO_SUMMARIZE] for df in dfs.values()
+    ])
+    combined = combined.rename(columns=COLUMNS_TO_YLABEL)
+
+    corr = combined.corr()
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+    sns.heatmap(
+        corr,
+        annot=True,
+        cmap="viridis",
+        ax=ax,
+        cbar_kws={'shrink': 0.6},
+        square=True,
+        xticklabels=True,
+        yticklabels=True,
+        fmt=".2f"
+    )
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
+    fig.tight_layout()
+    _save_fig(fig, out_path / "correlation_matrix")
+
+def run_adf_test(df: pd.DataFrame, vm_name: str) -> pd.DataFrame:
+    result_rows = []
+    for col, label in COLUMNS_TO_YLABEL.items():
+        if col in df.columns:
+            series = df[col].dropna()
+            if len(series) < 10:
+                raise ValueError(f"Not enough data points for ADF test on {vm_name} - {label}. Minimum 10 required.")
+            else:
+                stat, pval, *_ = adfuller(series, autolag='AIC', regression='ct')
+                stationary = "TAK" if pval < 0.05 else "NIE"
+            result_rows.append({
+                "VM": vm_name,
+                "Cecha": label,
+                "ADF stat": stat,
+                "p-value": pval,
+                "Stacjonarna": stationary
+            })
+    return pd.DataFrame(result_rows)
+
+def generate_stationarity_report(dfs: Dict[str, pd.DataFrame], output_path: Path) -> None:
+    report = pd.concat([
+        run_adf_test(df, vm_name)
+        for vm_name, df in dfs.items()
+    ])
+
+    report.to_csv("report_output/stationarity_check.csv", index=False)
+
+    report["ADF stat"] = report["ADF stat"].round(3)
+    report["p-value"] = report["p-value"].round(3)
+
+    report_pivot = report.pivot(index="VM", columns="Cecha", values="Stacjonarna").reset_index()
+
+    desired_order = ["VM", "wykorzystanie CPU", "zużycie pamięci", "operacje dyskowe", "transfer sieciowy"]
+    existing_cols = [col for col in desired_order if col in report_pivot.columns]
+    report_pivot = report_pivot[existing_cols]
+
+    def df_to_latex_table(df_subset, caption, label):
+        df_copy = df_subset.copy()
+        if "VM" in df_copy.columns:
+            df_copy["VM"] = df_copy["VM"].apply(lambda x: x.replace("_", "\\_"))
+        df_latex = df_copy.to_latex(index=False,
+                                    column_format="|l|" + "c|" * (df_copy.shape[1] - 1),
+                                    caption=caption,
+                                    label=label,
+                                    escape=False)
+        lines = df_latex.splitlines()
+        for i in range(6, len(lines)):
+            if not lines[i].startswith("\\"):
+                lines[i] = lines[i] + r" \hline"
+        return "\n".join(lines)
+
+    output_path.parent.mkdir(exist_ok=True, parents=True)
+    with open(output_path, "w") as f:
+        f.write(df_to_latex_table(
+            report_pivot,
+            caption="Ocena stacjonarności poszczególnych cech dla każdej maszyny wirtualnej (test ADF)",
+            label="tab:stationarity-summary"
+        ))
+
+    return report_pivot
 
 def data_summarizer(
     dfs: Dict[str, pd.DataFrame],
@@ -223,6 +315,25 @@ def data_summarizer(
     pd.DataFrame(global_rows).to_csv(Path(output_dir) / "dataset_statistics_by_year.csv", index=False)
     print("✅ Summary tables saved to", output_dir)
 
+    scaled_dfs, _ = scale_dfs_per_vm(dfs)
+
+    plot_correlation_heatmap(scaled_dfs, Path(output_dir))
+
+
+def _check_stationarity(df: pd.DataFrame, out_path: Path) -> None:
+    out_lines = ["Kolumna\tADF stat\tp-value\tStacjonarna\n"]
+    for col in df.columns:
+        series = df[col].dropna()
+        try:
+            result = adfuller(series)
+            adf_stat, p_value = result[0], result[1]
+            is_stationary = "TAK" if p_value < 0.05 else "NIE"
+            out_lines.append(f"{col}\t{adf_stat:.3f}\t{p_value:.3f}\t{is_stationary}\n")
+        except Exception as e:
+            out_lines.append(f"{col}\tERROR\tERROR\t{str(e)}\n")
+
+    out_path.write_text("".join(out_lines), encoding="utf-8")
+
 def data_visualizer(
     dfs: Dict[str, pd.DataFrame],
     vm_names: List[str],
@@ -230,6 +341,8 @@ def data_visualizer(
 ) -> None:
     base_dir = Path(output_dir)
     _ensure_dir(base_dir)
+
+    generate_stationarity_report(dfs, Path(f"{base_dir}/stationarity_report.tex"))
 
     for vm in vm_names:
         if vm not in dfs:
@@ -239,18 +352,16 @@ def data_visualizer(
         vm_dir = base_dir / vm
         _ensure_dir(vm_dir)
 
+        _check_stationarity(df, out_path=vm_dir / "stationarity.txt")
+
         _plot_time_series(df, out_path=vm_dir / "timeseries")
-        hist_dir = vm_dir / "histograms"
         dist_dir = vm_dir / "distributions"
         acf_pacf_dir = vm_dir / "acf_pacf"
         decompose_dir = vm_dir / "decompositions"
-        _ensure_dir(hist_dir)
         _ensure_dir(dist_dir)
         _ensure_dir(acf_pacf_dir)
         _ensure_dir(decompose_dir)
 
-        _plot_histograms(df, out_dir=hist_dir)
-        _plot_correlation(df, out_path=vm_dir / "correlation.svg")
         _plot_distributions(df, out_dir=dist_dir)
         _plot_acf_pacf(df, "CPU_USAGE_MHZ", Path(acf_pacf_dir))
         _plot_seasonal_decompositions(df, "CPU_USAGE_MHZ", Path(decompose_dir), periods=[12, 24, 84])
@@ -281,7 +392,7 @@ def split_visualizer(
             ax.plot(df.index, df.iloc[:, 0], label=label, color=color, linewidth=0.7)
         ax.set_title(f"{vm} – chronological splits (first metric)")
         set_common_date_axis(ax, interval=4)
-        format_date_axis(fig, rotation=30)
+        format_date_axis(fig, rotation=0)
         ax.legend()
         _save_fig(fig, base / f"{vm}_splits")
     print("✅ Split visuals saved to", base)
@@ -298,7 +409,9 @@ def anomaly_comparison_visualizer(
     for vm in vm_names:
         if vm not in original_dfs or vm not in reduced_dfs:
             raise ValueError(f"VM '{vm}' missing in one of the provided dicts.")
-        orig = original_dfs[vm]; red = reduced_dfs[vm]
+
+        orig = original_dfs[vm]
+        red = reduced_dfs[vm]
         orig.index = pd.to_datetime(orig.index)
         red.index = pd.to_datetime(red.index)
 
@@ -311,14 +424,16 @@ def anomaly_comparison_visualizer(
 
             fig, ax = plt.subplots(figsize=(9, 3))
 
-            ax.plot(orig.index, orig[metric], label="original", linestyle="None", marker="o", markersize=2, alpha=0.7)
-            ax.plot(red.index, red[metric], label="reduced", linestyle="None", marker="o", markersize=2, alpha=0.7)
+            plot_metric(ax, orig, metric, label="oryginalne")
+            plot_metric(ax, red, metric, label="po redukcji")
 
-            ax.set_ylabel("CPU usage [MHz]")
+            ax.set_xlabel("czas pomiaru (interwał dwugodzinny)")
+            ax.set_ylabel(get_column_fullname(metric))
             set_common_date_axis(ax, interval=4)
-            format_date_axis(fig, rotation=30)
+            format_date_axis(fig, rotation=0)
             ax.legend()
 
             _save_fig(fig, base / f"{vm}_{metric}_orig_vs_red")
 
     print("✅ Anomaly comparison plots saved to", base)
+

@@ -18,7 +18,7 @@ net_cols = ["VM", "NODE_1_NETWORK_TR_KBPS_mean", "NODE_1_NETWORK_TR_KBPS_median"
 
 
 for col in cpu_cols[1:]:
-    df[col] = df[col] / 1024
+    df[col] = df[col] / 1000
 
 for col in mem_cols[1:]:
     df[col] = df[col] / (1024 ** 3)

@@ -49,7 +49,7 @@ def preprocessor(
 ]:
     dropna_how = "any"
     remove_nans = True
-    vm_names = ["2020_VM02", "2020_VM03", "2020_VM04", "2020_VM05", "2020_VM06"]
+    vm_names = ["2020_VM01", "2020_VM02", "2020_VM03", "2020_VM04", "2020_VM05", "2020_VM06", "2020_VM07", "2022_VM03", "2022_VM06"]
 
     load_2022_R04 = data_granularity != "M"  # R04 is only available for yearly data, not monthly since it has duplicated yearly data for monthly granularity
     if load_2022_data:
