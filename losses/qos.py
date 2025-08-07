@@ -38,3 +38,42 @@ class AsymmetricSmoothL1(nn.Module):
             factor * (abs_diff - 0.5 * self.beta),
         )
         return loss.mean()
+
+
+class AsymmetricCLoss(nn.Module):
+    """
+    Asymmetric correntropy-inspired loss (AC-loss).
+    Introduces exponential decay with asymmetry controlled by tau ∈ (0,1).
+    """
+    def __init__(self, tau: float, sigma: float):
+        super().__init__()
+        self.tau = tau
+        self.sigma = sigma
+
+    def forward(self, y_pred, y_true):
+        diff = y_true - y_pred
+        tau = torch.tensor(self.tau, dtype=diff.dtype, device=diff.device)
+        sigma_sq = self.sigma ** 2
+
+        loss = torch.where(
+            diff >= 0,
+            1 - torch.exp(-tau * diff ** 2 / (2 * sigma_sq)),
+            1 - torch.exp(-(1 - tau) * diff ** 2 / (2 * sigma_sq)),
+        )
+        return loss.mean()
+
+
+class AssymetricHuberLoss(nn.Module):
+    def __init__(self, alfa: float = 10.0, beta: float = 3.0):
+        super().__init__()
+        self.alfa = alfa
+        self.delta = beta
+        self.base_huber = nn.HuberLoss(delta=self.delta, reduction='none')
+
+    def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
+        loss = self.base_huber(y_pred, y_true)
+
+        mask = (y_pred < y_true).float()
+        weight = 1.0 + mask * (self.alfa - 1.0)
+
+        return (loss * weight).mean()

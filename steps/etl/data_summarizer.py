@@ -4,14 +4,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.dates as mdates
-from torch.fx.experimental.proxy_tensor import decompose
 from statsmodels.tsa.stattools import adfuller
 from river import preprocessing
 from typing import Dict, Tuple
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
+from utils.visualization_consistency import set_plot_style
+
 
 from zenml.logger import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -24,12 +26,25 @@ COLUMNS_TO_SUMMARIZE = [
     "NODE_1_NETWORK_TR_KBPS",
 ]
 
+COLUMNS_TO_SUMMARIZE = [
+    "CPU_USAGE_MHZ",
+    "NODE_1_DISK_IO_RATE_KBPS",
+    "NODE_1_NETWORK_TR_KBPS",
+]
+
 COLUMNS_TO_YLABEL = {
     "CPU_USAGE_MHZ": "wykorzystanie CPU",
     "MEMORY_USAGE_KB": "zużycie pamięci",
     "NODE_1_DISK_IO_RATE_KBPS": "operacje dyskowe",
     "NODE_1_NETWORK_TR_KBPS": "transfer sieciowy",
 }
+
+COLUMNS_TO_YLABEL = {
+    "CPU_USAGE_MHZ": "wykorzystanie CPU",
+    "NODE_1_DISK_IO_RATE_KBPS": "operacje dyskowe",
+    "NODE_1_NETWORK_TR_KBPS": "transfer sieciowy",
+}
+
 
 COLUMNS_TO_YUNITS = {
     "CPU_USAGE_MHZ": "[MHz]",
@@ -38,29 +53,17 @@ COLUMNS_TO_YUNITS = {
     "NODE_1_NETWORK_TR_KBPS": "[KB/s]",
 }
 
-def get_column_fullname(col: str) -> str:
-    return f"{COLUMNS_TO_YLABEL[col]} {COLUMNS_TO_YUNITS[col]}"
-
-def set_plot_style():
-    plt.rcParams.update({
-        "text.usetex": True,
-        "font.family": "serif",
-        "font.serif": ["Computer Modern Roman"],
-        "text.latex.preamble": r"""
-            \usepackage[utf8]{inputenc}
-            \usepackage[T1]{fontenc}
-            \usepackage[polish]{babel}
-            \usepackage{amsmath}
-        """,
-    })
-    sns.set_theme(
-        style="whitegrid",
-        context="paper",
-        font="serif",
-        font_scale=1.2
-    )
+COLUMNS_TO_YUNITS = {
+    "CPU_USAGE_MHZ": "[MHz]",
+    "NODE_1_DISK_IO_RATE_KBPS": "[KB/s]",
+    "NODE_1_NETWORK_TR_KBPS": "[KB/s]",
+}
 
 set_plot_style()
+
+
+def get_column_fullname(col: str) -> str:
+    return f"{COLUMNS_TO_YLABEL[col]} {COLUMNS_TO_YUNITS[col]}"
 
 def set_common_date_axis(ax: plt.Axes, interval: int = 4) -> None:
     from matplotlib.ticker import FuncFormatter
@@ -138,14 +141,36 @@ def _plot_seasonal_decompositions(df: pd.DataFrame, column: str, output_path: Pa
     df = df.copy()
     df = df[COLUMNS_TO_YLABEL.keys()]
     df.columns = [get_column_fullname(col) for col in df.columns]
-    column = get_column_fullname(column)
+    column_full = get_column_fullname(column)
+
     for period in periods:
-        decomposition = seasonal_decompose(df[column].dropna(), period=period, model='additive')
-        fig = decomposition.plot()
-        fig.set_size_inches(10, 6)
-        fig.tight_layout()
-        fig.savefig(output_path / f"{column}_decomposition_period_{period}.pdf")
-        plt.close(fig)
+        decomposition = seasonal_decompose(df[column_full].dropna(), period=period, model='additive')
+
+        fig, axes = plt.subplots(4, 1, figsize=(10, 6), sharex=True)
+
+        axes[0].plot(decomposition.observed.index, decomposition.observed, linewidth=1)
+        axes[0].set_ylabel("dane oryginalne")
+
+        axes[1].plot(decomposition.trend.index, decomposition.trend, linewidth=1)
+        axes[1].set_ylabel("trend")
+
+        axes[2].plot(decomposition.seasonal.index, decomposition.seasonal, linewidth=1)
+        axes[2].set_ylabel("sezonowość")
+
+        axes[3].plot(decomposition.resid.index, decomposition.resid, linestyle='None', marker='o', markersize=3)
+        axes[3].set_ylabel("reszta")
+        axes[3].set_xlabel("czas")
+
+        for ax in axes:
+            set_common_date_axis(ax, interval=4)
+
+        format_date_axis(fig, rotation=0)
+
+        fig.suptitle(column_full, fontsize=14)
+        fig.tight_layout(rect=[0, 0, 1, 0.97])
+
+        _save_fig(fig, output_path / f"{column_full}_decomposition_period_{period}")
+
 
 def scale_dfs_per_vm(
     dfs: Dict[str, pd.DataFrame]
@@ -382,20 +407,38 @@ def split_visualizer(
     for vm in vm_names:
         if vm not in train_dfs:
             raise ValueError(f"VM '{vm}' not in splits.")
+
+        column = train_dfs[vm].columns[0]
+
+        for split_df in [train_dfs[vm], val_dfs[vm], test_dfs[vm], online_dfs[vm]]:
+            split_df.index = pd.to_datetime(split_df.index)
+
+        col_label = get_column_fullname(column)
+
         fig, ax = plt.subplots(figsize=(9, 3))
-        for df, label, color in [
-            (train_dfs[vm], "train", "tab:blue"),
-            (val_dfs[vm], "val", "tab:orange"),
-            (test_dfs[vm], "test", "tab:green"),
-            (online_dfs[vm], "online", "tab:red"),
+        for df, label in [
+            (train_dfs[vm], "treningowy"),
+            (val_dfs[vm], "walidacyjny"),
+            (test_dfs[vm], "testowy"),
+            (online_dfs[vm], "online"),
         ]:
-            ax.plot(df.index, df.iloc[:, 0], label=label, color=color, linewidth=0.7)
-        ax.set_title(f"{vm} – chronological splits (first metric)")
+            plot_metric(ax, df, col=column, label=label)
+
+        ax.set_xlabel("czas pomiaru (interwał dwugodzinny)")
+        ax.set_ylabel(col_label)
+
         set_common_date_axis(ax, interval=4)
         format_date_axis(fig, rotation=0)
+
+        #all_times = pd.concat([train_dfs[vm], val_dfs[vm], test_dfs[vm], online_dfs[vm]]).index
+        #ax.set_xlim(all_times.min(), all_times.max())
+
         ax.legend()
+        fig.tight_layout()
         _save_fig(fig, base / f"{vm}_splits")
+
     print("✅ Split visuals saved to", base)
+
 
 def anomaly_comparison_visualizer(
     original_dfs: Dict[str, pd.DataFrame],
