@@ -7,10 +7,30 @@ import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 import json
+import random
+import numpy as np
 import os
+from .fitness_cache import FitnessCache
+
 from steps.training.model_evaluator import calculate_loss, _predict_max_baseline_sliding
 
 logger = get_logger(__name__)
+
+cache = FitnessCache("fitness_cache.pkl")
+
+
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 def save_checkpoint(it, best_cfg, best_score, trajectory):
     payload = {
@@ -26,22 +46,6 @@ def save_checkpoint(it, best_cfg, best_score, trajectory):
         os.fsync(f.fileno())
     os.replace(tmp, "checkpoint.json")
 
-def plot_trajectory(trajectory: List[float]) -> None:
-    # Plot the convergence curve
-    plt.figure()
-    plt.plot(trajectory, marker='o')
-    plt.gca().invert_yaxis()  # lower loss is better
-    plt.xlabel("Iteration")
-    plt.ylabel("Best test loss ↓")
-    plt.title("DPSO-GA Convergence")
-    plt.grid(True)
-    plt.tight_layout()
-
-    # Save to file
-    output_path = "convergence_curve.png"
-    plt.savefig(output_path, dpi=150)
-
-    logger.info(f"Plot saved to: {output_path}")
 
 @step(enable_cache=False)
 def dpso_ga_searcher(
@@ -57,6 +61,7 @@ def dpso_ga_searcher(
     selected_target_columns: List[str],
     epochs: int,
     early_stop_epochs: int,
+    seed_cfg: Dict[str, float] = None,
 ) -> Tuple[Dict[str, float], List[float]]:
     """
     Runs DPSO-GA hyperparameter search for CNN-LSTM model.
@@ -64,8 +69,10 @@ def dpso_ga_searcher(
 
     def _build_hp(cfg: Dict[str, float]) -> Dict[str, Any]:
         logger.info(f"Original config: {cfg}\n")
+        """
+        batch = int(round(cfg['batch']))
 
-        n_conv = int(round(cfg["n_conv"]))
+        n_conv = 4
         cnn_channels = [int(round(cfg[f"c{i}"])) for i in range(n_conv)]
         kernels = []
         for i in range(n_conv):
@@ -74,12 +81,17 @@ def dpso_ga_searcher(
                 k += 1  # force odd kernel
             kernels.append(k)
 
+            # "batch": (32.0, 128.0),
+            # **{f"c{i}": (64.0, 512.0) for i in range(len(cnn_channels))},
+            # **{f"k{i}": (3.0, 9.0) for i in range(len(cnn_channels))},
+            # "hidden_lstm": (32.0, 512.0),
+        """
         result = {
-            "batch": int(round(cfg["batch"])),
-            "cnn_channels": cnn_channels,
-            "kernels": kernels,
-            "hidden_lstm": int(round(cfg["hidden_lstm"])),
-            "lstm_layers": int(round(cfg["lstm_layers"])),
+            "batch": 64,
+            "cnn_channels": [64, 128, 256, 512],
+            "kernels": [3, 5, 7, 9],
+            "hidden_lstm": 256,
+            "lstm_layers": 1,
             "dropout_rate": cfg["dropout"],
             "lr": cfg["lr"],
         }
@@ -91,7 +103,10 @@ def dpso_ga_searcher(
 
     # -----------------------------
     def _fitness(cfg: Dict[str, float]) -> float:
-        batch = int(round(cfg["batch"]))
+        set_seed(42)
+
+        #batch = int(round(cfg['batch']))
+        batch = 64
 
         model = cnn_lstm_trainer(
             train=train,
@@ -119,9 +134,47 @@ def dpso_ga_searcher(
 
         return model_loss
 
+    def _fitness_cached(cfg: Dict[str, float]) -> float:
+        v = cache.get(cfg)
+        if v is not None:
+            logger.info("Cache hit for config: %s", cfg)
+            return v
+
+        logger.info("Cache miss for config: %s", cfg)
+        # compute once
+        score = _fitness(cfg)  # your existing trainer+evaluator
+        cache.set(cfg, score)
+        cache.flush()  # persist immediately (or batch)
+        return score
+
+    # ----------------------------------------------
+    # TEST STABILNOŚCI: uruchomienie _fitness z różnymi seedami
+    # ----------------------------------------------
+    logger.info("[Stability Test] Rozpoczynam test niestabilności dla best_cfg na 10 różnych seedach...")
+
+    stability_scores = []
+
+    for seed in range(10):
+        logger.info(f"[Stability Test] Seed {seed}")
+        set_seed(seed)
+
+        # Tym razem nie używamy cache – bezpośrednie wywołanie _fitness
+        loss = _fitness(seed_cfg)
+        logger.info(f"[Stability Test] Seed {seed} → Loss: {loss:.4f}")
+        stability_scores.append(loss)
+
+    scores_np = np.array(stability_scores)
+    logger.info(
+        "\n[Stability Test Summary for best_cfg]\n"
+        f"Średni loss: {scores_np.mean():.4f}\n"
+        f"Odch. std:   {scores_np.std():.4f}\n"
+        f"Min:         {scores_np.min():.4f}\n"
+        f"Max:         {scores_np.max():.4f}"
+    )
+
     # ----------------------------------------------
     best_cfg, trajectory = dpso_ga(
-        fitness_fn=_fitness,
+        fitness_fn=_fitness_cached,
         space=search_space,
         pop_size=int(pso_const["pop_size"]),
         ga_generations=int(pso_const["ga_generations"]),
@@ -134,17 +187,15 @@ def dpso_ga_searcher(
         c1=float(pso_const["c1"]),
         c2=float(pso_const["c2"]),
         vmax_fraction=float(pso_const["vmax_fraction"]),
-        early_stop_iters=5,
+        early_stop_iters=None,
         on_iteration_end=save_checkpoint,
+        seed_cfg=seed_cfg,
     )
 
     logger.info("DPSO-GA finished, best cfg=%s  best_score=%.4f",
                 best_cfg, trajectory[-1])
 
-    with open("trajectory.json", "w") as f:
-        json.dump(trajectory, f)
 
-    plot_trajectory(trajectory)
     best_model_hp = _build_hp(cfg=best_cfg)
     logger.info("Best model hyperparameters: %s", best_model_hp)
     return best_model_hp, trajectory

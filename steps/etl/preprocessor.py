@@ -17,7 +17,7 @@ from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
-@step(enable_cache=False)
+@step(enable_cache=True)
 def preprocessor(
     cleaned_polcom_2022_dir: Path,
     cleaned_polcom_2020_dir: Path,

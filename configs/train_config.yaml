@@ -96,7 +96,7 @@ parameters:
   is_weekend_mode: none
   model_input_seq_len: 24
   model_forecast_horizon: 24
-  make_plots: True
+  make_plots: False
   batch: 64
   cnn_channels: [ 64, 128, 256, 512 ]
   kernels: [ 3, 5, 7, 9 ]

@@ -38,7 +38,6 @@ def cloud_resource_prediction_dpso_ga(
         interpolation_order: int,
         use_hour_features: bool,
         use_day_of_week_features: bool,
-        use_weekend_features: bool,
         is_weekend_mode: str,
         model_input_seq_len: int,
         model_forecast_horizon: int,
@@ -82,39 +81,48 @@ def cloud_resource_prediction_dpso_ga(
             interpolation_order=interpolation_order,
             use_hour_features=use_hour_features,
             use_day_of_week_features=use_day_of_week_features,
-            use_weekend_features=use_weekend_features,
             is_weekend_mode=is_weekend_mode,
             make_plots=make_plots,
             leave_online_unscaled=False)
 
     # -----------------------------------------------------------
-    # ❷ PSO-GA constants: population size, iterations, inertia,
-    #    cognitive & social weights, mutation probability
+    # PSO-GA constants: population size, iterations, inertia,
+    # cognitive & social weights, mutation probability
     # -----------------------------------------------------------
     pso_ga_const = {
-        "pop_size": 20,  # number of particles
-        "ga_generations": 5,  # optimization iterations
+        "pop_size": 50,  # number of particles
+        "ga_generations": 3,  # optimization iterations
+        "pso_iterations": 14,  # PSO iterations
         "crossover_rate": 0.8,  # crossover rate
         "mutation_rate": 0.06,  # mutation rate
-        "mutation_std": 0.3,  # mutation standard deviation
-        "pso_iterations": 7,  # PSO iterations
+        "mutation_std": 0.1,  # mutation standard deviation
         "w_max": 0.5,  # initial inertia weight
         "w_min": 0.2, # final inertia weight
-        "c1": 1.0,  # cognitive coefficient
-        "c2": 1.2,  # social coefficient
-        "vmax_fraction": 0.5 # max velocity fraction
+        "c1": 1.8,  # cognitive coefficient
+        "c2": 1.0,  # social coefficient
+        "vmax_fraction": 0.08 # max velocity fraction
     }
 
-    MAX_CONV_LAYERS = 2
     search_space: Dict[str, Tuple[float, float]] = {
-        "batch": (32.0, 128.0),
-        "n_conv": (1.0, float(MAX_CONV_LAYERS)),
-        **{f"c{i}": (8.0, 64.0) for i in range(MAX_CONV_LAYERS)},
-        **{f"k{i}": (3.0, 25.0) for i in range(MAX_CONV_LAYERS)},
-        "hidden_lstm": (32.0, 512.0),
-        "lstm_layers": (1.0, 2.0),
-        "dropout": (0.0, 0.5),
-        "lr": (1e-4, 1e-2),
+        #"batch": (32.0, 128.0),
+        #**{f"c{i}": (64.0, 512.0) for i in range(len(cnn_channels))},
+        #**{f"k{i}": (3.0, 9.0) for i in range(len(cnn_channels))},
+        #"hidden_lstm": (32.0, 512.0),
+        "dropout": (0.05, 0.15),
+        "lr": (0.0005, 0.005),
+    }
+
+    #assert {f"c{i}" for i in range(4)}.issubset(search_space), "c*-keys mismatch"
+    #assert {f"k{i}" for i in range(4)}.issubset(search_space), "k*-keys mismatch"
+    logger.info(f"Search space: {search_space}")
+
+    seed_cfg = {
+        #"batch": batch,
+        #**{f"c{i}": cnn_channels[i] for i in range(len(cnn_channels))},
+        #**{f"k{i}": kernels[i] for i in range(len(cnn_channels))},
+        #"hidden_lstm": hidden_lstm,
+        "dropout": dropout_rate,
+        "lr": lr,
     }
 
     best_model_hp, _ = dpso_ga_searcher(
@@ -130,6 +138,7 @@ def cloud_resource_prediction_dpso_ga(
         selected_target_columns=selected_columns,
         epochs=epochs,
         early_stop_epochs=early_stop_epochs,
+        seed_cfg=seed_cfg,
     )
 
     model = cnn_lstm_trainer(train=expanded_train_dfs,
