@@ -420,7 +420,7 @@ def split_visualizer(
             (train_dfs[vm], "treningowy"),
             (val_dfs[vm], "walidacyjny"),
             (test_dfs[vm], "testowy"),
-            (online_dfs[vm], "online"),
+            (online_dfs[vm], "przyrostowy"),
         ]:
             plot_metric(ax, df, col=column, label=label)
 
