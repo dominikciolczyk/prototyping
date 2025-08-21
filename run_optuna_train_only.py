@@ -10,7 +10,7 @@ from optuna.samplers import TPESampler
 import time
 from pipelines import cloud_resource_prediction_training
 import os
-from run import set_seed
+from utils import set_seed
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
 

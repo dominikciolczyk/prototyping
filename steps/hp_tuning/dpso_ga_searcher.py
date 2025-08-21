@@ -1,36 +1,21 @@
 from typing import Dict, Tuple, Any, List
 from zenml import step
-from zenml.logger import get_logger
 from optim.dpso_ga import dpso_ga
 from steps.training.cnn_lstm_trainer import cnn_lstm_trainer
 import pandas as pd
 import torch
-import matplotlib.pyplot as plt
 import json
-import random
+from utils import set_seed
 import numpy as np
 import os
 from .fitness_cache import FitnessCache
-
 from steps.training.model_evaluator import calculate_loss, _predict_max_baseline_sliding
+from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
 cache = FitnessCache("fitness_cache.pkl")
 
-
-def set_seed(seed=42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 def save_checkpoint(it, best_cfg, best_score, trajectory):
     payload = {
@@ -88,9 +73,9 @@ def dpso_ga_searcher(
         """
         result = {
             "batch": 64,
-            "cnn_channels": [64, 128, 256, 512],
-            "kernels": [3, 5, 7, 9],
-            "hidden_lstm": 256,
+            "cnn_channels": [64],
+            "kernels": [12],
+            "hidden_lstm": 128,
             "lstm_layers": 1,
             "dropout_rate": cfg["dropout"],
             "lr": cfg["lr"],
@@ -103,7 +88,7 @@ def dpso_ga_searcher(
 
     # -----------------------------
     def _fitness(cfg: Dict[str, float]) -> float:
-        set_seed(42)
+        #set_seed(42)
 
         #batch = int(round(cfg['batch']))
         batch = 64
@@ -170,6 +155,7 @@ def dpso_ga_searcher(
         f"Odch. std:   {scores_np.std():.4f}\n"
         f"Min:         {scores_np.min():.4f}\n"
         f"Max:         {scores_np.max():.4f}"
+        f"CV:           {scores_np.std() / scores_np.mean() * 100:.2f}%\n"
     )
 
     # ----------------------------------------------

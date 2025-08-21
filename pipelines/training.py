@@ -27,7 +27,6 @@ def cloud_resource_prediction_training(
     val_size: float,
     test_size: float,
     online_size: float,
-    seed: int,
     selected_columns: List[str],
     min_strength: float,
     correlation_threshold: float,

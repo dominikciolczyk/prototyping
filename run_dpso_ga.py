@@ -7,7 +7,7 @@ os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
 
 import os
-from run import set_seed
+from utils import set_seed
 
 
 @click.command
@@ -21,7 +21,7 @@ def main(
     only_inference: bool = False,
 ):
 
-    set_seed(42)
+    #set_seed(42)
     # Run a pipeline with the required parameters. This executes
     # all steps in the pipeline in the correct order using the orchestrator
     # stack component that is configured in your active ZenML stack.

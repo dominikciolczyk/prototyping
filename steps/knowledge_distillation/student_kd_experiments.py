@@ -1,11 +1,12 @@
-import optuna
+import json
 import pandas as pd
 from torch import nn
 from zenml import step
-from zenml.logger import get_logger
+import itertools
 from .student_distiller import student_distiller, StudentType
 from steps.training import model_evaluator
 from typing import Dict, Any, List
+from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -18,93 +19,132 @@ def student_kd_experiments(
     horizon: int,
     selected_target_columns: List[str],
     teacher: nn.Module,
-    teacher_hparams: Dict[str, Any],
     student_kind: StudentType,
     epochs: int,
     early_stop_epochs: int,
-    batch: int,
-    lr: float,
-    n_trials: int,
     alpha_range: List[int],
     beta_range: List[int],
     distill_alpha_range: List[float],
+    cnn_channels_grid: List[List[int]],
+    kernels_grid: List[List[int]],
+    lr_grid: List[float],
+    batch_grid: List[int],
+    lstm_hidden_grid: List[int],
+    dropout_grid: List[float],
     scalers: Dict[str, Dict[str, Any]],
     eval_alpha: float,
     eval_beta: float,
 ) -> pd.DataFrame:
-    """Run Optuna to find best KD hyperparameters, return a DataFrame of all trials."""
-    # objective for Optuna
-    def objective(trial: optuna.Trial) -> float:
-        # sample the KD variant
-        kd_kind = trial.suggest_categorical("kd_kind",
-                                            ["mse", "AsymmetricL1", "AsymmetricSmoothL1"])
-        # always sample distill_alpha
-        distill_alpha = trial.suggest_categorical("distill_alpha", distill_alpha_range)
+    """Run grid search for KD + CNN + optimizer params. Returns a DataFrame of all runs."""
 
-        # conditionally sample alpha and beta
-        alpha = None
-        beta  = None
-        if kd_kind in ("AsymmetricL1", "AsymmetricSmoothL1"):
-            alpha = trial.suggest_categorical("alpha", alpha_range)
-        if kd_kind == "AsymmetricSmoothL1":
-            beta = trial.suggest_categorical("beta", beta_range)
+    results = []
 
-        run_name = f"{kd_kind}_dα={distill_alpha}" + (
-            f"_α={alpha}" if alpha is not None else ""
-        ) + (
-            f"_β={beta}"  if beta  is not None else ""
-        )
-        logger.info(f"🔎 Trial {trial.number}: {run_name}")
+    logger.info(itertools.product(
+                distill_alpha_range,
+                cnn_channels_grid,
+                kernels_grid,
+                lr_grid,
+                batch_grid,
+                lstm_hidden_grid,
+                dropout_grid,
+        ))
 
-        # call your existing distiller step
-        student = student_distiller(
-            train=train,
-            val=val,
-            seq_len=seq_len,
-            horizon=horizon,
-            selected_target_columns=selected_target_columns,
-            teacher=teacher,
-            teacher_hparams=teacher_hparams,
-            student_kind=student_kind,
-            kd_kind=kd_kind,
-            kd_params={
-                "distill_alpha": distill_alpha,
-                **({"alpha": alpha} if alpha is not None else {}),
-                **({"beta": beta}  if beta  is not None else {}),
-            },
-            epochs=epochs,
-            early_stop_epochs=early_stop_epochs,
-            batch=batch,
-            lr=lr,
-        )
+    #for kd_kind in ["AsymmetricSmoothL1", "AsymmetricL1"]:
+    for kd_kind in ["AsymmetricSmoothL1"]:
+        for distill_alpha, cnn_channels, kernels, lr, batch, lstm_hidden, dropout in itertools.product(
+                distill_alpha_range,
+                cnn_channels_grid,
+                kernels_grid,
+                lr_grid,
+                batch_grid,
+                lstm_hidden_grid,
+                dropout_grid,
+        ):
+            for alpha in (alpha_range if kd_kind in ("AsymmetricL1", "AsymmetricSmoothL1") else [None]):
+                for beta in (beta_range if kd_kind == "AsymmetricSmoothL1" else [None]):
 
-        # evaluate on test set
-        result = model_evaluator.entrypoint(
-            model=student,
-            test=test,
-            seq_len=seq_len,
-            horizon=horizon,
-            alpha=eval_alpha,
-            beta=eval_beta,
-            hyper_params=teacher_hparams,
-            selected_target_columns=selected_target_columns,
-            scalers=scalers,
-        )
+                    cnn_str = "x".join(map(str, cnn_channels))
+                    kern_str = "x".join(map(str, kernels))
 
-        score = result["metrics"]["AsymmetricSmoothL1_model"]
-        # report to Optuna (no intermediate pruning here, but you could)
-        trial.report(score, step=0)
-        return score
+                    run_name = (
+                            f"{kd_kind}"
+                            f"_distill={distill_alpha}"
+                            f"_cnn={cnn_str}"
+                            f"_kern={kern_str}"
+                            f"_lr={lr}"
+                            f"_batch={batch}"
+                            f"_lstm={lstm_hidden}"
+                            f"_drop={dropout}"
+                            + (f"_alpha={alpha}" if alpha is not None else "")
+                            + (f"_beta={beta}" if beta is not None else "")
+                    )
+                    logger.info(f"🔎 Running: {run_name}")
 
-    # create and run the study
-    study = optuna.create_study(direction="minimize",
-                                sampler=optuna.samplers.TPESampler(),
-                                pruner=optuna.pruners.MedianPruner())
-    study.optimize(objective, n_trials=n_trials)
 
-    # build a DataFrame of all trials for your downstream report
-    df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
-    logger.info(f"🏆 Best trial: #{study.best_trial.number} → "
-                f"value={study.best_value:.4f}, params={study.best_trial.params}")
+                    # train student
+                    student = student_distiller(
+                        train=train,
+                        val=val,
+                        seq_len=seq_len,
+                        horizon=horizon,
+                        selected_target_columns=selected_target_columns,
+                        teacher=teacher,
+                        student_kind=student_kind,
+                        kd_kind=kd_kind,
+                        kd_params={
+                            "distill_alpha": distill_alpha,
+                            **({"alpha": alpha} if alpha is not None else {}),
+                            **({"beta": beta} if beta is not None else {}),
+                        },
+                        epochs=epochs,
+                        early_stop_epochs=early_stop_epochs,
+                        batch=batch,
+                        lr=lr,
+                        cnn_channels=cnn_channels,
+                        kernels=kernels,
+                        lstm_hidden=lstm_hidden,
+                        dropout=dropout,
+                    )
 
+                    result = model_evaluator.entrypoint(
+                        model=student,
+                        test=test,
+                        seq_len=seq_len,
+                        horizon=horizon,
+                        alpha=eval_alpha,
+                        beta=eval_beta,
+                        hyper_params={
+                            "batch": batch,
+                        },
+                        selected_target_columns=selected_target_columns,
+                        scalers=scalers,
+                    )
+
+                    score = result["metrics"]["AsymmetricSmoothL1_model"]
+
+                    row = {
+                        "run": run_name,
+                        "kd_kind": kd_kind,
+                        "distill_alpha": distill_alpha,
+                        "alpha": alpha,
+                        "beta": beta,
+                        "cnn_channels": cnn_channels,
+                        "kernels": kernels,
+                        "lr": lr,
+                        "batch": batch,
+                        "dropout": dropout,
+                        "lstm_hidden": lstm_hidden,
+                        "score": score,
+                        "metrics": result["metrics"],  # optional: keep full metrics
+                    }
+
+                    results.append(row)
+
+                    # write only this row to file
+                    with open("student_kd_results.jsonl", "a") as f:
+                        f.write(json.dumps(row) + "\n")
+
+    df = pd.DataFrame(results)
+    best = df.loc[df["score"].idxmin()]
+    logger.info(f"🏆 Best config: {best.to_dict()}")
     return df

@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Literal, Tuple, Callable
+from typing import Dict, List, Literal, Tuple, Callable
 import copy
 import pandas as pd
 from torch import nn
@@ -10,12 +10,15 @@ from models.lstm_baseline import LSTM_Baseline
 import torch
 import torch.nn.functional as F
 from losses.qos import AsymmetricSmoothL1, AsymmetricL1
+from utils import set_seed
+from pathlib import Path
+from utils.visualization_consistency import plot_training_curves
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 
 StudentType   = Literal["cnn_lstm", "lstm"]
-KDKind = Literal["mse", "AsymmetricSmoothL1", "AsymmetricL1"]
+KDKind = Literal["AsymmetricSmoothL1", "AsymmetricL1"]
 
 def make_distill_loss(
     base_loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
@@ -54,41 +57,37 @@ def build_student(student_kind: StudentType,
                   n_features: int,
                   n_targets: int,
                   horizon: int,
-                  teacher_hparams: Dict[str, Any]
-                  ) -> nn.Module:
-    """
-    Produces a lighter student:
-        * cnn_lstm – ½ filters, ½ hidden, 1 LSTM layer
-        * lstm     – as in LSTM_Baseline (mean+max pooling)
-    """
+                  cnn_channels: List[int],
+                  kernels: List[int],
+                  lstm_hidden: int,
+                  dropout: float) -> nn.Module:
     if student_kind == "cnn_lstm":
-        small_channels = [c // 2 for c in teacher_hparams["cnn_channels"]]
         model = CNNLSTMWithAttention(
             n_features=n_features,
             n_targets=n_targets,
             horizon=horizon,
-            cnn_channels=small_channels,
-            kernels=teacher_hparams["kernels"],
-            lstm_hidden=int(teacher_hparams["hidden_lstm"] // 2),
+            cnn_channels=cnn_channels,
+            kernels=kernels,
+            lstm_hidden=lstm_hidden,
             lstm_layers=1,
-            dropout=float(teacher_hparams["dropout_rate"]),
+            dropout=dropout,
         )
     elif student_kind == "lstm":
         model = LSTM_Baseline(
             n_features=n_features,
             n_targets=n_targets,
             horizon=horizon,
-            cnn_channels=[], kernels=[],                   # ignored
-            lstm_hidden=int(teacher_hparams["hidden_lstm"] // 2),
+            cnn_channels=[], kernels=[],   # ignored
+            lstm_hidden=lstm_hidden,
             lstm_layers=1,
-            dropout=float(teacher_hparams["dropout_rate"]),
+            dropout=dropout,
         )
     else:
         raise ValueError(f"Unknown student_kind: {student_kind}")
     return model
 
 
-@step(enable_cache=True)
+@step(enable_cache=False)
 def student_distiller(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
@@ -96,7 +95,6 @@ def student_distiller(
     horizon: int,
     selected_target_columns: List[str],
     teacher: nn.Module,
-    teacher_hparams: Dict[str, Any],
     student_kind: StudentType,
     kd_kind: KDKind,
     kd_params: Dict[str, float],
@@ -104,8 +102,12 @@ def student_distiller(
     early_stop_epochs,
     batch,
     lr,
+    cnn_channels: List[int],
+    kernels: List[int],
+    lstm_hidden: int,
+    dropout: float,
 ) -> nn.Module:
-
+    set_seed(42)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     teacher.to(device).eval()                         # freeze teacher
     for p in teacher.parameters():
@@ -135,9 +137,10 @@ def student_distiller(
     logger.info(f"Student_distiller | X {sample_X.shape}, y {sample_y.shape}")
 
     # ── 2. Build student ───────────────────────────────────────────────────
-    student = build_student(student_kind,
-                            n_features, n_targets, horizon,
-                            teacher_hparams).to(device)
+    student = build_student(
+        student_kind=student_kind,
+        n_features=n_features, n_targets=n_targets, horizon=horizon,
+        cnn_channels=cnn_channels, kernels=kernels, lstm_hidden=lstm_hidden, dropout=dropout).to(device)
     optimizer = Adam(student.parameters(), lr=lr)
 
     if kd_kind == "mse":
@@ -161,6 +164,8 @@ def student_distiller(
     # ── 3. Training loop w/ early stopping ────────────────────────────────
     best_val, patience = float("inf"), 0
     best_state: Tuple[int, dict] | None = None
+
+    train_hist, val_hist = [], []
 
     for epoch in range(epochs):
         student.train()
@@ -192,6 +197,9 @@ def student_distiller(
                 val_loss += v_loss.item() * len(X)
         val_loss /= len(val_loader.dataset)
 
+        train_hist.append(train_loss)
+        val_hist.append(val_loss)
+
         # early-stopping logic
         if val_loss < best_val:
             best_val = val_loss
@@ -206,6 +214,21 @@ def student_distiller(
         logger.info(f"[{epoch:02d}] distill "
                     f"train={train_loss:.4f}  val={val_loss:.4f}  "
                     f"(patience {patience}/{early_stop_epochs})")
+
+
+    if True:
+        try:
+            suffix = f"{student_kind}_{kd_kind}_d{kd_params['distill_alpha']}_a{kd_params['alpha']}"
+            if 'beta' in kd_params:
+                suffix += f"_b{kd_params['beta']}"
+            curve_path = plot_training_curves(
+                train_losses=train_hist,
+                val_losses=val_hist,
+                out_path=Path(f"report_output/distillation/loss_curve_{suffix}")
+            )
+            logger.info("KD loss curve saved to %s", curve_path)
+        except Exception as e:
+            logger.warning("Could not save KD loss curve: %s", e)
 
     # ── 4. Restore best weights ───────────────────────────────────────────
     if best_state:

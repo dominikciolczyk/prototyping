@@ -4,7 +4,8 @@ import pandas as pd
 import torch
 from steps.logging.track_params import track_experiment_metadata
 from torch import nn
-from utils.plotter import plot_time_series
+from utils.visualization_consistency import plot_forecasts
+from pathlib import Path
 from utils.window_dataset import make_loader
 from zenml import step
 from zenml.client import Client
@@ -160,13 +161,34 @@ def model_evaluator(
         merged = pd.concat([df_true, df_pred, df_base], axis=1)
         merged_plots[vm_id] = merged
 
-    plot_paths = plot_time_series(merged_plots, "eval")
-    track_experiment_metadata(model_loss=model_loss, hyper_params=hyper_params)
+    if True:
+        # track_experiment_metadata(model_loss=model_loss, hyper_params=hyper_params)
 
-    return {
-        "metrics": {
-            "AsymmetricSmoothL1_model": model_loss,
-            "AsymmetricSmoothL1_baseline": baseline_loss,
-        },
-        "plot_paths": plot_paths,
-    }
+        col_label_map = {
+            "CPU_USAGE_MHZ": "wykorzystanie CPU [MHz]",
+            "MEMORY_USAGE_KB": "zużycie pamięci [KB]",
+            "NODE_1_DISK_IO_RATE_KBPS": "operacje dyskowe [KB/s]",
+            "NODE_1_NETWORK_TR_KBPS": "transfer sieciowy [KB/s]",
+        }
+
+        plot_paths = plot_forecasts(
+            merged=merged_plots,
+            selected_columns=selected_target_columns,
+            out_dir=Path("report_output/eval"),
+            col_label_map=col_label_map)
+
+        return {
+            "metrics": {
+                "AsymmetricSmoothL1_model": model_loss,
+                "AsymmetricSmoothL1_baseline": baseline_loss,
+            },
+            "plot_paths": plot_paths,
+        }
+    else:
+        logger.info("Skipping plots generation")
+        return {
+            "metrics": {
+                "AsymmetricSmoothL1_model": model_loss,
+                "AsymmetricSmoothL1_baseline": baseline_loss,
+            },
+        }

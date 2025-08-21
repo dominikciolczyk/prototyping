@@ -79,7 +79,6 @@ parameters:
   val_size: 0.15
   test_size: 0.15
   online_size: 0.15
-  seed: 42
   selected_columns:
     - CPU_USAGE_MHZ
     - NODE_1_DISK_IO_RATE_KBPS

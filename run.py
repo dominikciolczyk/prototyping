@@ -1,29 +1,11 @@
 import click
 from datetime import datetime as dt
-from zenml.logger import get_logger
-
 from pipelines import cloud_resource_prediction_training
 import os
+from utils import set_seed
+from zenml.logger import get_logger
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
-
-import torch
-import numpy as np
-import random
-import os
-
-def set_seed(seed=42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 @click.command(

@@ -12,7 +12,7 @@ import os
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
 
-from run import set_seed
+from utils import set_seed
 from run_optuna_train_only import save_best_result, save_full_report, save_checkpoint, get_loss
 
 @click.command()

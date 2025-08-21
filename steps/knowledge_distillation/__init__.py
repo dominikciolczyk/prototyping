@@ -22,3 +22,4 @@
 # 
 from .student_distiller import student_distiller
 from .student_kd_experiments import student_kd_experiments
+from .student_kd_experiments_TPE import student_kd_optuna_experiments

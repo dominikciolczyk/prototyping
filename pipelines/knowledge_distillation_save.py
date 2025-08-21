@@ -27,7 +27,6 @@ def cloud_resource_prediction_knowledge_distillation(
     val_size: float,
     test_size: float,
     test_final_size: float,
-    seed: int,
     only_train_val_test_sets: int,
     selected_columns: List[str],
     anomaly_reduction_before_aggregation: bool,

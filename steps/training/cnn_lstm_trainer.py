@@ -4,13 +4,15 @@ import numpy as np
 import torch
 from torch import nn
 from torch.optim import Adam
-from zenml import step
 from models.cnn_lstm import CNNLSTM, CNNLSTMWithAttention
 from losses.qos import AsymmetricL1, AsymmetricSmoothL1
 from utils.window_dataset import make_loader
 import copy
 from zenml.client import Client
 from zenml import step
+from pathlib import Path
+from utils.visualization_consistency import plot_training_curves
+from utils import set_seed
 from zenml.logger import get_logger
 
 experiment_tracker = Client().active_stack.experiment_tracker
@@ -56,7 +58,7 @@ def calculate_model_loss_for_loader(model, loader, alpha, beta, device):
     model_loss = criterion(to_tensor(y_pred_model), to_tensor(y_true_model)).item()
     return model_loss, y_pred_model, y_true_model, criterion, to_tensor
 
-@step(enable_cache=True)
+@step(enable_cache=False)
 def cnn_lstm_trainer(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
@@ -93,6 +95,8 @@ def cnn_lstm_trainer(
                 )
     #_inspect_split("train", train)
     #_inspect_split("val",   val)
+
+    set_seed(42)
 
     # ------------------------------------------------------------------ #
     # 1. Hyper-parameters
@@ -176,6 +180,9 @@ def cnn_lstm_trainer(
     patience, best_val = early_stop_epochs, float("inf")
     best_state, patience_counter = None, 0
     best_epoch = -1
+
+    train_hist, val_hist = [], []
+
     for epoch in range(epochs):
         # 4.1 —— Training ------------------------------------------------
         train_loss = train_model_for_epoch(model, train_loader, criterion, optim, device)
@@ -186,6 +193,9 @@ def cnn_lstm_trainer(
             alpha=alpha,
             beta=beta,
             device=device)
+
+        train_hist.append(train_loss)
+        val_hist.append(val_loss)
 
         logger.info(
             f"[{epoch:02d}] "
@@ -203,6 +213,17 @@ def cnn_lstm_trainer(
             if patience_counter >= patience:
                 logger.info("Early-stopping triggered.")
                 break
+
+    if False:
+        try:
+            curve_path = plot_training_curves(
+                train_losses=train_hist,
+                val_losses=val_hist,
+                out_path=Path("report_output/training/loss_curve"),
+            )
+            logger.info("Training curve saved to %s", curve_path)
+        except Exception as e:
+            logger.warning("Could not save training curve: %s", e)
 
     # ------------------------------------------------------------------ #
     # 5. Restore best weights & finish
