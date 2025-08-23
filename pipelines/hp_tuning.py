@@ -1,7 +1,7 @@
 from typing import List, Tuple, Dict
 from steps import (
     model_evaluator,
-    dpso_ga_searcher,
+    pso_ga_searcher,
     cnn_lstm_trainer,
 )
 from utils.pipeline_utils import prepare_datasets_before_model_input
@@ -12,7 +12,7 @@ from zenml.logger import get_logger
 logger = get_logger(__name__)
 
 @pipeline
-def cloud_resource_prediction_dpso_ga(
+def cloud_resource_prediction_hp_tuning(
         raw_dir: str,
         zip_path: str,
         raw_polcom_2022_dir: str,
@@ -124,7 +124,8 @@ def cloud_resource_prediction_dpso_ga(
         "lr": lr,
     }
 
-    best_model_hp, _ = dpso_ga_searcher(
+
+    best_model_hp, _ = pso_ga_searcher(
         train=expanded_train_dfs,
         val=expanded_val_dfs,
         test=expanded_test_dfs,

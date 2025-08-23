@@ -1,7 +1,7 @@
 import click
 from datetime import datetime as dt
 from zenml.logger import get_logger
-from pipelines import cloud_resource_prediction_dpso_ga
+from pipelines import cloud_resource_prediction_hp_tuning
 import os
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 logger = get_logger(__name__)
@@ -36,7 +36,7 @@ def main(
         pipeline_args[
             "run_name"
         ] = f"cloud-resource-prediction_training_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
-        cloud_resource_prediction_dpso_ga.with_options(**pipeline_args)(**run_args_train)
+        cloud_resource_prediction_hp_tuning.with_options(**pipeline_args)(**run_args_train)
         logger.info("Training pipeline finished successfully!")
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 from typing import Dict, Tuple, Any, List
 from zenml import step
-from optim.dpso_ga import dpso_ga
+from optim.pso_ga import pso_ga
 from steps.training.cnn_lstm_trainer import cnn_lstm_trainer
 import pandas as pd
 import torch
@@ -33,14 +33,13 @@ def save_checkpoint(it, best_cfg, best_score, trajectory):
 
 
 @step(enable_cache=False)
-def dpso_ga_searcher(
+def pso_ga_searcher(
     train: Dict[str, pd.DataFrame],
     val: Dict[str, pd.DataFrame],
     test: Dict[str, pd.DataFrame],
     seq_len: int,
     horizon: int,
-    alpha: float,
-    beta: float,
+    criterion,
     search_space: Dict[str, Tuple[float, float]],
     pso_const: Dict[str, float],
     selected_target_columns: List[str],
@@ -98,8 +97,7 @@ def dpso_ga_searcher(
             val=val,
             seq_len=seq_len,
             horizon=horizon,
-            alpha=alpha,
-            beta=beta,
+            criterion=criterion,
             hyper_params=_build_hp(cfg=cfg),
             selected_target_columns=selected_target_columns,
             epochs=epochs,
@@ -111,8 +109,7 @@ def dpso_ga_searcher(
             test=test,
             seq_len=seq_len,
             horizon=horizon,
-            alpha=alpha,
-            beta=beta,
+            criterion=criterion,
             batch=batch,
             device=device,
             selected_target_columns=selected_target_columns)
@@ -159,7 +156,7 @@ def dpso_ga_searcher(
     )
 
     # ----------------------------------------------
-    best_cfg, trajectory = dpso_ga(
+    best_cfg, trajectory = pso_ga(
         fitness_fn=_fitness_cached,
         space=search_space,
         pop_size=int(pso_const["pop_size"]),

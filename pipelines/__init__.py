@@ -26,5 +26,5 @@ from .batch_inference import cloud_resource_prediction_batch_inference
 from .training import cloud_resource_prediction_training
 from .deployment import cloud_resource_prediction_deployment
 from .knowledge_distillation import cloud_resource_prediction_knowledge_distillation
-from .dpso_ga import cloud_resource_prediction_dpso_ga
+from .hp_tuning import cloud_resource_prediction_hp_tuning
 from .online_learning import cloud_resource_prediction_online_learning

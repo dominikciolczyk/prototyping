@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 Particle = Dict[str, float]
 
-def save_dpso_ga_plots(score_history, prefix="dpso_ga"):
+def save_pso_ga_plots(score_history, prefix="pso_ga"):
     scores = np.array(score_history)  # shape: (iterations, particles)
 
     # === 1) All particles' scores over time ===
@@ -44,9 +44,9 @@ def visualize_training(param_history, score_history):
             logger.info(f"  Particle {j}: {param} => Score: {score}")
 
     if score_history:
-        save_dpso_ga_plots(score_history, prefix="dpso_ga")
+        save_pso_ga_plots(score_history, prefix="pso_ga")
 
-def dpso_ga(
+def pso_ga(
     fitness_fn: Callable[[Particle], float],
     space: Dict[str, Tuple[float, float]],
     pop_size: int,
@@ -72,7 +72,7 @@ def dpso_ga(
     lo = {k: low for k, (low, high) in space.items()}
     rng = {k: high - low for k, (low, high) in space.items()}
 
-    logger.info(f"optim/dpso_ga with arguments:\n"
+    logger.info(f"optim/pso_ga with arguments:\n"
                 f"space: {space}\n"
                 f"pop_size: {pop_size}\n"
                 f"ga_generations: {ga_generations}\n"

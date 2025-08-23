@@ -36,7 +36,7 @@ from .etl import (
     feature_expander,
     preprocessor,
 )
-from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search, dpso_ga_searcher
+from .hp_tuning import hp_tuning_select_best_model, hp_tuning_single_search, pso_ga_searcher
 from .inference import inference_predict
 from .promotion import (
     compute_performance_metrics_on_current_data,

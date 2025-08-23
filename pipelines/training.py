@@ -1,7 +1,6 @@
 from typing import List
 from steps import (
     model_evaluator,
-    dpso_ga_searcher,
     cnn_lstm_trainer,
 )
 from torch import nn
