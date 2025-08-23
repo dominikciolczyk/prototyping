@@ -240,7 +240,6 @@ def online_evaluator(
         scaling_debug_buffer: List[Dict[str, Any]] = []
         if want_debug:
             logger.debug(f"[{vm_id}] INIT_DF: {_df_stats(init_df)} first ts={init_df.index.min()}, last ts={init_df.index.max()}")
-            logger.debug(f"[{vm_id}] INIT_DF\nHEAD:\n{init_df.head(3)}\nTAIL:\n{init_df.tail(3)}")
             init_df.to_csv(debug_dir / f"{vm_id}_INIT_DF.csv")
 
 
@@ -252,7 +251,6 @@ def online_evaluator(
         if want_debug:
             logger.debug(
                 f"[{vm_id}] STREAM_DF: {_df_stats(stream_df)}  first ts={stream_df.index.min()}, last ts={stream_df.index.max()}")
-            logger.debug(f"[{vm_id}] STREAM_DF\nHEAD:\n{stream_df.head(5)}\nTAIL:\n{stream_df.tail(3)}")
             stream_df.to_csv(debug_dir / f"{vm_id}_STREAM_DF.csv")
 
         vm_scalers: Dict[str, Any] = scalers[vm_id]
@@ -265,7 +263,6 @@ def online_evaluator(
 
         if want_debug:
             logger.debug(f"[{vm_id}] FULL_DF after concat: {_df_stats(full_df)} first ts={full_df.index.min()}, last ts={full_df.index.max()}")
-            logger.debug(f"[{vm_id}] FULL_DF\nHEAD:\n{full_df.head(3)}\nTAIL:\n{full_df.tail(3)}")
             full_df.to_csv(debug_dir / f"{vm_id}_FULL_DF.csv")
 
         if not full_df.index.is_monotonic_increasing:
@@ -320,8 +317,6 @@ def online_evaluator(
                 logger.debug(f"[{vm_id}][{i}] X_window {_tensor_stats(X_window)}")
 
                 X_np = X_window.squeeze(0).cpu().numpy()
-                logger.debug(f"[{vm_id}][{i}] X_window head:\n{pd.DataFrame(X_np[:5], columns=history.columns)}")
-                logger.debug(f"[{vm_id}][{i}] X_window tail:\n{pd.DataFrame(X_np[-5:], columns=history.columns)}")
                 pd.DataFrame(X_np, columns=history.columns).to_csv(step_dir / "X_window.csv")
 
             # Compute indices for the future slice BEFORE we append new_obs
@@ -339,8 +334,6 @@ def online_evaluator(
             if want_debug:
                 logger.debug(f"[{vm_id}][{i}] y_pred_scaled {_tensor_stats(y_pred_scaled)}")
                 y_pred_np = y_pred_scaled.squeeze(0).numpy()
-                logger.debug(f"[{vm_id}][{i}] y_pred_scaled head:\n{pd.DataFrame(y_pred_np[:5], columns=history.columns)}")
-                logger.debug(f"[{vm_id}][{i}] y_pred_scaled tail:\n{pd.DataFrame(y_pred_np[-5:], columns=history.columns)}")
                 pd.DataFrame(y_pred_np, columns=selected_target_columns).to_csv(step_dir / "y_pred_scaled.csv")
 
             _last = X_window.squeeze(0)
@@ -349,7 +342,6 @@ def online_evaluator(
 
             if want_debug:
                 logger.debug(f"[{vm_id}][{i}] y_pred_base {_tensor_stats(y_pred_base)}")
-                logger.debug(f"[{vm_id}][{i}] y_pred_base values (first row): {y_pred_base[0, 0].numpy()}")
                 pd.DataFrame(y_pred_base.squeeze(0).numpy(), columns=selected_target_columns).to_csv(
                     step_dir / "y_pred_base.csv")
 
@@ -359,8 +351,6 @@ def online_evaluator(
 
             if want_debug:
                 logger.debug(f"[{vm_id}][{i}] y_true_raw shape={y_true_raw.shape}")
-                logger.debug(f"[{vm_id}][{i}] y_true_raw head:\n{y_true_raw[:3]}")
-                logger.debug(f"[{vm_id}][{i}] y_true_raw tail:\n{y_true_raw[-3:]}")
 
                 pd.DataFrame(y_true_raw, columns=selected_target_columns).to_csv(
                     step_dir / "y_true_raw.csv", index=False
@@ -374,8 +364,6 @@ def online_evaluator(
 
             if want_debug:
                 logger.debug(f"[{vm_id}][{i}] y_true (scaled) {_tensor_stats(y_true)}")
-                logger.debug(f"[{vm_id}][{i}] y_true_scaled head:\n{y_true_scaled[:3]}")
-                logger.debug(f"[{vm_id}][{i}] y_true_scaled tail:\n{y_true_scaled[-3:]}")
 
                 pd.DataFrame(y_true_scaled, columns=selected_target_columns).to_csv(
                     step_dir / "y_true_scaled.csv", index=False
