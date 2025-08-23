@@ -1,17 +1,13 @@
 import logging
 import copy
-from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional, Literal
-import numpy as np
 import pandas as pd
-import torch
 from matplotlib import pyplot as plt
 from torch import nn
 from torch.optim import Adam
 from zenml import step
 from zenml.client import Client
 from losses.qos import AsymmetricSmoothL1
-from utils.plotter import plot_time_series, _plot_step_line, _frames_to_gif
 from collections import deque
 from .replay_buffers import (
     NoReplayBuffer,
@@ -21,6 +17,10 @@ from .replay_buffers import (
     BaseReplayBuffer
 )
 from utils import set_seed
+import json
+import numpy as np
+import torch
+from pathlib import Path
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
@@ -125,7 +125,8 @@ def _scaler_state(scaler, col: str) -> Tuple[float, float, float]:
 
 def _transform_row_one_with_state(row: pd.Series,
                                   vm_scalers: Dict[str, Any],
-                                  track_cols: List[str]) -> Tuple[pd.Series, List[Dict[str, Any]]]:
+                                  track_cols: List[str],
+                                  update_scalers: bool) -> Tuple[pd.Series, List[Dict[str, Any]]]:
     out = {}
     recs = []
     ts = row.name
@@ -136,7 +137,10 @@ def _transform_row_one_with_state(row: pd.Series,
         scaler = vm_scalers[col]
         mu_b, std_b, cnt_b = _scaler_state(scaler, col)
         x_scaled = scaler.transform_one({col: val})[col]
-        scaler.learn_one({col: val})
+
+        if update_scalers:
+            scaler.learn_one({col: val})
+
         mu_a, std_a, cnt_a = _scaler_state(scaler, col)
         out[col] = x_scaled
         if col in track_cols:
@@ -146,6 +150,88 @@ def _transform_row_one_with_state(row: pd.Series,
                 "mu_after": mu_a, "std_after": std_a, "cnt_after": cnt_a,
             })
     return pd.Series(out, name=ts), recs
+
+def _param_fingerprint(model: nn.Module) -> float:
+    with torch.no_grad():
+        return float(sum((p.float().abs().sum() for p in model.parameters())))
+
+def _param_delta_norm(state_before: Dict[str, torch.Tensor],
+                      state_after: Dict[str, torch.Tensor]) -> float:
+    s = 0.0
+    for k in state_before:
+        a = state_after[k].detach().float().cpu()
+        b = state_before[k].detach().float().cpu()
+        s += float(((a - b) ** 2).sum().item())
+    return float(s ** 0.5)
+
+def _grad_l2_norm(model: nn.Module) -> float:
+    total = 0.0
+    for p in model.parameters():
+        if p.grad is not None:
+            g = p.grad.detach().float().cpu()
+            total += float((g * g).sum().item())
+    return float(total ** 0.5)
+
+def _save_tensor(name: str, t: torch.Tensor, step_dir: Path) -> None:
+    """Save tensor as .npy (full) and a small CSV preview."""
+    arr = t.detach().cpu().numpy()
+    np.save(step_dir / f"{name}.npy", arr)
+    # small preview CSV (first 10 rows collapsed if 3D)
+    if arr.ndim == 3:
+        B, L, F = arr.shape
+        flat = arr.reshape(B * L, F)
+        pd.DataFrame(flat[:100]).to_csv(step_dir / f"{name}_preview.csv", index=False)
+    elif arr.ndim in (1, 2):
+        pd.DataFrame(arr[:100]).to_csv(step_dir / f"{name}.csv", index=False)
+    else:
+        # fallback: save raw text for exotic shapes
+        np.savetxt(step_dir / f"{name}.txt", arr.reshape(-1, 1)[:100], fmt="%.6g")
+
+def _save_array(name: str, arr: np.ndarray, step_dir: Path) -> None:
+    np.save(step_dir / f"{name}.npy", arr)
+    pd.DataFrame(arr[:100]).to_csv(step_dir / f"{name}.csv", index=False)
+
+def _append_jsonl(path: Path, row: Dict[str, object]) -> None:
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(row, default=str) + "\n")
+
+def _dump_replay_state(rb, step_dir: Path, now_t: int) -> None:
+    """Dump full replay buffer metadata and PER priorities (if available)."""
+    rows = []
+    # Try best-effort introspection of buffer internals you shared
+    buf = None
+    if hasattr(rb, "_buf"):
+        buf = rb._buf  # type: ignore[attr-defined]
+    elif hasattr(rb, "_queue"):
+        buf = rb._queue
+
+    if buf is None:
+        pd.DataFrame([{"note": "buffer has no _buf; skipping dump"}]).to_csv(step_dir / "replay_dump.csv", index=False)
+        return
+
+    for j, e in enumerate(buf):
+        # e is SeqEntry: (X, y, err, t, regime_id)
+        meta = {
+            "idx": j,
+            "t": getattr(e, "t", None),
+            "err": getattr(e, "err", None),
+            "regime_id": getattr(e, "regime_id", None),
+            "X_shape": tuple(getattr(e, "X", torch.empty(0)).shape),
+            "y_shape": tuple(getattr(e, "y", torch.empty(0)).shape),
+        }
+        rows.append(meta)
+
+    df = pd.DataFrame(rows)
+    df.to_csv(step_dir / "replay_dump.csv", index=False)
+
+    # If PER: also dump current priorities
+    if rb.__class__.__name__ == "PrioritizedReplayBuffer" and hasattr(rb, "_priorities"):
+        try:
+            pri = rb._priorities(now_t)  # type: ignore[attr-defined]
+            _save_array("per_priorities", np.asarray(pri), step_dir)
+        except Exception as ex:
+            pd.DataFrame([{"per_priorities_error": str(ex)}]).to_csv(step_dir / "per_priorities_error.csv", index=False)
+
 
 @step(enable_cache=False)
 def online_evaluator(
@@ -160,25 +246,22 @@ def online_evaluator(
     scalers: Dict[str, Dict[str, Any]],
     replay_buffer_size: int,
     online_lr: float,
+    update_scalers: bool,
     train_every: int,
-    replay_strategy: Literal["none", "sliding", "random", "prioritized"] = "none",
-    batch_size: int = 32,
-    recent_window_size: int = 32,
-    recent_ratio: float = 0.7,
-    grad_clip: Optional[float] = 1.0,
-    per_alpha: float = 0.6,
-    per_beta: float = 0.4,
-    per_half_life: int = 1000,
-    per_eps: float = 1e-3,
-    use_online: bool = True,
-    # ==== NEW: debug controls ====
-    debug: bool = True,
-    debug_every: int = 10,
-    debug_vms: Optional[List[str]] = None,
+    replay_strategy: Literal["none", "sliding", "random", "prioritized"],
+    batch_size: int,
+    recent_window_size: int,
+    recent_ratio: float,
+    grad_clip: Optional[float],
+    per_alpha: float,
+    per_beta: float,
+    per_half_life: int,
+    per_eps: float,
+    use_online: bool,
+    debug: bool,
+    debug_vms: Optional[List[str]],
     debug_dump_dir: Optional[str] = "debug_dumps",
-    make_gifs: bool = False,
     save_step_csv_dir: Optional[str] = "results/online",
-    rolling_window_for_plots: int = 24,
 ) -> Dict[str, Any]:
 
     if debug:
@@ -221,9 +304,19 @@ def online_evaluator(
 
     for vm_id, init_df in expanded_test_dfs.items():
         set_seed(42)
+
+        model.load_state_dict(base_state)  # reset to the same offline-trained weights
+        model.to(device)
+        model.eval()
+        optim = Adam(model.parameters(), lr=online_lr) if use_online else None
+
         want_debug = _want_debug_fun(vm_id, debug, debug_vms)
 
+
         if want_debug:
+            with torch.no_grad():
+                fp = sum((p.float().abs().sum() for p in model.parameters()))
+            logger.debug(f"[{vm_id}] model fingerprint after reset: {float(fp):.6e}")
             debug_dir = Path(debug_dump_dir) / vm_id
             debug_dir.mkdir(parents=True, exist_ok=True)
 
@@ -293,16 +386,6 @@ def online_evaluator(
         for i, (ts, new_obs) in enumerate(stream_df.iterrows(), start=1):
             vm_scalers_eval = {col: copy.deepcopy(s) for col, s in vm_scalers.items()}
 
-            model.load_state_dict(base_state)  # reset to the same offline-trained weights
-            model.to(device)
-            model.eval()
-            optim = Adam(model.parameters(), lr=online_lr) if use_online else None
-
-            if want_debug:
-                with torch.no_grad():
-                    fp = sum((p.float().abs().sum() for p in model.parameters()))
-                logger.debug(f"[{vm_id}] model fingerprint after reset: {float(fp):.6e}")
-
             # === 1) PREDICT using current history (do NOT append new_obs yet) ===
             if len(history) < seq_len:
                 raise ValueError(f"History for VM '{vm_id}' has fewer rows ({len(history)}) than seq_len ({seq_len}).")
@@ -346,7 +429,6 @@ def online_evaluator(
                 pd.DataFrame(y_pred_base.squeeze(0).numpy(), columns=selected_target_columns).to_csv(
                     step_dir / "y_pred_base.csv")
 
-            # --- Build y_true in SCALED space using the PRE-UPDATE snapshot ---
             y_true_slice = full_df.iloc[start_idx:end_idx][selected_target_columns]  # raw (online)
             y_true_raw = y_true_slice.to_numpy(dtype=np.float32)  # (H, T)
 
@@ -374,7 +456,7 @@ def online_evaluator(
             loss_model = criterion(y_pred_scaled.squeeze(0), y_true).item()
             loss_base = criterion(y_pred_base.squeeze(0), y_true).item()
 
-            new_obs_scaled, recs = _transform_row_one_with_state(new_obs, vm_scalers, selected_target_columns)
+            new_obs_scaled, recs = _transform_row_one_with_state(new_obs, vm_scalers, selected_target_columns, update_scalers)
 
             if want_debug:
                 logger.debug(f"[{vm_id}][{i}] losses (scaled): model={loss_model:.6f}, baseline={loss_base:.6f}")
@@ -409,8 +491,6 @@ def online_evaluator(
                 # 6) (Optional) train step co 'train_every'
                 if optim is not None and (i % train_every) == 0:
                     logger.debug(f"[{vm_id}][{i}] Training step (train_every={train_every})")
-                    model.train()
-                    optim.zero_grad()
 
                     # planowany skład batcha
                     m = int(batch_size * float(recent_ratio))  # recent
@@ -434,13 +514,21 @@ def online_evaluator(
                     deficit = batch_size - (len(Xr) + len(Xp))
                     logger.debug(f"[{vm_id}][{i}] Batch mix: recent={len(Xr)}, replay={len(Xp)}, deficit={deficit}")
                     if deficit > 0 and not isinstance(rb, NoReplayBuffer):
-                        Xd, Yd, Wd = rb.sample(deficit)
+                        Xd, Yd, Wd = rb.sample(deficit, now_t=i) if isinstance(rb, PrioritizedReplayBuffer) else rb.sample(deficit)
                         Xp += Xd; Yp += Yd
                         if isinstance(rb, PrioritizedReplayBuffer) and Wp is not None and Wd is not None:
                             Wp = np.concatenate([Wp, Wd])
 
-                    if debug and (i % debug_every == 0):
-                        _log_batch_mix(vm_id, i, Xr, Yr, Xp, Yp, Wp)
+                    if want_debug:
+                        comp_row = {
+                            "vm_id": vm_id, "step": i,
+                            "recent_len": len(recent_X), "replay_len": len(rb),
+                            "batch_recent": len(Xr), "batch_replay": len(Xp),
+                            "batch_deficit_filled": int(deficit > 0),
+                            "Wp_present": int(Wp is not None),
+                        }
+                        _append_jsonl(step_dir / "train_batch_meta.jsonl", comp_row)
+                        _dump_replay_state(rb, step_dir, now_t=i)
 
                     # finalny batch
                     batch_X_list = Xr + Xp
@@ -450,11 +538,22 @@ def online_evaluator(
                         batch_X = torch.cat(batch_X_list).to(device)  # (B, L, F)
                         batch_Y = torch.cat(batch_Y_list).to(device)  # (B, H, T)
 
-                        if debug and (i % debug_every == 0):
-                            logger.debug(f"[{vm_id}][{i}] batch_X {_tensor_stats(batch_X)}")
-                            logger.debug(f"[{vm_id}][{i}] batch_Y {_tensor_stats(batch_Y)}")
+                        if want_debug:
+                            _save_tensor("batch_X", batch_X, step_dir)
+                            _save_tensor("batch_Y", batch_Y, step_dir)
+                            if Wp is not None:
+                                _save_array("IS_weights", np.asarray(Wp, dtype=np.float32), step_dir)
 
-                        # PER: wagi IS tylko dla części replay
+                        # ---- Evaluate BEFORE update (no grad) ----
+                        model.eval()
+                        with torch.no_grad():
+                            loss_pre = criterion(model(batch_X), batch_Y).item()
+
+                        # ---- Train step ----
+                        model.train()
+                        optim.zero_grad()
+
+                        # PER weighted loss
                         if isinstance(rb, PrioritizedReplayBuffer) and Wp is not None:
                             num_recent = len(Xr)
                             weights = np.ones((len(batch_X_list),), dtype=np.float32)
@@ -471,14 +570,41 @@ def online_evaluator(
                         else:
                             loss_train = criterion(model(batch_X), batch_Y)
 
-                        if debug and (i % debug_every == 0):
-                            logger.debug(f"[{vm_id}][{i}] loss_train={float(loss_train.item()):.6f}")
-
                         loss_train.backward()
+
+                        # grad norms before/after clip
+                        grad_norm_before = _grad_l2_norm(model)
                         if grad_clip is not None and grad_clip > 0:
                             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float(grad_clip))
+                        grad_norm_after = _grad_l2_norm(model)
+
+                        # snapshot params (before step) -> to compute delta
+                        state_before = copy.deepcopy(model.state_dict())
+
                         optim.step()
                         model.eval()
+
+                        # param delta + post loss
+                        state_after = model.state_dict()
+                        param_delta = _param_delta_norm(state_before, state_after)
+
+                        with torch.no_grad():
+                            loss_post = criterion(model(batch_X), batch_Y).item()
+
+                        # ---- Save scalar metrics of this train step ----
+                        train_row = {
+                            "vm_id": vm_id, "step": i,
+                            "B": int(batch_X.shape[0]),
+                            "L": int(batch_X.shape[1]), "F": int(batch_X.shape[2]),
+                            "H": int(batch_Y.shape[1]), "T": int(batch_Y.shape[2]),
+                            "loss_pre": float(loss_pre),
+                            "loss_train": float(loss_train.item()),
+                            "loss_post": float(loss_post),
+                            "grad_l2_before": float(grad_norm_before),
+                            "grad_l2_after": float(grad_norm_after),
+                            "param_delta_l2": float(param_delta),
+                        }
+                        _append_jsonl(step_dir / "train_step_metrics.jsonl", train_row)
 
             y_true_inverse_transform = _inverse_transform(y_true_scaled,
                                                               selected_target_columns, vm_scalers_eval)

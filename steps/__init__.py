@@ -47,4 +47,4 @@ from .training import model_evaluator, register_model, cnn_lstm_trainer
 from .logging import track_experiment_metadata
 from .anomaly_reduction import anomaly_reducer
 from .knowledge_distillation import student_distiller, student_kd_experiments, student_kd_optuna_experiments
-from .online_learning import online_evaluator
+from .online_learning import online_evaluator, optuna_online_search
