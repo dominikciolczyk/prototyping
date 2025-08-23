@@ -20,6 +20,7 @@ from .replay_buffers import (
     PrioritizedReplayBuffer,
     BaseReplayBuffer
 )
+from utils import set_seed
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
@@ -103,8 +104,7 @@ def _inverse_transform(arr: np.ndarray, selected_cols: List[str], vm_scalers_sna
     out = np.zeros_like(arr)
     for i, col in enumerate(selected_cols):
         sc = vm_scalers_snapshot[col]
-        mu = float(sc.means[col])
-        std = (float(sc.vars[col]) ** 0.5) + 1e-8
+        mu, std, _ = _scaler_state(sc, col)
         out[..., i] = arr[..., i] * std + mu
     return out
 
@@ -176,7 +176,6 @@ def online_evaluator(
     debug_every: int = 10,
     debug_vms: Optional[List[str]] = None,
     debug_dump_dir: Optional[str] = "debug_dumps",
-    debug_dump_every: int = 200,
     make_gifs: bool = False,
     save_step_csv_dir: Optional[str] = "results/online",
     rolling_window_for_plots: int = 24,
@@ -192,12 +191,9 @@ def online_evaluator(
                      f"recent_ratio={recent_ratio}, train_every={train_every}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-    model.eval()
-
     criterion = AsymmetricSmoothL1(alpha=float(alpha), beta=float(beta))
 
-    optim = Adam(model.parameters(), lr=online_lr) if use_online else None
+    base_state = copy.deepcopy(model.state_dict())
 
     if save_step_csv_dir:
         Path(save_step_csv_dir).mkdir(parents=True, exist_ok=True)
@@ -219,12 +215,12 @@ def online_evaluator(
 
     per_vm_losses_model: Dict[str, List[float]] = {}
     per_vm_losses_baseline: Dict[str, List[float]] = {}
-    merged_plots: Dict[str, pd.DataFrame] = {}
 
     if debug_dump_dir:
         Path(debug_dump_dir).mkdir(parents=True, exist_ok=True)
 
     for vm_id, init_df in expanded_test_dfs.items():
+        set_seed(42)
         want_debug = _want_debug_fun(vm_id, debug, debug_vms)
 
         if want_debug:
@@ -237,11 +233,9 @@ def online_evaluator(
 
         logger.info(f"Streaming evaluation for VM '{vm_id}' (strategy={replay_strategy})")
 
-        scaling_debug_buffer: List[Dict[str, Any]] = []
         if want_debug:
             logger.debug(f"[{vm_id}] INIT_DF: {_df_stats(init_df)} first ts={init_df.index.min()}, last ts={init_df.index.max()}")
             init_df.to_csv(debug_dir / f"{vm_id}_INIT_DF.csv")
-
 
 
         if vm_id not in expanded_test_final_dfs:
@@ -293,14 +287,21 @@ def online_evaluator(
         # Bufor replay
         rb = make_buffer()
 
-        # For true_y, pred_y, baseline_y storage and plotting
-        vm_records: List[Tuple[pd.Timestamp, Dict[str, float]]] = []
-
         # Per-step CSV storage
         step_rows: List[Dict[str, Any]] = []
 
         for i, (ts, new_obs) in enumerate(stream_df.iterrows(), start=1):
             vm_scalers_eval = {col: copy.deepcopy(s) for col, s in vm_scalers.items()}
+
+            model.load_state_dict(base_state)  # reset to the same offline-trained weights
+            model.to(device)
+            model.eval()
+            optim = Adam(model.parameters(), lr=online_lr) if use_online else None
+
+            if want_debug:
+                with torch.no_grad():
+                    fp = sum((p.float().abs().sum() for p in model.parameters()))
+                logger.debug(f"[{vm_id}] model fingerprint after reset: {float(fp):.6e}")
 
             # === 1) PREDICT using current history (do NOT append new_obs yet) ===
             if len(history) < seq_len:
@@ -372,25 +373,20 @@ def online_evaluator(
             # --- Scaled-space losses (what you already do) ---
             loss_model = criterion(y_pred_scaled.squeeze(0), y_true).item()
             loss_base = criterion(y_pred_base.squeeze(0), y_true).item()
-            per_vm_losses_model.setdefault(vm_id, []).append(loss_model)
-            per_vm_losses_baseline.setdefault(vm_id, []).append(loss_base)
+
+            new_obs_scaled, recs = _transform_row_one_with_state(new_obs, vm_scalers, selected_target_columns)
 
             if want_debug:
                 logger.debug(f"[{vm_id}][{i}] losses (scaled): model={loss_model:.6f}, baseline={loss_base:.6f}")
 
-            if want_debug:
-                new_obs_scaled, recs = _transform_row_one_with_state(new_obs, vm_scalers, selected_target_columns)
-                scaling_debug_buffer.extend(recs)
                 _log_scaling_sample(vm_id, i, new_obs, new_obs_scaled, selected_target_columns)
-
                 logger.debug(f"[{vm_id}][{i}] Scaling state changes for tracked columns:\n"
                      + "\n".join([f"  {r['col']}: raw={r['raw']:.5f} -> scaled={r['scaled']:.5f}, "
                           f"mu: {r['mu_before']:.5f}->{r['mu_after']:.5f}, "
                           f"std: {r['std_before']:.5f}->{r['std_after']:.5f}, "
                           f"count: {r['cnt_before']}->{r['cnt_after']}"
                           for r in recs]))
-            else:
-                new_obs_scaled = _transform_row_one(new_obs, vm_scalers)
+
 
             history = pd.concat([history, new_obs_scaled.to_frame().T])
 
@@ -484,27 +480,33 @@ def online_evaluator(
                         optim.step()
                         model.eval()
 
+            y_true_inverse_transform = _inverse_transform(y_true_scaled,
+                                                              selected_target_columns, vm_scalers_eval)
             y_pred_raw = _inverse_transform(y_pred_scaled[0].numpy(),
                                             selected_target_columns, vm_scalers_eval)
             y_base_raw = _inverse_transform(y_pred_base[0].numpy(),
                                             selected_target_columns, vm_scalers_eval)
 
+            if y_pred_raw.shape != y_true_raw.shape:
+                raise ValueError(f"Raw shapes mismatch: pred {y_pred_raw.shape} vs true {y_true_raw.shape}")
+            if y_base_raw.shape != y_true_raw.shape:
+                raise ValueError(f"Raw baseline shape mismatch: base {y_base_raw.shape} vs true {y_true_raw.shape}")
+
+            if want_debug:
+                pd.DataFrame(y_true_inverse_transform, columns=selected_target_columns).to_csv(
+                    step_dir / "y_true_inverse_transform.csv", index=False
+                )
+                pd.DataFrame(y_pred_raw, columns=selected_target_columns).to_csv(
+                    step_dir / "y_pred_raw.csv", index=False
+                )
+                pd.DataFrame(y_base_raw, columns=selected_target_columns).to_csv(
+                    step_dir / "y_base_raw.csv", index=False
+                )
+
             loss_model_raw = criterion(torch.tensor(y_pred_raw), torch.tensor(y_true_raw)).item()
             loss_base_raw = criterion(torch.tensor(y_base_raw), torch.tensor(y_true_raw)).item()
-
-            """
-            record = {col: y_true_raw[i] for i, col in enumerate(selected_target_columns)}
-            record.update({f"{col}_pred_model": y_pred_raw[i] for i, col in enumerate(selected_target_columns)})
-            record.update({f"{col}_pred_base": y_base_raw[i] for i, col in enumerate(selected_target_columns)})
-            vm_records.append((ts, record))
-
-            
-            if i % 1 == 0:
-                history_df = pd.DataFrame([rec for _, rec in vm_records],
-                                          index=[t for t, _ in vm_records])
-                _plot_step_line(history_df, vm_id, step_idx=i)
-                
-            """
+            per_vm_losses_model.setdefault(vm_id, []).append(loss_model_raw)
+            per_vm_losses_baseline.setdefault(vm_id, []).append(loss_base_raw)
 
             row = {
                 "vm_id": vm_id,
@@ -515,8 +517,7 @@ def online_evaluator(
                 "loss_model_raw": float(loss_model_raw),
                 "loss_baseline_raw": float(loss_base_raw),
             }
-            # zapisujemy one-step-ahead w jednostkach oryginalnych (dla każdego targetu)
-            # --- Short-term (first step ahead) ---
+
             for k, col in enumerate(selected_target_columns):
                 row[f"y_true_{col}"] = float(y_true_raw[0, k])
                 row[f"y_pred_model_{col}"] = float(y_pred_raw[0, k])
@@ -538,28 +539,13 @@ def online_evaluator(
             df_steps.to_csv(vm_csv_path, index=False)
             logger.info("Saved per-step CSV for %s to %s", vm_id, vm_csv_path)
 
-        # ---- Build plotting DataFrame for this VM ----
-        if make_gifs and vm_records:
-            idx, recs = zip(*vm_records)
-            merged_plots[vm_id] = pd.DataFrame(list(recs), index=pd.Index(idx, name="timestamp"))
-
-            frames_dir = "history_frames"
-            gif_path = Path("history_gifs")
-            _frames_to_gif(frames_dir, gif_path=gif_path, fps=1)
-
-        if debug_dump_dir and scaling_debug_buffer:
-            pd.DataFrame(scaling_debug_buffer).to_parquet(
-                Path(debug_dump_dir) / f"{vm_id}_scaling_snapshot.parquet", index=False
-            )
-            scaling_debug_buffer.clear()
-
     # ==== Final aggregation ====
     all_losses_model = [loss for vm_losses in per_vm_losses_model.values() for loss in vm_losses]
     all_losses_baseline = [loss for vm_losses in per_vm_losses_baseline.values() for loss in vm_losses]
 
     avg_loss_model = float(np.mean(all_losses_model)) if all_losses_model else float("nan")
     avg_loss_baseline = float(np.mean(all_losses_baseline)) if all_losses_baseline else float("nan")
-    plot_paths = plot_time_series(merged_plots, "online_eval")
+    #plot_paths = plot_time_series(merged_plots, "online_eval")
 
     logger.info("Average loss for model: %.4f", avg_loss_model)
     logger.info("Average loss for baseline: %.4f", avg_loss_baseline)
@@ -582,8 +568,10 @@ def online_evaluator(
         plt.legend()
         plt.tight_layout()
 
-        out_path = f"loss_plots/{vm_id}_loss.png"
-        Path("loss_plots").mkdir(exist_ok=True)
+        loss_plots_path = "results/online/loss_plots/"
+        Path(loss_plots_path).mkdir(parents=True, exist_ok=True)
+
+        out_path = f"{loss_plots_path}{vm_id}_loss.png"
         plt.savefig(out_path, dpi=150)
         plt.close()
         loss_plot_paths[vm_id] = out_path
@@ -600,9 +588,9 @@ def online_evaluator(
             "online_AsymmetricSmoothL1_model": avg_loss_model,
             "online_AsymmetricSmoothL1_baseline": avg_loss_baseline,
         },
-        "plot_paths": plot_paths,
+        #"plot_paths": plot_paths,
         "per_vm_csv_paths": per_vm_csv_paths,
-        "rolling_window": rolling_window_for_plots
+       # "rolling_window": rolling_window_for_plots
     }
     logger.info("Online evaluation completed. Results: %s", results)
 
