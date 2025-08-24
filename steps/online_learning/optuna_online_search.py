@@ -1,6 +1,9 @@
+import json
 from typing import Dict, Any
 from zenml import step
 import optuna
+from pathlib import Path
+from utils import set_seed
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
@@ -16,69 +19,112 @@ def optuna_online_search(
     beta: float,
     selected_target_columns: list,
     scalers: Dict[str, Dict[str, Any]],
-    batch_size: int,
     n_trials: int,
 ) -> Dict[str, Any]:
     """Optuna search to minimize online evaluator loss."""
-
+    set_seed(42)
 
     def objective(trial: optuna.Trial) -> float:
-        # --- Przestrzeń hiperparametrów ---
-        replay_buffer_size = trial.suggest_categorical("replay_buffer_size", [0, 50, 100, 500, 1000])
-        online_lr = trial.suggest_loguniform("online_lr", 1e-5, 1e-1)
-        update_scalers = trial.suggest_categorical("update_scalers", [True, False])
-        train_every = trial.suggest_int("train_every", 1, 10)
-        recent_window_size = trial.suggest_int("recent_window_size", 1, 20)
-        recent_ratio = trial.suggest_float("recent_ratio", 0.0, 1.0)
-        grad_clip = trial.suggest_float("grad_clip", 0.1, 5.0)
+        try:
+            max_steps = 30
+            batch_size = trial.suggest_int("batch_size", 1, max_steps)
+            replay_buffer_size = trial.suggest_int("replay_buffer_size", 1, max_steps)
+            online_lr = trial.suggest_loguniform("online_lr", 1e-5, 1e-1)
+            update_scalers = trial.suggest_categorical("update_scalers", [True, False])
+            train_every = trial.suggest_int("train_every", 1, 10)
+            recent_window_size = trial.suggest_int("recent_window_size", 1, max_steps)
+            recent_ratio = trial.suggest_float("recent_ratio", 0.0, 1.0)
+            grad_clip = trial.suggest_float("grad_clip", 0.1, 5.0)
 
-        replay_strategy = trial.suggest_categorical("replay_strategy", ["none", "sliding", "random", "prioritized"])
+            replay_strategy = trial.suggest_categorical("replay_strategy", ["none", "sliding", "cyclic", "random", "prioritized"])
 
-        if replay_strategy == "prioritized":
-            per_alpha = trial.suggest_float("per_alpha", 0.3, 1.0)
-            per_beta = trial.suggest_float("per_beta", 0.1, 1.0)
-            per_half_life = trial.suggest_int("per_half_life", 50, 2000)
-            per_eps = trial.suggest_loguniform("per_eps", 1e-6, 1e-2)
-        else:
-            per_alpha, per_beta, per_half_life, per_eps = 0.6, 0.4, 1000, 1e-3
+            if replay_strategy == "prioritized":
+                per_alpha = trial.suggest_float("per_alpha", 0.3, 1.0)
+                per_beta = trial.suggest_float("per_beta", 0.1, 1.0)
+                per_half_life = trial.suggest_int("per_half_life", 50, 2000, log=True)
+                per_eps = trial.suggest_loguniform("per_eps", 1e-6, 1e-2)
+            else:
+                per_alpha, per_beta, per_half_life, per_eps = 0.6, 0.4, 1000, 1e-3
 
-        # --- Wywołanie online_evaluator ---
-        from steps import online_evaluator
+            effective_replay_buffer_size = 0 if replay_strategy == "none" else replay_buffer_size
 
-        results = online_evaluator(
-            model=model,
-            expanded_test_dfs=expanded_test_dfs,
-            expanded_test_final_dfs=expanded_test_final_dfs,
-            seq_len=seq_len,
-            horizon=horizon,
-            alpha=alpha,
-            beta=beta,
-            selected_target_columns=selected_target_columns,
-            scalers=scalers,
-            replay_buffer_size=replay_buffer_size,
-            online_lr=online_lr,
-            update_scalers=update_scalers,
-            train_every=train_every,
-            replay_strategy=replay_strategy,
-            batch_size=batch_size,
-            recent_window_size=recent_window_size,
-            recent_ratio=recent_ratio,
-            grad_clip=grad_clip,
-            per_alpha=per_alpha,
-            per_beta=per_beta,
-            per_half_life=per_half_life,
-            per_eps=per_eps,
-            use_online=True,
-            debug=True,
-            debug_vms=["2020_VM02"],
-        )
+            if int(batch_size * recent_ratio) + effective_replay_buffer_size < batch_size:
+                # prune trial
+                raise optuna.TrialPruned("Not enough buffer+recent to satisfy batch_size")
 
-        loss = results["metrics"]["online_AsymmetricSmoothL1_model"]
-        logger.info(f"Trial {trial.number}: loss={loss:.4f}")
-        return loss
+            # --- Create unique subdir for this trial ---
+            base_dir = Path("results/online/optuna_trials")
+            trial_name = f"trial_{trial.number}"
+            # you can include params in folder name if you want (but can get very long)
+            trial_dir = base_dir / trial_name
+            (trial_dir / "debug_dumps").mkdir(parents=True, exist_ok=True)
+            (trial_dir / "step_csvs").mkdir(parents=True, exist_ok=True)
 
-    # Uruchom Optunę
-    study = optuna.create_study(direction="minimize")
+            # --- Wywołanie online_evaluator ---
+            from steps import online_evaluator
+
+            results = online_evaluator(
+                model=model,
+                expanded_test_dfs=expanded_test_dfs,
+                expanded_test_final_dfs=expanded_test_final_dfs,
+                seq_len=seq_len,
+                horizon=horizon,
+                alpha=alpha,
+                beta=beta,
+                selected_target_columns=selected_target_columns,
+                scalers=scalers,
+                replay_buffer_size=replay_buffer_size,
+                online_lr=online_lr,
+                update_scalers=update_scalers,
+                train_every=train_every,
+                replay_strategy=replay_strategy,
+                batch_size=batch_size,
+                recent_window_size=recent_window_size,
+                recent_ratio=recent_ratio,
+                grad_clip=grad_clip,
+                per_alpha=per_alpha,
+                per_beta=per_beta,
+                per_half_life=per_half_life,
+                per_eps=per_eps,
+                use_online=True,
+                debug=False,
+                debug_vms=["2020_VM01", "2020_VM02"],
+                debug_dump_dir=str(trial_dir / "debug_dumps"),
+                save_step_csv_dir=str(trial_dir / "step_csvs"),
+            )
+
+            loss = results["metrics"]["online_AsymmetricSmoothL1_model"]
+            logger.info(f"Trial {trial.number}: loss={loss:.4f}")
+
+            row = {
+                "run": trial_name,
+                "loss": loss,
+                "replay_buffer_size": replay_buffer_size,
+                "online_lr": online_lr,
+                "update_scalers": update_scalers,
+                "train_every": train_every,
+                "replay_strategy": replay_strategy,
+                "batch_size": batch_size,
+                "recent_window_size": recent_window_size,
+                "recent_ratio": recent_ratio,
+                "grad_clip": grad_clip,
+                "per_alpha": per_alpha,
+                "per_beta": per_beta,
+                "per_half_life": per_half_life,
+                "per_eps": per_eps,
+                "metrics": results["metrics"],
+            }
+
+            with open("online_optuna_results.jsonl", "a") as f:
+                f.write(json.dumps(row) + "\n")
+
+            return loss
+        except Exception as e:
+            logger.error(f"Trial {trial.number} failed: {e}", exc_info=True)
+            raise optuna.TrialPruned()
+
+    sampler = optuna.samplers.TPESampler(n_startup_trials=100)
+    study = optuna.create_study(direction="minimize", sampler=sampler)
     study.optimize(objective, n_trials=n_trials)
 
     best_params = study.best_params

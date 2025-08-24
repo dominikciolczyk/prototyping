@@ -150,7 +150,7 @@ def cloud_resource_prediction_online_learning(
 
 
     if optuna_search:
-        best_params = optuna_online_search(
+        optuna_online_search(
             model=student,
             expanded_test_dfs=expanded_test_dfs,
             expanded_test_final_dfs=expanded_test_final_unscaled_dfs,
@@ -160,8 +160,7 @@ def cloud_resource_prediction_online_learning(
             beta=beta,
             selected_target_columns=selected_columns,
             scalers=scalers,
-            batch_size=4,
-            n_trials=50,
+            n_trials=1000,
         )
     else:
         online_evaluator(
@@ -176,26 +175,18 @@ def cloud_resource_prediction_online_learning(
             scalers=scalers,
             replay_buffer_size=1000,
             online_lr=1e-3,
+            update_scalers=True,
             train_every=1,
-            #replay_strategy="prioritized",
-            replay_strategy="none",
-            #batch_size=5,
-            #recent_window_size=5,
-            #recent_ratio=0.7,
+            replay_strategy="cyclic",
+            batch_size=4,
+            recent_window_size=2,
+            recent_ratio=0.5,
+            grad_clip=1.0,
+            per_alpha=0.6,
+            per_beta=0.4,
+            per_half_life=1000,
+            per_eps=1e-3,
             use_online=True,
-            batch_size=1,
-            recent_window_size=5,
-            recent_ratio=1,
-            #grad_clip: Optional[float] = 1.0,
-            #per_alpha: float = 0.6,
-            #per_beta: float = 0.4,
-            #per_half_life: int = 1000,
-            #per_eps: float = 1e-3,
             debug=True,
-            debug_every=1,
             debug_vms=["2020_VM02"],
-            debug_dump_dir="results/online/debug_dumps",
-            save_step_csv_dir="results/online",
-            rolling_window_for_plots=24,
-            make_gifs=False,
         )

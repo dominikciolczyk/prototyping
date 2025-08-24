@@ -12,6 +12,7 @@ from collections import deque
 from .replay_buffers import (
     NoReplayBuffer,
     SlidingWindowBuffer,
+    CyclicReplayBuffer,
     RandomReplayBuffer,
     PrioritizedReplayBuffer,
     BaseReplayBuffer
@@ -173,19 +174,13 @@ def _grad_l2_norm(model: nn.Module) -> float:
     return float(total ** 0.5)
 
 def _save_tensor(name: str, t: torch.Tensor, step_dir: Path) -> None:
-    """Save tensor as .npy (full) and a small CSV preview."""
     arr = t.detach().cpu().numpy()
-    np.save(step_dir / f"{name}.npy", arr)
-    # small preview CSV (first 10 rows collapsed if 3D)
     if arr.ndim == 3:
         B, L, F = arr.shape
         flat = arr.reshape(B * L, F)
-        pd.DataFrame(flat[:100]).to_csv(step_dir / f"{name}_preview.csv", index=False)
-    elif arr.ndim in (1, 2):
-        pd.DataFrame(arr[:100]).to_csv(step_dir / f"{name}.csv", index=False)
+        pd.DataFrame(flat[:50]).to_csv(step_dir / f"{name}_preview.csv", index=False)
     else:
-        # fallback: save raw text for exotic shapes
-        np.savetxt(step_dir / f"{name}.txt", arr.reshape(-1, 1)[:100], fmt="%.6g")
+        pd.DataFrame(arr[:50]).to_csv(step_dir / f"{name}_preview.csv", index=False)
 
 def _save_array(name: str, arr: np.ndarray, step_dir: Path) -> None:
     np.save(step_dir / f"{name}.npy", arr)
@@ -248,7 +243,7 @@ def online_evaluator(
     online_lr: float,
     update_scalers: bool,
     train_every: int,
-    replay_strategy: Literal["none", "sliding", "random", "prioritized"],
+    replay_strategy: Literal["none", "sliding", "cyclic", "random", "prioritized"],
     batch_size: int,
     recent_window_size: int,
     recent_ratio: float,
@@ -260,8 +255,8 @@ def online_evaluator(
     use_online: bool,
     debug: bool,
     debug_vms: Optional[List[str]],
-    debug_dump_dir: Optional[str] = "debug_dumps",
-    save_step_csv_dir: Optional[str] = "results/online",
+    debug_dump_dir: Optional[str] = "results/online/debug_dumps",
+    save_step_csv_dir: Optional[str] = "results/online/step_csvs",
 ) -> Dict[str, Any]:
 
     if debug:
@@ -288,6 +283,8 @@ def online_evaluator(
             return SlidingWindowBuffer(capacity=replay_buffer_size)
         if replay_strategy == "random":
             return RandomReplayBuffer(capacity=replay_buffer_size)
+        if replay_strategy == "cyclic":
+            return CyclicReplayBuffer(capacity=replay_buffer_size)
         if replay_strategy == "prioritized":
             return PrioritizedReplayBuffer(
                 capacity=replay_buffer_size,
@@ -455,6 +452,8 @@ def online_evaluator(
             # --- Scaled-space losses (what you already do) ---
             loss_model = criterion(y_pred_scaled.squeeze(0), y_true).item()
             loss_base = criterion(y_pred_base.squeeze(0), y_true).item()
+            per_vm_losses_model.setdefault(vm_id, []).append(loss_model)
+            per_vm_losses_baseline.setdefault(vm_id, []).append(loss_base)
 
             new_obs_scaled, recs = _transform_row_one_with_state(new_obs, vm_scalers, selected_target_columns, update_scalers)
 
@@ -510,7 +509,6 @@ def online_evaluator(
                     else:
                         Xp, Yp, Wp = [], [], None
 
-                    # jeżeli za mało recent/replay – dobierz z replay
                     deficit = batch_size - (len(Xr) + len(Xp))
                     logger.debug(f"[{vm_id}][{i}] Batch mix: recent={len(Xr)}, replay={len(Xp)}, deficit={deficit}")
                     if deficit > 0 and not isinstance(rb, NoReplayBuffer):
@@ -534,63 +532,72 @@ def online_evaluator(
                     batch_X_list = Xr + Xp
                     batch_Y_list = Yr + Yp
 
-                    if len(batch_X_list) > 0:
-                        batch_X = torch.cat(batch_X_list).to(device)  # (B, L, F)
-                        batch_Y = torch.cat(batch_Y_list).to(device)  # (B, H, T)
+                    logger.debug(f"[{vm_id}][{i}] FINAL batch size={len(batch_X_list)} "
+                                 f"(recent={len(Xr)}, replay={len(Xp)})")
 
-                        if want_debug:
-                            _save_tensor("batch_X", batch_X, step_dir)
-                            _save_tensor("batch_Y", batch_Y, step_dir)
-                            if Wp is not None:
-                                _save_array("IS_weights", np.asarray(Wp, dtype=np.float32), step_dir)
+                    if len(batch_X_list) < batch_size:
+                        logger.debug(f"[{vm_id}][{i}] Skipping train step: not enough samples for full batch ")
+                        continue
 
-                        # ---- Evaluate BEFORE update (no grad) ----
-                        model.eval()
-                        with torch.no_grad():
-                            loss_pre = criterion(model(batch_X), batch_Y).item()
+                    logger.debug(f"[{vm_id}][{i}] Training started")
 
-                        # ---- Train step ----
-                        model.train()
-                        optim.zero_grad()
+                    batch_X = torch.cat(batch_X_list).to(device)  # (B, L, F)
+                    batch_Y = torch.cat(batch_Y_list).to(device)  # (B, H, T)
 
-                        # PER weighted loss
-                        if isinstance(rb, PrioritizedReplayBuffer) and Wp is not None:
-                            num_recent = len(Xr)
-                            weights = np.ones((len(batch_X_list),), dtype=np.float32)
-                            weights[num_recent:] = Wp
-                            weights_t = torch.tensor(weights, dtype=torch.float32, device=device)
+                    if want_debug:
+                        _save_tensor("batch_X", batch_X, step_dir)
+                        _save_tensor("batch_Y", batch_Y, step_dir)
+                        if Wp is not None:
+                            _save_array("IS_weights", np.asarray(Wp, dtype=np.float32), step_dir)
 
-                            total = 0.0
-                            w_sum = weights_t.sum().clamp_min(1e-8)
-                            for j in range(batch_X.shape[0]):
-                                out = model(batch_X[j:j + 1])
-                                l_j = criterion(out.squeeze(0), batch_Y[j])
-                                total = total + l_j * weights_t[j]
-                            loss_train = total / w_sum
-                        else:
-                            loss_train = criterion(model(batch_X), batch_Y)
+                    # ---- Evaluate BEFORE update (no grad) ----
+                    model.eval()
+                    with torch.no_grad():
+                        loss_pre = criterion(model(batch_X), batch_Y).item()
 
-                        loss_train.backward()
+                    # ---- Train step ----
+                    model.train()
+                    optim.zero_grad()
 
-                        # grad norms before/after clip
-                        grad_norm_before = _grad_l2_norm(model)
-                        if grad_clip is not None and grad_clip > 0:
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float(grad_clip))
-                        grad_norm_after = _grad_l2_norm(model)
+                    # PER weighted loss
+                    if isinstance(rb, PrioritizedReplayBuffer) and Wp is not None:
+                        num_recent = len(Xr)
+                        weights = np.ones((len(batch_X_list),), dtype=np.float32)
+                        weights[num_recent:] = Wp
+                        weights_t = torch.tensor(weights, dtype=torch.float32, device=device)
 
-                        # snapshot params (before step) -> to compute delta
-                        state_before = copy.deepcopy(model.state_dict())
+                        total = 0.0
+                        w_sum = weights_t.sum().clamp_min(1e-8)
+                        for j in range(batch_X.shape[0]):
+                            out = model(batch_X[j:j + 1])
+                            l_j = criterion(out.squeeze(0), batch_Y[j])
+                            total = total + l_j * weights_t[j]
+                        loss_train = total / w_sum
+                    else:
+                        loss_train = criterion(model(batch_X), batch_Y)
 
-                        optim.step()
-                        model.eval()
+                    loss_train.backward()
 
-                        # param delta + post loss
-                        state_after = model.state_dict()
-                        param_delta = _param_delta_norm(state_before, state_after)
+                    # grad norms before/after clip
+                    grad_norm_before = _grad_l2_norm(model)
+                    if grad_clip is not None and grad_clip > 0:
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float(grad_clip))
+                    grad_norm_after = _grad_l2_norm(model)
 
-                        with torch.no_grad():
-                            loss_post = criterion(model(batch_X), batch_Y).item()
+                    # snapshot params (before step) -> to compute delta
+                    state_before = copy.deepcopy(model.state_dict())
 
+                    optim.step()
+                    model.eval()
+
+                    # param delta + post loss
+                    state_after = model.state_dict()
+                    param_delta = _param_delta_norm(state_before, state_after)
+
+                    with torch.no_grad():
+                        loss_post = criterion(model(batch_X), batch_Y).item()
+
+                    if want_debug:
                         # ---- Save scalar metrics of this train step ----
                         train_row = {
                             "vm_id": vm_id, "step": i,
@@ -631,8 +638,6 @@ def online_evaluator(
 
             loss_model_raw = criterion(torch.tensor(y_pred_raw), torch.tensor(y_true_raw)).item()
             loss_base_raw = criterion(torch.tensor(y_base_raw), torch.tensor(y_true_raw)).item()
-            per_vm_losses_model.setdefault(vm_id, []).append(loss_model_raw)
-            per_vm_losses_baseline.setdefault(vm_id, []).append(loss_base_raw)
 
             row = {
                 "vm_id": vm_id,
@@ -668,6 +673,9 @@ def online_evaluator(
     # ==== Final aggregation ====
     all_losses_model = [loss for vm_losses in per_vm_losses_model.values() for loss in vm_losses]
     all_losses_baseline = [loss for vm_losses in per_vm_losses_baseline.values() for loss in vm_losses]
+
+    logger.debug(f"All model losses collected: {all_losses_model}")
+    logger.debug(f"All baseline losses collected: {all_losses_baseline}")
 
     avg_loss_model = float(np.mean(all_losses_model)) if all_losses_model else float("nan")
     avg_loss_baseline = float(np.mean(all_losses_baseline)) if all_losses_baseline else float("nan")

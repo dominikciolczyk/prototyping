@@ -69,7 +69,7 @@ class SlidingWindowBuffer(BaseReplayBuffer):
         return len(self._buf)
 
 
-class RandomReplayBuffer(BaseReplayBuffer):
+class CyclicReplayBuffer(BaseReplayBuffer):
     """Duży bufor z uniform sampling (experience replay bez priorytetów)."""
     def __init__(self, capacity: int):
         super().__init__(capacity)
@@ -84,6 +84,33 @@ class RandomReplayBuffer(BaseReplayBuffer):
         else:
             self._buf[self._next] = entry
             self._next = (self._next + 1) % self.capacity
+
+    def sample(self, k: int) -> Tuple[List[torch.Tensor], List[torch.Tensor], Optional[np.ndarray]]:
+        if len(self._buf) == 0 or k <= 0:
+            return [], [], None
+        k = min(k, len(self._buf))
+        idxs = random.sample(range(len(self._buf)), k)
+        Xs = [self._buf[i].X for i in idxs]
+        ys = [self._buf[i].y for i in idxs]
+        return Xs, ys, None
+
+    def __len__(self) -> int:
+        return len(self._buf)
+
+class RandomReplayBuffer(BaseReplayBuffer):
+    """Replay buffer with random eviction and uniform sampling."""
+    def __init__(self, capacity: int):
+        super().__init__(capacity)
+        self._buf: List[SeqEntry] = []
+
+    def push(self, X: torch.Tensor, y: torch.Tensor, step_t: int, err: float = 0.0,
+             regime_id: Optional[int] = None) -> None:
+        entry = SeqEntry(X.detach().cpu(), y.detach().cpu(), float(err), int(step_t), regime_id)
+        if len(self._buf) < self.capacity:
+            self._buf.append(entry)
+        else:
+            idx = random.randrange(self.capacity)  # random slot to overwrite
+            self._buf[idx] = entry
 
     def sample(self, k: int) -> Tuple[List[torch.Tensor], List[torch.Tensor], Optional[np.ndarray]]:
         if len(self._buf) == 0 or k <= 0:

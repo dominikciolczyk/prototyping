@@ -181,3 +181,7 @@ Saved best result: {'best_params': {'min_strength': 0.8896879145148959, 'correla
 
 Saved best result: {'best_params': {'min_strength': 0.8418052233367769, 'correlation_threshold': 0.9569165272783219, 'threshold': 4.797380848863149, 'reduction_method': 'interpolat
 e_spline', 'interpolation_order': 2, 'use_hour_features': False, 'use_day_of_week_features': False, 'is_weekend_mode': 'none'}, 'best_value': 0.6887093186378479, 'best_trial_number': 147, 'timestamp': '2025-07-07T11:53:37.181835'}
+
+
+
+[optuna_online_search] Best trial: loss=1.1961, params={'replay_buffer_size': 10, 'online_lr': 0.0025134041100574964, 'update_scalers': True, 'train_every': 3, 'recent_window_size': 4, 'recent_ratio': 0.1312362919550678, 'grad_clip': 3.096545658580737, 'replay_strategy': 'sliding'}
