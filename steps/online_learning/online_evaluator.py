@@ -246,7 +246,6 @@ def online_evaluator(
     replay_strategy: Literal["none", "sliding", "cyclic", "random", "prioritized"],
     batch_size: int,
     recent_window_size: int,
-    recent_ratio: float,
     grad_clip: Optional[float],
     per_alpha: float,
     per_beta: float,
@@ -266,12 +265,13 @@ def online_evaluator(
                      f"alpha={alpha}, beta={beta}, "
                      f"replay_strategy={replay_strategy}, replay_buffer_size={replay_buffer_size}, "
                      f"batch_size={batch_size}, recent_window_size={recent_window_size}, "
-                     f"recent_ratio={recent_ratio}, train_every={train_every}")
+                     f"train_every={train_every}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     criterion = AsymmetricSmoothL1(alpha=float(alpha), beta=float(beta))
 
     base_state = copy.deepcopy(model.state_dict())
+    base_scalers = copy.deepcopy(scalers)
 
     if save_step_csv_dir:
         Path(save_step_csv_dir).mkdir(parents=True, exist_ok=True)
@@ -306,14 +306,18 @@ def online_evaluator(
         model.to(device)
         model.eval()
         optim = Adam(model.parameters(), lr=online_lr) if use_online else None
+        vm_scalers: Dict[str, Any] = copy.deepcopy(base_scalers[vm_id])
 
         want_debug = _want_debug_fun(vm_id, debug, debug_vms)
-
 
         if want_debug:
             with torch.no_grad():
                 fp = sum((p.float().abs().sum() for p in model.parameters()))
             logger.debug(f"[{vm_id}] model fingerprint after reset: {float(fp):.6e}")
+            for col in selected_target_columns:
+                mu, std, cnt = _scaler_state(vm_scalers[col], col)
+                logger.info(f"[{vm_id}] INIT SCALER {col}: mu={mu:.5f}, std={std:.5f}, cnt={cnt}")
+
             debug_dir = Path(debug_dump_dir) / vm_id
             debug_dir.mkdir(parents=True, exist_ok=True)
 
@@ -327,7 +331,6 @@ def online_evaluator(
             logger.debug(f"[{vm_id}] INIT_DF: {_df_stats(init_df)} first ts={init_df.index.min()}, last ts={init_df.index.max()}")
             init_df.to_csv(debug_dir / f"{vm_id}_INIT_DF.csv")
 
-
         if vm_id not in expanded_test_final_dfs:
             raise KeyError(f"No streaming data for VM '{vm_id}' in expanded_test_final_dfs")
         stream_df = expanded_test_final_dfs[vm_id]
@@ -337,7 +340,6 @@ def online_evaluator(
                 f"[{vm_id}] STREAM_DF: {_df_stats(stream_df)}  first ts={stream_df.index.min()}, last ts={stream_df.index.max()}")
             stream_df.to_csv(debug_dir / f"{vm_id}_STREAM_DF.csv")
 
-        vm_scalers: Dict[str, Any] = scalers[vm_id]
         history = init_df.copy()
 
         col_to_idx = {c: k for k, c in enumerate(history.columns)}
@@ -370,9 +372,11 @@ def online_evaluator(
                 f"Expected every 2h, but found {bad.unique().tolist()} at {bad.index[:5].tolist()}."
             )
 
-        # Krótkie okno "recent"
-        recent_X: deque = deque(maxlen=max(1, int(recent_window_size)))
-        recent_y: deque = deque(maxlen=max(1, int(recent_window_size)))
+        recent_cap = max(1, int(recent_window_size))
+        recent_X: deque = deque()
+        recent_y: deque = deque()
+        recent_err: deque = deque()  # track loss_model for PER priority (or logging)
+        recent_t: deque = deque()  # track step index of each recent sample
 
         # Bufor replay
         rb = make_buffer()
@@ -473,26 +477,31 @@ def online_evaluator(
 
             # --- 5) Update buffers / online train ---
             if use_online:
-                # recent window (zawsze)
-                recent_X.append(X_window.detach().cpu())           # (1, L, F)
-                recent_y.append(y_true.unsqueeze(0))               # (1, H, T)
+                logger.debug(f"[{vm_id}][{i}] recent_X size before={len(recent_X)}, recent_cap={recent_cap}")
+                if len(recent_X) >= recent_cap:
+                    old_X = recent_X.popleft()
+                    old_Y = recent_y.popleft()
+                    old_e = recent_err.popleft()
+                    old_t = recent_t.popleft()  # its original step index
+                    if not isinstance(rb, NoReplayBuffer):
+                        logger.debug(f"[{vm_id}][{i}] Pushing to replay buffer: X={_tensor_stats(old_X)}, y={_tensor_stats(old_Y)}, err={old_e:.6f}, t={old_t}")
+                        rb.push(
+                            X=old_X,
+                            y=old_Y,
+                            step_t=int(old_t),  # precise step for aging in PER
+                            err=float(old_e),  # priority/error if you use PER
+                            regime_id=None
+                        )
 
-                # replay buffer (w zależności od strategii)
-                if not isinstance(rb, NoReplayBuffer):
-                    rb.push(
-                        X=X_window.detach().cpu(),
-                        y=y_true.unsqueeze(0),
-                        step_t=i,
-                        err=float(loss_model),
-                        regime_id=None
-                    )
+                recent_X.append(X_window.detach().cpu())  # (1, L, F)
+                recent_y.append(y_true.unsqueeze(0))  # (1, H, T)
+                recent_err.append(float(loss_model))
+                recent_t.append(i)
 
                 # 6) (Optional) train step co 'train_every'
                 if optim is not None and (i % train_every) == 0:
-                    logger.debug(f"[{vm_id}][{i}] Training step (train_every={train_every})")
-
                     # planowany skład batcha
-                    m = int(batch_size * float(recent_ratio))  # recent
+                    m = min(batch_size, recent_window_size)
                     n = max(0, batch_size - m)                 # replay
 
                     # pobierz recent
@@ -510,36 +519,33 @@ def online_evaluator(
                         Xp, Yp, Wp = [], [], None
 
                     deficit = batch_size - (len(Xr) + len(Xp))
-                    logger.debug(f"[{vm_id}][{i}] Batch mix: recent={len(Xr)}, replay={len(Xp)}, deficit={deficit}")
-                    if deficit > 0 and not isinstance(rb, NoReplayBuffer):
-                        Xd, Yd, Wd = rb.sample(deficit, now_t=i) if isinstance(rb, PrioritizedReplayBuffer) else rb.sample(deficit)
-                        Xp += Xd; Yp += Yd
-                        if isinstance(rb, PrioritizedReplayBuffer) and Wp is not None and Wd is not None:
-                            Wp = np.concatenate([Wp, Wd])
+
+                    # finalny batch
+                    batch_X_list = Xr + Xp
+                    batch_Y_list = Yr + Yp
 
                     if want_debug:
+                        logger.debug(f"[{vm_id}][{i}] Batch mix: recent={len(Xr)}, recent_size={len(recent_X)}, replay={len(Xp)}, deficit={deficit}")
+
                         comp_row = {
                             "vm_id": vm_id, "step": i,
                             "recent_len": len(recent_X), "replay_len": len(rb),
                             "batch_recent": len(Xr), "batch_replay": len(Xp),
                             "batch_deficit_filled": int(deficit > 0),
                             "Wp_present": int(Wp is not None),
+                            "recent_steps": list(recent_t)[-recent_samples:],
+                            "recent_cap": recent_cap,
                         }
                         _append_jsonl(step_dir / "train_batch_meta.jsonl", comp_row)
                         _dump_replay_state(rb, step_dir, now_t=i)
-
-                    # finalny batch
-                    batch_X_list = Xr + Xp
-                    batch_Y_list = Yr + Yp
-
-                    logger.debug(f"[{vm_id}][{i}] FINAL batch size={len(batch_X_list)} "
+                        logger.debug(f"[{vm_id}][{i}] FINAL batch size={len(batch_X_list)} "
                                  f"(recent={len(Xr)}, replay={len(Xp)})")
 
                     if len(batch_X_list) < batch_size:
                         logger.debug(f"[{vm_id}][{i}] Skipping train step: not enough samples for full batch ")
                         continue
 
-                    logger.debug(f"[{vm_id}][{i}] Training started")
+                    logger.debug(f"[{vm_id}][{i}] Training train_every={train_every} with batch_size={len(batch_X_list)} ")
 
                     batch_X = torch.cat(batch_X_list).to(device)  # (B, L, F)
                     batch_Y = torch.cat(batch_Y_list).to(device)  # (B, H, T)

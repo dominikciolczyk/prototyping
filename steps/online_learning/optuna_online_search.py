@@ -1,5 +1,7 @@
 import json
 from typing import Dict, Any
+
+from optuna import TrialPruned
 from zenml import step
 import optuna
 from pathlib import Path
@@ -27,16 +29,20 @@ def optuna_online_search(
     def objective(trial: optuna.Trial) -> float:
         try:
             max_steps = 30
-            batch_size = trial.suggest_int("batch_size", 1, max_steps)
-            replay_buffer_size = trial.suggest_int("replay_buffer_size", 1, max_steps)
+            batch_size = trial.suggest_int("batch_size", 4, 24)
             online_lr = trial.suggest_loguniform("online_lr", 1e-5, 1e-1)
             update_scalers = trial.suggest_categorical("update_scalers", [True, False])
             train_every = trial.suggest_int("train_every", 1, 10)
-            recent_window_size = trial.suggest_int("recent_window_size", 1, max_steps)
-            recent_ratio = trial.suggest_float("recent_ratio", 0.0, 1.0)
             grad_clip = trial.suggest_float("grad_clip", 0.1, 5.0)
 
             replay_strategy = trial.suggest_categorical("replay_strategy", ["none", "sliding", "cyclic", "random", "prioritized"])
+
+            if replay_strategy == "none":
+                replay_buffer_size = 0
+                recent_window_size = trial.suggest_int("recent_window_size", 1, max_steps)
+            else:
+                replay_buffer_size = trial.suggest_int("replay_buffer_size", 1, max_steps)
+                recent_window_size = trial.suggest_int("recent_window_size", 0, max_steps)
 
             if replay_strategy == "prioritized":
                 per_alpha = trial.suggest_float("per_alpha", 0.3, 1.0)
@@ -46,11 +52,15 @@ def optuna_online_search(
             else:
                 per_alpha, per_beta, per_half_life, per_eps = 0.6, 0.4, 1000, 1e-3
 
-            effective_replay_buffer_size = 0 if replay_strategy == "none" else replay_buffer_size
 
-            if int(batch_size * recent_ratio) + effective_replay_buffer_size < batch_size:
+            if recent_window_size + replay_buffer_size < batch_size:
                 # prune trial
                 raise optuna.TrialPruned("Not enough buffer+recent to satisfy batch_size")
+
+            if recent_window_size > batch_size:
+                # prune trial
+                raise optuna.TrialPruned("recent_window_size cannot be larger than batch_size")
+
 
             # --- Create unique subdir for this trial ---
             base_dir = Path("results/online/optuna_trials")
@@ -80,7 +90,6 @@ def optuna_online_search(
                 replay_strategy=replay_strategy,
                 batch_size=batch_size,
                 recent_window_size=recent_window_size,
-                recent_ratio=recent_ratio,
                 grad_clip=grad_clip,
                 per_alpha=per_alpha,
                 per_beta=per_beta,
@@ -106,7 +115,6 @@ def optuna_online_search(
                 "replay_strategy": replay_strategy,
                 "batch_size": batch_size,
                 "recent_window_size": recent_window_size,
-                "recent_ratio": recent_ratio,
                 "grad_clip": grad_clip,
                 "per_alpha": per_alpha,
                 "per_beta": per_beta,
@@ -119,9 +127,12 @@ def optuna_online_search(
                 f.write(json.dumps(row) + "\n")
 
             return loss
+        except TrialPruned:
+            raise
         except Exception as e:
-            logger.error(f"Trial {trial.number} failed: {e}", exc_info=True)
-            raise optuna.TrialPruned()
+            # This will **not** prune, it will fail the trial with error
+            logger.error(f"Trial {trial.number} crashed: {e}", exc_info=True)
+            raise
 
     sampler = optuna.samplers.TPESampler(n_startup_trials=100)
     study = optuna.create_study(direction="minimize", sampler=sampler)
