@@ -1,8 +1,5 @@
 import logging
 import copy
-from typing import Dict, Any, List, Tuple, Optional, Literal
-import pandas as pd
-from matplotlib import pyplot as plt
 from torch import nn
 from torch.optim import Adam
 from zenml import step
@@ -22,13 +19,55 @@ import json
 import numpy as np
 import torch
 from pathlib import Path
+from typing import Dict, Any, List, Tuple, Optional, Literal
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from utils.visualization_consistency import set_plot_style, save_pdf
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
 experiment_tracker = Client().active_stack.experiment_tracker
 
-# set debug level for detailed logging in logger
 logger.setLevel(logging.INFO)
+
+def plot_online_losses(
+    per_vm_losses_model: Dict[str, List[float]],
+    per_vm_losses_baseline: Dict[str, List[float]],
+    out_dir,
+) -> Dict[str, str]:
+    """Render per-VM loss plots in the same style as your other figures."""
+    set_plot_style()
+    out_paths: Dict[str, str] = {}
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    for vm_id, model_losses in per_vm_losses_model.items():
+        baseline_losses = per_vm_losses_baseline.get(vm_id, None)
+
+        df = pd.DataFrame({"step": range(len(model_losses)), "model": model_losses})
+        if baseline_losses is not None:
+            df["baseline"] = baseline_losses[: len(model_losses)]
+
+        fig, ax = plt.subplots(figsize=(9, 3))
+
+        # Consistent with your other plots: thin line, small markers
+        sns.lineplot(data=df, x="step", y="model", ax=ax,
+                     linewidth=1, marker="o", markersize=3, label="model")
+        if "baseline" in df:
+            sns.lineplot(
+                data=df, x="step", y="baseline", ax=ax,
+                linewidth=1, marker="o", markersize=3,
+                linestyle="--", label="baseline"
+            )
+
+        ax.set_xlabel("krok czasowy")
+        ax.set_ylabel("strata AsymmetricSmoothL1")
+        fig.tight_layout()
+
+        out_paths[vm_id] = save_pdf(fig, out_dir / f"{vm_id}_online_loss")
+
+    return out_paths
 
 def _tensor_stats(t: torch.Tensor) -> str:
     if t is None or not isinstance(t, torch.Tensor) or t.numel() == 0:
@@ -93,12 +132,21 @@ def _transform_row_one(row: pd.Series, vm_scalers: Dict[str, Any]) -> pd.Series:
 
 def _make_window(history: pd.DataFrame, seq_len: int) -> torch.Tensor:
     """
-    Zwróć ostatnie 'seq_len' wierszy jako tensor:
+    Return the last 'seq_len' rows as a tensor:
       IN:  history.shape = (N, n_features)
       OUT: torch.FloatTensor (1, seq_len, n_features)
     """
     window = history.iloc[-seq_len:].values            # np.array (seq_len, n_features)
     t = torch.tensor(window, dtype=torch.float32).unsqueeze(0)
+
+    # Debug info
+    logger.debug("---- _make_window Debug ----")
+    logger.debug(f"History shape: {history.shape}")
+    logger.debug(f"Window shape (numpy): {window.shape}")
+    logger.debug(f"Tensor shape: {t.shape}")
+    logger.debug(f"Tensor values:\n{t}")
+    logger.debug("----------------------------")
+
     return t
 
 def _inverse_transform(arr: np.ndarray, selected_cols: List[str], vm_scalers_snapshot: Dict[str, Any]) -> np.ndarray:
@@ -273,8 +321,11 @@ def online_evaluator(
     base_state = copy.deepcopy(model.state_dict())
     base_scalers = copy.deepcopy(scalers)
 
-    if save_step_csv_dir:
+    if debug and save_step_csv_dir:
         Path(save_step_csv_dir).mkdir(parents=True, exist_ok=True)
+
+    if debug and debug_dump_dir:
+        Path(debug_dump_dir).mkdir(parents=True, exist_ok=True)
 
     def make_buffer() -> BaseReplayBuffer:
         if replay_strategy == "none":
@@ -288,16 +339,15 @@ def online_evaluator(
         if replay_strategy == "prioritized":
             return PrioritizedReplayBuffer(
                 capacity=replay_buffer_size,
-                alpha=per_alpha, beta=per_beta,
-                eps=per_eps, half_life=per_half_life
+                alpha=per_alpha,
+                beta=per_beta,
+                eps=per_eps,
+                half_life=per_half_life
             )
         raise ValueError(f"Unknown replay_strategy: {replay_strategy}")
 
     per_vm_losses_model: Dict[str, List[float]] = {}
     per_vm_losses_baseline: Dict[str, List[float]] = {}
-
-    if debug_dump_dir:
-        Path(debug_dump_dir).mkdir(parents=True, exist_ok=True)
 
     for vm_id, init_df in expanded_test_dfs.items():
         set_seed(42)
@@ -315,41 +365,57 @@ def online_evaluator(
                 fp = sum((p.float().abs().sum() for p in model.parameters()))
             logger.debug(f"[{vm_id}] model fingerprint after reset: {float(fp):.6e}")
             for col in selected_target_columns:
-                mu, std, cnt = _scaler_state(vm_scalers[col], col)
-                logger.info(f"[{vm_id}] INIT SCALER {col}: mu={mu:.5f}, std={std:.5f}, cnt={cnt}")
+                mu, std, cnt = _scaler_state(scaler=vm_scalers[col], col=col)
+                logger.info(f"[{vm_id}] INIT SCALER for col {col}: mu={mu:.5f}, std={std:.5f}, cnt={cnt}")
 
-            debug_dir = Path(debug_dump_dir) / vm_id
-            debug_dir.mkdir(parents=True, exist_ok=True)
+            vm_debug_dir = Path(debug_dump_dir) / vm_id
+            vm_debug_dir.mkdir(parents=True, exist_ok=True)
 
         if debug and not want_debug:
             logger.info(f"Skipping VM '{vm_id}' (not in debug_vms list)")
             continue
 
-        logger.info(f"Streaming evaluation for VM '{vm_id}' (strategy={replay_strategy})")
-
         if want_debug:
             logger.debug(f"[{vm_id}] INIT_DF: {_df_stats(init_df)} first ts={init_df.index.min()}, last ts={init_df.index.max()}")
-            init_df.to_csv(debug_dir / f"{vm_id}_INIT_DF.csv")
+            init_df.to_csv(vm_debug_dir / f"{vm_id}_INIT_DF.csv")
 
         if vm_id not in expanded_test_final_dfs:
             raise KeyError(f"No streaming data for VM '{vm_id}' in expanded_test_final_dfs")
+
         stream_df = expanded_test_final_dfs[vm_id]
 
         if want_debug:
             logger.debug(
                 f"[{vm_id}] STREAM_DF: {_df_stats(stream_df)}  first ts={stream_df.index.min()}, last ts={stream_df.index.max()}")
-            stream_df.to_csv(debug_dir / f"{vm_id}_STREAM_DF.csv")
+            stream_df.to_csv(vm_debug_dir / f"{vm_id}_STREAM_DF.csv")
 
         history = init_df.copy()
 
         col_to_idx = {c: k for k, c in enumerate(history.columns)}
         target_idx = [col_to_idx[c] for c in selected_target_columns]
 
+        logger.debug(f"[{vm_id}] History columns: {list(history.columns)}")
+        logger.debug(f"[{vm_id}] Selected target columns: {selected_target_columns}")
+        logger.debug(f"[{vm_id}] Column to index mapping: {col_to_idx}")
+        logger.debug(f"[{vm_id}] Target indices: {target_idx}")
+
+        # Sanitity check: all selected_target_columns must be in history
+        for c in selected_target_columns:
+            if c not in col_to_idx:
+                raise ValueError(f"Selected target column '{c}' not found in data columns: {list(history.columns)}")
+
+        if want_debug:
+            logger.debug(f"[{vm_id}] Initial history {_df_stats(history)}, first ts={history.index.min()}, last ts={history.index.max()}")
+            history.to_csv(vm_debug_dir / f"{vm_id}_HISTORY_START.csv")
+
+        if len(history) < seq_len:
+            raise ValueError(f"History for VM '{vm_id}' has fewer rows ({len(history)}) than seq_len ({seq_len}).")
+
         full_df = pd.concat([init_df, stream_df])
 
         if want_debug:
-            logger.debug(f"[{vm_id}] FULL_DF after concat: {_df_stats(full_df)} first ts={full_df.index.min()}, last ts={full_df.index.max()}")
-            full_df.to_csv(debug_dir / f"{vm_id}_FULL_DF.csv")
+            logger.debug(f"[{vm_id}] FULL_DF: {_df_stats(full_df)} first ts={full_df.index.min()}, last ts={full_df.index.max()}")
+            full_df.to_csv(vm_debug_dir / f"{vm_id}_FULL_DF.csv")
 
         if not full_df.index.is_monotonic_increasing:
             raise ValueError(f"Data for VM '{vm_id}' is not sorted by timestamp. Please sort the DataFrame before evaluation.")
@@ -359,8 +425,7 @@ def online_evaluator(
 
         deltas = full_df.index.to_series().diff().dropna()
 
-        if want_debug:
-            logger.debug(f"[{vm_id}] Time deltas (first 5): {deltas.head().tolist()}")
+        logger.debug(f"[{vm_id}] Time deltas (first 5): {deltas.head().tolist()}")
 
         expected_delta = pd.Timedelta(hours=2)
 
@@ -372,7 +437,7 @@ def online_evaluator(
                 f"Expected every 2h, but found {bad.unique().tolist()} at {bad.index[:5].tolist()}."
             )
 
-        recent_cap = max(1, int(recent_window_size))
+        recent_window_size_capped = max(1, int(recent_window_size))
         recent_X: deque = deque()
         recent_y: deque = deque()
         recent_err: deque = deque()  # track loss_model for PER priority (or logging)
@@ -384,21 +449,20 @@ def online_evaluator(
         # Per-step CSV storage
         step_rows: List[Dict[str, Any]] = []
 
+        logger.info(f"Starting online eval for VM '{vm_id}' with {len(stream_df)} streaming rows, replay buffer={rb.__class__.__name__}")
+
         for i, (ts, new_obs) in enumerate(stream_df.iterrows(), start=1):
             vm_scalers_eval = {col: copy.deepcopy(s) for col, s in vm_scalers.items()}
-
-            # === 1) PREDICT using current history (do NOT append new_obs yet) ===
-            if len(history) < seq_len:
-                raise ValueError(f"History for VM '{vm_id}' has fewer rows ({len(history)}) than seq_len ({seq_len}).")
 
             # Build window purely from existing history (t=0 -> only TEST)
             X_window = _make_window(history, seq_len).to(device)
 
             if want_debug:
-                step_dir = debug_dir / f"step_{i:05d}"
+                step_dir = vm_debug_dir / f"step_{i:05d}"
                 step_dir.mkdir(parents=True, exist_ok=True)
                 history.to_csv(step_dir / "HISTORY.csv")
-                logger.debug(f"[{vm_id}][{i}] HISTORY {_df_stats(history)}")
+                logger.debug(
+                    f"[{vm_id}][{i}] HISTORY {_df_stats(history)}, first ts={history.index.min()}, last ts={history.index.max()}")
                 logger.debug(f"[{vm_id}][{i}] X_window {_tensor_stats(X_window)}")
 
                 X_np = X_window.squeeze(0).cpu().numpy()
@@ -406,6 +470,7 @@ def online_evaluator(
 
             # Compute indices for the future slice BEFORE we append new_obs
             start_idx, end_idx = len(history), len(history) + horizon
+            logger.debug(f"[{vm_id}][{i}] Predicting horizon {horizon} from indices {start_idx}:{end_idx}")
             if end_idx > len(full_df):
                 if debug:
                     logger.debug(f"[{vm_id}][{i}] Not enough future rows for horizon={horizon} "
@@ -444,18 +509,18 @@ def online_evaluator(
                 vm_scalers_eval[col].transform_many(y_true_slice[[col]])[col].values
                 for col in selected_target_columns
             ]).astype(np.float32)
-            y_true = torch.tensor(y_true_scaled)  # (H, T)
+            y_true_scaled_tensor = torch.tensor(y_true_scaled)  # (H, T)
 
             if want_debug:
-                logger.debug(f"[{vm_id}][{i}] y_true (scaled) {_tensor_stats(y_true)}")
+                logger.debug(f"[{vm_id}][{i}] y_true_scaled_tensor (scaled) {_tensor_stats(y_true_scaled_tensor)}")
 
                 pd.DataFrame(y_true_scaled, columns=selected_target_columns).to_csv(
                     step_dir / "y_true_scaled.csv", index=False
                 )
 
             # --- Scaled-space losses (what you already do) ---
-            loss_model = criterion(y_pred_scaled.squeeze(0), y_true).item()
-            loss_base = criterion(y_pred_base.squeeze(0), y_true).item()
+            loss_model = criterion(y_pred_scaled.squeeze(0), y_true_scaled_tensor).item()
+            loss_base = criterion(y_pred_base.squeeze(0), y_true_scaled_tensor).item()
             per_vm_losses_model.setdefault(vm_id, []).append(loss_model)
             per_vm_losses_baseline.setdefault(vm_id, []).append(loss_base)
 
@@ -475,149 +540,155 @@ def online_evaluator(
 
             history = pd.concat([history, new_obs_scaled.to_frame().T])
 
-            # --- 5) Update buffers / online train ---
-            if use_online:
-                logger.debug(f"[{vm_id}][{i}] recent_X size before={len(recent_X)}, recent_cap={recent_cap}")
-                if len(recent_X) >= recent_cap:
-                    old_X = recent_X.popleft()
-                    old_Y = recent_y.popleft()
-                    old_e = recent_err.popleft()
-                    old_t = recent_t.popleft()  # its original step index
-                    if not isinstance(rb, NoReplayBuffer):
-                        logger.debug(f"[{vm_id}][{i}] Pushing to replay buffer: X={_tensor_stats(old_X)}, y={_tensor_stats(old_Y)}, err={old_e:.6f}, t={old_t}")
-                        rb.push(
-                            X=old_X,
-                            y=old_Y,
-                            step_t=int(old_t),  # precise step for aging in PER
-                            err=float(old_e),  # priority/error if you use PER
-                            regime_id=None
-                        )
+            if not use_online:
+                logger.debug(f"[{vm_id}][{i}] Skipping online update (use_online=False)")
+                continue
 
-                recent_X.append(X_window.detach().cpu())  # (1, L, F)
-                recent_y.append(y_true.unsqueeze(0))  # (1, H, T)
-                recent_err.append(float(loss_model))
-                recent_t.append(i)
+            logger.debug(f"[{vm_id}][{i}] recent_X size before={len(recent_X)}, recent_window_size_capped={recent_window_size_capped}")
+            if len(recent_X) >= recent_window_size_capped:
+                old_X = recent_X.popleft()
+                old_Y = recent_y.popleft()
+                old_e = recent_err.popleft()
+                old_t = recent_t.popleft()
+                if isinstance(rb, NoReplayBuffer):
+                    logger.debug(f"[{vm_id}][{i}]] NoReplayBuffer: not pushing anything")
+                else:
+                    logger.debug(f"[{vm_id}][{i}] Pushing to replay buffer: X={_tensor_stats(old_X)}, y={_tensor_stats(old_Y)}, err={old_e:.6f}, t={old_t}")
+                    logger.debug(f"Old_X shape: {old_X.shape}, Old_Y shape: {old_Y.shape}, old_t: {old_t}, old_e: {old_e}")
+                    rb.push(
+                        X=old_X,
+                        y=old_Y,
+                        step_t=int(old_t),  # precise step for aging in PER
+                        err=float(old_e),  # priority/error if you use PER
+                        regime_id=None
+                    )
 
-                # 6) (Optional) train step co 'train_every'
-                if optim is not None and (i % train_every) == 0:
-                    # planowany skład batcha
-                    m = min(batch_size, recent_window_size)
-                    n = max(0, batch_size - m)                 # replay
+            recent_X.append(X_window.detach().cpu())  # (1, L, F)
+            recent_y.append(y_true_scaled_tensor.unsqueeze(0))  # (1, H, T)
+            recent_err.append(float(loss_model))
+            recent_t.append(i)
 
-                    # pobierz recent
-                    recent_samples = min(m, len(recent_X))
-                    Xr = list(recent_X)[-recent_samples:] if recent_samples > 0 else []
-                    Yr = list(recent_y)[-recent_samples:] if recent_samples > 0 else []
+            # 6) (Optional) train step co 'train_every'
+            if optim is not None and (i % train_every) == 0:
+                # planowany skład batcha
+                m = min(batch_size, recent_window_size)
+                n = max(0, batch_size - m)                 # replay
 
-                    # pobierz replay
-                    if n > 0:
-                        if isinstance(rb, PrioritizedReplayBuffer):
-                            Xp, Yp, Wp = rb.sample(n, now_t=i)
-                        else:
-                            Xp, Yp, Wp = rb.sample(n)
+                # pobierz recent
+                recent_samples = min(m, len(recent_X))
+                Xr = list(recent_X)[-recent_samples:] if recent_samples > 0 else []
+                Yr = list(recent_y)[-recent_samples:] if recent_samples > 0 else []
+
+                # pobierz replay
+                if n > 0:
+                    if isinstance(rb, PrioritizedReplayBuffer):
+                        Xp, Yp, Wp = rb.sample(n, now_t=i)
                     else:
-                        Xp, Yp, Wp = [], [], None
+                        Xp, Yp, Wp = rb.sample(n)
+                else:
+                    Xp, Yp, Wp = [], [], None
 
-                    deficit = batch_size - (len(Xr) + len(Xp))
+                deficit = batch_size - (len(Xr) + len(Xp))
 
-                    # finalny batch
-                    batch_X_list = Xr + Xp
-                    batch_Y_list = Yr + Yp
+                # finalny batch
+                batch_X_list = Xr + Xp
+                batch_Y_list = Yr + Yp
 
-                    if want_debug:
-                        logger.debug(f"[{vm_id}][{i}] Batch mix: recent={len(Xr)}, recent_size={len(recent_X)}, replay={len(Xp)}, deficit={deficit}")
+                if want_debug:
+                    logger.debug(f"[{vm_id}][{i}] Batch mix: recent={len(Xr)}, recent_size={len(recent_X)}, replay={len(Xp)}, deficit={deficit}")
 
-                        comp_row = {
-                            "vm_id": vm_id, "step": i,
-                            "recent_len": len(recent_X), "replay_len": len(rb),
-                            "batch_recent": len(Xr), "batch_replay": len(Xp),
-                            "batch_deficit_filled": int(deficit > 0),
-                            "Wp_present": int(Wp is not None),
-                            "recent_steps": list(recent_t)[-recent_samples:],
-                            "recent_cap": recent_cap,
-                        }
-                        _append_jsonl(step_dir / "train_batch_meta.jsonl", comp_row)
-                        _dump_replay_state(rb, step_dir, now_t=i)
-                        logger.debug(f"[{vm_id}][{i}] FINAL batch size={len(batch_X_list)} "
-                                 f"(recent={len(Xr)}, replay={len(Xp)})")
+                    comp_row = {
+                        "vm_id": vm_id, "step": i,
+                        "recent_len": len(recent_X), "replay_len": len(rb),
+                        "batch_recent": len(Xr), "batch_replay": len(Xp),
+                        "Wp_present": int(Wp is not None),
+                        "recent_steps": list(recent_t)[-recent_samples:],
+                        "recent_window_size_capped": recent_window_size_capped,
+                    }
+                    _append_jsonl(step_dir / "train_batch_meta.jsonl", comp_row)
+                    _dump_replay_state(rb, step_dir, now_t=i)
+                    logger.debug(f"[{vm_id}][{i}] FINAL batch size={len(batch_X_list)} "
+                             f"(recent={len(Xr)}, replay={len(Xp)})")
 
-                    if len(batch_X_list) < batch_size:
-                        logger.debug(f"[{vm_id}][{i}] Skipping train step: not enough samples for full batch ")
-                        continue
+                if len(batch_X_list) < batch_size:
+                    logger.debug(f"[{vm_id}][{i}] Skipping train step: not enough samples for full batch ")
+                    continue
 
-                    logger.debug(f"[{vm_id}][{i}] Training train_every={train_every} with batch_size={len(batch_X_list)} ")
+                logger.debug(f"[{vm_id}][{i}] Training train_every={train_every} with batch_size={len(batch_X_list)} ")
 
-                    batch_X = torch.cat(batch_X_list).to(device)  # (B, L, F)
-                    batch_Y = torch.cat(batch_Y_list).to(device)  # (B, H, T)
+                batch_X = torch.cat(batch_X_list).to(device)  # (B, L, F)
+                batch_Y = torch.cat(batch_Y_list).to(device)  # (B, H, T)
 
-                    if want_debug:
-                        _save_tensor("batch_X", batch_X, step_dir)
-                        _save_tensor("batch_Y", batch_Y, step_dir)
-                        if Wp is not None:
-                            _save_array("IS_weights", np.asarray(Wp, dtype=np.float32), step_dir)
+                if want_debug:
+                    _save_tensor("batch_X", batch_X, step_dir)
+                    logger.debug(f"[{vm_id}][{i}] batch_X {_tensor_stats(batch_X)}")
+                    _save_tensor("batch_Y", batch_Y, step_dir)
+                    logger.debug(f"[{vm_id}][{i}] batch_Y {_tensor_stats(batch_Y)}")
+                    if Wp is not None:
+                        _save_array("IS_weights", np.asarray(Wp, dtype=np.float32), step_dir)
 
-                    # ---- Evaluate BEFORE update (no grad) ----
-                    model.eval()
-                    with torch.no_grad():
-                        loss_pre = criterion(model(batch_X), batch_Y).item()
+                # ---- Evaluate BEFORE update (no grad) ----
+                model.eval()
+                with torch.no_grad():
+                    loss_pre = criterion(model(batch_X), batch_Y).item()
 
-                    # ---- Train step ----
-                    model.train()
-                    optim.zero_grad()
+                # ---- Train step ----
+                model.train()
+                optim.zero_grad()
 
-                    # PER weighted loss
-                    if isinstance(rb, PrioritizedReplayBuffer) and Wp is not None:
-                        num_recent = len(Xr)
-                        weights = np.ones((len(batch_X_list),), dtype=np.float32)
-                        weights[num_recent:] = Wp
-                        weights_t = torch.tensor(weights, dtype=torch.float32, device=device)
+                # PER weighted loss
+                if isinstance(rb, PrioritizedReplayBuffer) and Wp is not None:
+                    num_recent = len(Xr)
+                    weights = np.ones((len(batch_X_list),), dtype=np.float32)
+                    weights[num_recent:] = Wp
+                    weights_t = torch.tensor(weights, dtype=torch.float32, device=device)
 
-                        total = 0.0
-                        w_sum = weights_t.sum().clamp_min(1e-8)
-                        for j in range(batch_X.shape[0]):
-                            out = model(batch_X[j:j + 1])
-                            l_j = criterion(out.squeeze(0), batch_Y[j])
-                            total = total + l_j * weights_t[j]
-                        loss_train = total / w_sum
-                    else:
-                        loss_train = criterion(model(batch_X), batch_Y)
+                    total = 0.0
+                    w_sum = weights_t.sum().clamp_min(1e-8)
+                    for j in range(batch_X.shape[0]):
+                        out = model(batch_X[j:j + 1])
+                        l_j = criterion(out.squeeze(0), batch_Y[j])
+                        total = total + l_j * weights_t[j]
+                    loss_train = total / w_sum
+                else:
+                    loss_train = criterion(model(batch_X), batch_Y)
 
-                    loss_train.backward()
+                loss_train.backward()
 
-                    # grad norms before/after clip
-                    grad_norm_before = _grad_l2_norm(model)
-                    if grad_clip is not None and grad_clip > 0:
-                        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float(grad_clip))
-                    grad_norm_after = _grad_l2_norm(model)
+                # grad norms before/after clip
+                grad_norm_before = _grad_l2_norm(model)
+                if grad_clip is not None and grad_clip > 0:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float(grad_clip))
+                grad_norm_after = _grad_l2_norm(model)
 
-                    # snapshot params (before step) -> to compute delta
-                    state_before = copy.deepcopy(model.state_dict())
+                # snapshot params (before step) -> to compute delta
+                state_before = copy.deepcopy(model.state_dict())
 
-                    optim.step()
-                    model.eval()
+                optim.step()
+                model.eval()
 
-                    # param delta + post loss
-                    state_after = model.state_dict()
-                    param_delta = _param_delta_norm(state_before, state_after)
+                # param delta + post loss
+                state_after = model.state_dict()
+                param_delta = _param_delta_norm(state_before, state_after)
 
-                    with torch.no_grad():
-                        loss_post = criterion(model(batch_X), batch_Y).item()
+                with torch.no_grad():
+                    loss_post = criterion(model(batch_X), batch_Y).item()
 
-                    if want_debug:
-                        # ---- Save scalar metrics of this train step ----
-                        train_row = {
-                            "vm_id": vm_id, "step": i,
-                            "B": int(batch_X.shape[0]),
-                            "L": int(batch_X.shape[1]), "F": int(batch_X.shape[2]),
-                            "H": int(batch_Y.shape[1]), "T": int(batch_Y.shape[2]),
-                            "loss_pre": float(loss_pre),
-                            "loss_train": float(loss_train.item()),
-                            "loss_post": float(loss_post),
-                            "grad_l2_before": float(grad_norm_before),
-                            "grad_l2_after": float(grad_norm_after),
-                            "param_delta_l2": float(param_delta),
-                        }
-                        _append_jsonl(step_dir / "train_step_metrics.jsonl", train_row)
+                if want_debug:
+                    # ---- Save scalar metrics of this train step ----
+                    train_row = {
+                        "vm_id": vm_id, "step": i,
+                        "B": int(batch_X.shape[0]),
+                        "L": int(batch_X.shape[1]), "F": int(batch_X.shape[2]),
+                        "H": int(batch_Y.shape[1]), "T": int(batch_Y.shape[2]),
+                        "loss_pre": float(loss_pre),
+                        "loss_train": float(loss_train.item()),
+                        "loss_post": float(loss_post),
+                        "grad_l2_before": float(grad_norm_before),
+                        "grad_l2_after": float(grad_norm_after),
+                        "param_delta_l2": float(param_delta),
+                    }
+                    _append_jsonl(step_dir / "train_step_metrics.jsonl", train_row)
 
             y_true_inverse_transform = _inverse_transform(y_true_scaled,
                                                               selected_target_columns, vm_scalers_eval)
@@ -680,41 +751,27 @@ def online_evaluator(
     all_losses_model = [loss for vm_losses in per_vm_losses_model.values() for loss in vm_losses]
     all_losses_baseline = [loss for vm_losses in per_vm_losses_baseline.values() for loss in vm_losses]
 
+
     logger.debug(f"All model losses collected: {all_losses_model}")
     logger.debug(f"All baseline losses collected: {all_losses_baseline}")
 
     avg_loss_model = float(np.mean(all_losses_model)) if all_losses_model else float("nan")
     avg_loss_baseline = float(np.mean(all_losses_baseline)) if all_losses_baseline else float("nan")
+    avg_loss_model_5_last = float(np.mean(all_losses_model[-5:])) if len(all_losses_model) >= 5 else float("nan")
+    avg_loss_baseline_5_last = float(np.mean(all_losses_baseline[-5:])) if len(all_losses_baseline) >= 5 else float("nan")
     #plot_paths = plot_time_series(merged_plots, "online_eval")
 
     logger.info("Average loss for model: %.4f", avg_loss_model)
     logger.info("Average loss for baseline: %.4f", avg_loss_baseline)
+    logger.info("Average loss for model (last 5 steps): %.4f", avg_loss_model_5_last)
+    logger.info("Average loss for baseline (last 5 steps): %.4f", avg_loss_baseline_5_last)
 
-    # per-VM wykres strat (zostawione bez zmian)
-    loss_plot_paths = {}
-    for vm_id in per_vm_losses_model:
-        loss_df = pd.DataFrame({
-            "model_loss": per_vm_losses_model[vm_id],
-            "baseline_loss": per_vm_losses_baseline[vm_id],
-        })
-        loss_df.index.name = "step"
-
-        plt.figure(figsize=(8, 4))
-        plt.plot(loss_df.index, loss_df["model_loss"], label="Model", linewidth=2)
-        plt.plot(loss_df.index, loss_df["baseline_loss"], label="Baseline", linestyle="--", linewidth=2)
-        plt.xlabel("Step")
-        plt.ylabel("AsymmetricSmoothL1 loss")
-        plt.title(f"Loss Evolution – {vm_id}")
-        plt.legend()
-        plt.tight_layout()
-
-        loss_plots_path = "results/online/loss_plots/"
-        Path(loss_plots_path).mkdir(parents=True, exist_ok=True)
-
-        out_path = f"{loss_plots_path}{vm_id}_loss.png"
-        plt.savefig(out_path, dpi=150)
-        plt.close()
-        loss_plot_paths[vm_id] = out_path
+    if debug:
+        plot_online_losses(
+            per_vm_losses_model=per_vm_losses_model,
+            per_vm_losses_baseline=per_vm_losses_baseline,
+            out_dir="report_output/online/loss_plots"
+        )
 
     per_vm_csv_paths = {}
     if save_step_csv_dir:

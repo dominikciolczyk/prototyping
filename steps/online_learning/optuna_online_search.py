@@ -31,7 +31,7 @@ def optuna_online_search(
             max_steps = 30
             batch_size = trial.suggest_int("batch_size", 4, 24)
             online_lr = trial.suggest_loguniform("online_lr", 1e-5, 1e-1)
-            update_scalers = trial.suggest_categorical("update_scalers", [True, False])
+            update_scalers = True
             train_every = trial.suggest_int("train_every", 1, 10)
             grad_clip = trial.suggest_float("grad_clip", 0.1, 5.0)
 
@@ -134,8 +134,14 @@ def optuna_online_search(
             logger.error(f"Trial {trial.number} crashed: {e}", exc_info=True)
             raise
 
-    sampler = optuna.samplers.TPESampler(n_startup_trials=100)
-    study = optuna.create_study(direction="minimize", sampler=sampler)
+    sampler = optuna.samplers.TPESampler(n_startup_trials=500, seed=42)
+    study = optuna.create_study(
+        study_name="online_eval",
+        direction="minimize",
+        sampler=sampler,
+        storage="sqlite:///online_optuna.db",
+        load_if_exists=True,
+    )
     study.optimize(objective, n_trials=n_trials)
 
     best_params = study.best_params
