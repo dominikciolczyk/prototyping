@@ -148,7 +148,6 @@ def cloud_resource_prediction_online_learning(
 
     optuna_search = True
 
-
     if optuna_search:
         optuna_online_search(
             model=student,
@@ -160,32 +159,38 @@ def cloud_resource_prediction_online_learning(
             beta=beta,
             selected_target_columns=selected_columns,
             scalers=scalers,
-            n_trials=1000,
+            n_startup_trials=1000,
+            n_trials=5000,
         )
     else:
-        online_evaluator(
-            model=student,
-            expanded_test_dfs=expanded_test_dfs,
-            expanded_test_final_dfs=expanded_test_final_unscaled_dfs,
-            seq_len=model_input_seq_len,
-            horizon=model_forecast_horizon,
-            alpha=alpha,
-            beta=beta,
-            selected_target_columns=selected_columns,
-            scalers=scalers,
-            replay_buffer_size=0,
-            online_lr=0.03673608013279492,
-            update_scalers=True,
-            train_every=1,
-            replay_strategy="none",
-            batch_size=8,
-            recent_window_size=8,
-            grad_clip=2.6694132726642987,
-            per_alpha=0.37889792054173255,
-            per_beta=0.33752302411245927,
-            per_half_life=1052,
-            per_eps=0.007415590467509862,
-            use_online=True,
-            debug=True,
-            debug_vms=["2020_VM02"],
-        )
+        #for recent_window_size in range(7, 30, 3):
+            online_lr = 0.0016
+
+            recent_window_size = 7
+            online_evaluator(
+                model=student,
+                expanded_test_dfs=expanded_test_dfs,
+                expanded_test_final_dfs=expanded_test_final_unscaled_dfs,
+                seq_len=model_input_seq_len,
+                horizon=model_forecast_horizon,
+                alpha=alpha,
+                beta=beta,
+                selected_target_columns=selected_columns,
+                scalers=scalers,
+                replay_buffer_size=recent_window_size,
+                online_lr=online_lr,
+                update_scalers=True,
+                train_every=1,
+                replay_strategy="cyclic",
+                batch_size=recent_window_size+1,
+                recent_window_size=1,
+                grad_clip=0.3,
+                per_alpha=0.37889792054173255,
+                per_beta=0.33752302411245927,
+                per_half_life=1052,
+                per_eps=0.007415590467509862,
+                use_online=True,
+                debug=False,
+                debug_vms=["2020_VM02"],
+                allow_partial_batches=True,
+            )

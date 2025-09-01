@@ -1,0 +1,6 @@
+number,value,params_batch_size,params_grad_clip,params_online_lr,params_per_alpha,params_per_beta,params_per_eps,params_per_half_life,params_recent_window_size,params_replay_buffer_size,params_replay_strategy,state
+1395,1.0995142407057916,4,1.6525116240602518,0.001781683714063041,,,,,3.0,24.0,cyclic,COMPLETE
+2036,1.1028835292102075,4,1.446583199065389,0.001623781224902848,,,,,2.0,20.0,sliding,COMPLETE
+2009,1.103931984473385,4,1.0483480856970737,0.001863786750636925,,,,,2.0,21.0,sliding,COMPLETE
+1694,1.104678918786493,4,0.9772076949302415,0.002099851387695679,,,,,2.0,22.0,cyclic,COMPLETE
+1121,1.11943183432461,29,0.1732823677357567,0.0022507368503934533,,,,,,,none,COMPLETE
